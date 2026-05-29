@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gazette News — Weekly Story Planner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#0000EE;
+  --blue-lt:#EEF0FF;
+  --blue-dk:#0000AA;
+  --ink:#111111;
+  --white:#ffffff;
+  --acid:#EEFF00;
+  --acid-dk:#4A5200;
+  --grey-lt:#F5F4F1;
+  --grey-md:#888888;
+  --grey-dk:#444444;
+  --cream:#FFFDE7;
+  --cream-dk:#6B4400;
+  --border:#DDDDDD;
+  --success:#15803D;
+  --success-lt:#F0FDF4;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f8f8f6;color:#111;min-height:100vh}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.setup-card{background:#fff;border:0.5px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:480px}
+.setup-logo{font-size:11px;font-weight:600;letter-spacing:.15em;color:var(--grey-md);text-transform:uppercase;margin-bottom:1.5rem}
+.setup-title{font-size:28px;font-weight:600;color:var(--ink);margin-bottom:.5rem}
+.setup-sub{font-size:14px;color:var(--grey-md);margin-bottom:2rem;line-height:1.5}
+.setup-field{margin-bottom:1.25rem}
+.setup-label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-dk);margin-bottom:.5rem;display:block}
+.setup-field input,.setup-field select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#111;outline:none;transition:border-color .2s}
+.setup-field input:focus,.setup-field select:focus{border-color:var(--blue)}
+.setup-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:.5rem;transition:opacity .2s}
+.setup-btn:hover{opacity:.88}
+.setup-err{font-size:13px;color:#cc0000;margin-top:.5rem;display:none}
+
+/* ── MAIN APP ── */
+#app{display:none;min-height:100vh}
+
+/* ── HEADER ── */
+.app-header{background:var(--ink);padding:0 2rem;display:flex;align-items:center;height:52px;gap:1.5rem;position:sticky;top:0;z-index:100}
+.app-wordmark{font-size:11px;font-weight:600;letter-spacing:.15em;color:#666;text-transform:uppercase}
+.app-divider{width:1px;height:16px;background:#333}
+.app-pub{font-size:13px;color:#aaa}
+.app-reporter{font-size:13px;color:#fff;font-weight:500}
+.header-spacer{flex:1}
+.week-display{font-size:12px;color:#888;display:flex;align-items:center;gap:6px}
+.week-display span{color:#aaa}
+.change-week-btn{font-size:12px;color:#555;background:none;border:0.5px solid #333;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit}
+.change-week-btn:hover{border-color:#555;color:#888}
+.signout-btn{font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
+.signout-btn:hover{color:#888}
+
+/* ── PROGRESS BAR ── */
+.progress-section{background:#fff;border-bottom:0.5px solid var(--border);padding:1rem 2rem}
+.prog-top{display:flex;align-items:center;gap:1.5rem;margin-bottom:.75rem}
+.prog-count{font-size:22px;font-weight:600;color:var(--ink)}
+.prog-label{font-size:13px;color:var(--grey-md)}
+.prog-pct{font-size:13px;color:var(--grey-md);margin-left:auto}
+.track{height:6px;background:var(--grey-lt);border-radius:3px;overflow:hidden;margin-bottom:.75rem}
+.track-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s ease}
+.prog-pills{display:flex;gap:8px;flex-wrap:wrap}
+.ppill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:0.5px solid}
+.ppill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
+.ppill-imp{background:#1a1a1a;color:#fff;border-color:#333}
+.ppill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
+
+/* ── WEEK PICKER BANNER ── */
+.week-banner{background:var(--blue-lt);border-bottom:1px solid #AABBEE;padding:.75rem 2rem;display:flex;align-items:center;gap:1rem}
+.week-banner label{font-size:13px;color:var(--blue-dk);font-weight:500}
+.week-banner input{border:1px solid #AABBEE;border-radius:6px;padding:5px 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);outline:none}
+.week-banner input:focus{border-color:var(--blue)}
+.week-save-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.week-save-btn:hover{opacity:.88}
+.week-banner-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--blue-dk);font-size:18px;line-height:1}
+
+/* ── STORY GRID ── */
+.stories-grid{padding:1.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;max-width:1400px;margin:0 auto}
+
+/* ── STORY CARD ── */
+.story-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .2s}
+.story-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.story-card.is-filed{opacity:.6}
+
+.card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+.card-hdr.std{background:var(--blue)}
+.card-hdr.imp{background:var(--ink)}
+.card-hdr.life{background:var(--acid)}
+
+.hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px}
+.hdr-num.std,.hdr-num.imp{color:#fff}
+.hdr-num.life{color:var(--acid-dk)}
+
+.hdr-info{flex:1;min-width:0}
+.hdr-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.hdr-type.std{color:#AABBFF}
+.hdr-type.imp{color:#777}
+.hdr-type.life{color:var(--acid-dk)}
+
+.hdr-preview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.hdr-preview.std{color:#CCDDFF}
+.hdr-preview.imp{color:#666}
+.hdr-preview.life{color:#8B6500}
+
+.hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.filed-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:none}
+.filed-pill.std{background:rgba(255,255,255,.2);color:#fff}
+.filed-pill.imp{background:rgba(255,255,255,.15);color:#aaa}
+.filed-pill.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
+.filed-pill.show{display:block}
+
+.hdr-chev{font-size:16px;transition:transform .2s}
+.hdr-chev.std,.hdr-chev.imp{color:rgba(255,255,255,.6)}
+.hdr-chev.life{color:var(--acid-dk)}
+.hdr-chev.open{transform:rotate(180deg)}
+
+.card-body{display:none;padding:1rem}
+.card-body.open{display:block}
+
+.cf{margin-bottom:12px}
+.cf:last-child{margin-bottom:0}
+.cl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--grey-md);margin-bottom:4px}
+.cf input[type=text],.cf textarea{width:100%;border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:#111;outline:none;resize:vertical;transition:border-color .2s}
+.cf input[type=text]:focus,.cf textarea:focus{border-color:var(--blue)}
+.cf textarea{min-height:52px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+.cxgroup{display:flex;flex-wrap:wrap;gap:4px 12px}
+.cxgroup label{display:flex;align-items:center;gap:5px;font-size:13px;color:#111;cursor:pointer;white-space:nowrap}
+.cxgroup input[type=checkbox],.cxgroup input[type=radio]{accent-color:var(--blue);width:13px;height:13px;cursor:pointer}
+
+.filed-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
+.filed-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#111;cursor:pointer}
+.filed-label input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer}
+.filed-ok{font-size:12px;color:var(--success);display:none;align-items:center;gap:4px}
+.filed-ok.show{display:flex}
+
+/* ── SAVING INDICATOR ── */
+.save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;font-size:12px;padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.save-toast.show{opacity:1}
+
+/* ── LOADING ── */
+.loading-screen{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:1rem}
+.loading-spinner{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--grey-md)}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">Gazette News</div>
+    <div class="setup-title">Weekly Story Planner</div>
+    <div class="setup-sub">Enter your details to get started. Your stories save automatically and sync across devices.</div>
+    <div class="setup-field">
+      <label class="setup-label">Your name</label>
+      <input type="text" id="inp-name" placeholder="e.g. Zara Cuthbertson" autocomplete="name">
+    </div>
+    <div class="setup-field">
+      <label class="setup-label">Publication</label>
+      <select id="inp-pub">
+        <option value="">Select your publication...</option>
+        <option>Mid North Coaster</option>
+        <option>Eastern Melburnian</option>
+        <option>West Vic Brolga — Wannon</option>
+        <option>West Vic Brolga — Ballarat</option>
+        <option>Gippsland Monitor</option>
+        <option>North Shore Lorikeet</option>
+        <option>National Account</option>
+      </select>
+    </div>
+    <div class="setup-field">
+      <label class="setup-label">Week of</label>
+      <input type="text" id="inp-week" placeholder="e.g. 2 Jun 2026">
+    </div>
+    <div class="setup-err" id="setup-err">Please fill in all fields.</div>
+    <button class="setup-btn" onclick="startApp()">Open my planner</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="app-header">
+    <span class="app-wordmark">Gazette News</span>
+    <div class="app-divider"></div>
+    <span class="app-reporter" id="hdr-reporter"></span>
+    <div class="app-divider"></div>
+    <span class="app-pub" id="hdr-pub"></span>
+    <div class="header-spacer"></div>
+    <div class="week-display">
+      <span>Week of</span>
+      <strong id="hdr-week" style="color:#ccc"></strong>
+    </div>
+    <button class="change-week-btn" onclick="toggleWeekBanner()">Change week</button>
+    <button class="signout-btn" onclick="signOut()">Sign out</button>
+  </div>
+
+  <div class="week-banner" id="week-banner" style="display:none">
+    <label>Change week to:</label>
+    <input type="text" id="new-week-inp" placeholder="e.g. 9 Jun 2026">
+    <button class="week-save-btn" onclick="changeWeek()">Save</button>
+    <button class="week-banner-close" onclick="toggleWeekBanner()">×</button>
+  </div>
+
+  <div class="progress-section">
+    <div class="prog-top">
+      <span class="prog-count" id="prog-count">0</span>
+      <span class="prog-label">of 8 stories filed this week</span>
+      <span class="prog-pct" id="prog-pct">0%</span>
+    </div>
+    <div class="track"><div class="track-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-pills">
+      <span class="ppill ppill-std" id="pill-std">0 / 5 standard</span>
+      <span class="ppill ppill-imp" id="pill-imp">0 / 1 impact</span>
+      <span class="ppill ppill-life" id="pill-life">0 / 2 lifestyle</span>
+    </div>
+  </div>
+
+  <div id="stories-container">
+    <div class="loading-screen">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading your stories...</div>
+    </div>
+  </div>
+</div>
+
+<div class="save-toast" id="save-toast">Saved</div>
+
+<script>
+const SUPA_URL = 'https://asgyshkafnrqknnmkbfo.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
+const TABLE = 'planner_stories';
+const LS_KEY = 'gz_planner_user';
+
+const STORIES = [
+  {n:'01',t:'std',lbl:'Story'},
+  {n:'02',t:'std',lbl:'Story'},
+  {n:'03',t:'std',lbl:'Story'},
+  {n:'04',t:'std',lbl:'Story'},
+  {n:'05',t:'std',lbl:'Story'},
+  {n:'06',t:'imp',lbl:'Impact'},
+  {n:'07',t:'life',lbl:'Lifestyle / Culture'},
+  {n:'08',t:'life',lbl:'Lifestyle / Culture'},
+];
+
+const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
+const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
+const FMT_ITEMS  = ['Written-first','Video-first','Both'];
+const DAYS       = ['Mon','Tue','Wed','Thu','Fri'];
+
+let USER = null;
+let WEEK = '';
+let DATA = {};
+let saveTimer = null;
+
+async function supaFetch(method, path, body) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    method,
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function startApp() {
+  const name = document.getElementById('inp-name').value.trim();
+  const pub  = document.getElementById('inp-pub').value;
+  const week = document.getElementById('inp-week').value.trim();
+  const err  = document.getElementById('setup-err');
+  if (!name || !pub || !week) { err.style.display='block'; return; }
+  err.style.display = 'none';
+  USER = { name, pub };
+  WEEK = week;
+  localStorage.setItem(LS_KEY, JSON.stringify({ name, pub, week }));
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('hdr-reporter').textContent = USER.name;
+  document.getElementById('hdr-pub').textContent = USER.pub;
+  document.getElementById('hdr-week').textContent = WEEK;
+  loadStories();
+}
+
+function signOut() {
+  localStorage.removeItem(LS_KEY);
+  USER = null; WEEK = ''; DATA = {};
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+}
+
+function toggleWeekBanner() {
+  const b = document.getElementById('week-banner');
+  b.style.display = b.style.display === 'none' ? 'flex' : 'none';
+  if (b.style.display === 'flex') {
+    document.getElementById('new-week-inp').value = WEEK;
+    document.getElementById('new-week-inp').focus();
+  }
+}
+
+async function changeWeek() {
+  const val = document.getElementById('new-week-inp').value.trim();
+  if (!val) return;
+  WEEK = val;
+  document.getElementById('hdr-week').textContent = WEEK;
+  const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  saved.week = WEEK;
+  localStorage.setItem(LS_KEY, JSON.stringify(saved));
+  toggleWeekBanner();
+  DATA = {};
+  loadStories();
+}
+
+async function loadStories() {
+  const container = document.getElementById('stories-container');
+  container.innerHTML = `<div class="loading-screen"><div class="loading-spinner"></div><div class="loading-text">Loading your stories...</div></div>`;
+  try {
+    const rows = await supaFetch('GET',
+      `${TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=*`
+    );
+    DATA = {};
+    (rows || []).forEach(r => { DATA[r.story_num] = r; });
+    renderGrid();
+    updateProgress();
+  } catch(e) {
+    container.innerHTML = `<div class="loading-screen"><div class="loading-text" style="color:#cc0000">Error loading stories. Check your connection.</div></div>`;
+  }
+}
+
+function blankStory(num) {
+  return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false };
+}
+
+function getStory(num) {
+  return DATA[num] || blankStory(num);
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderGrid() {
+  const container = document.getElementById('stories-container');
+  container.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'stories-grid';
+  STORIES.forEach((s,i) => {
+    grid.appendChild(buildCard(s, i));
+  });
+  container.appendChild(grid);
+}
+
+function buildCard(s, i) {
+  const st = getStory(s.n);
+  const filed = !!st.filed;
+  const prev = st.headline || 'Tap to add story details';
+  const wrap = document.createElement('div');
+  wrap.className = 'story-card' + (filed ? ' is-filed' : '');
+  wrap.id = 'card-' + s.n;
+
+  wrap.innerHTML = `
+<div class="card-hdr ${s.t}" onclick="toggleCard('${s.n}')">
+  <div class="hdr-num ${s.t}">${s.n}</div>
+  <div class="hdr-info">
+    <div class="hdr-type ${s.t}">${s.lbl}</div>
+    <div class="hdr-preview ${s.t}" id="prev-${s.n}">${esc(prev)}</div>
+  </div>
+  <div class="hdr-right">
+    <span class="filed-pill ${s.t} ${filed?'show':''}" id="fpill-${s.n}">Filed</span>
+    <span class="hdr-chev ${s.t}" id="chev-${s.n}">▾</span>
+  </div>
+</div>
+<div class="card-body" id="body-${s.n}">
+  <div class="cf">
+    <div class="cl">Headline idea</div>
+    <input type="text" placeholder="The headline or story idea..." value="${esc(st.headline)}" oninput="fieldUpdate('${s.n}','headline',this.value)">
+  </div>
+  <div class="grid2">
+    <div class="cf">
+      <div class="cl">Angle</div>
+      <textarea placeholder="What's the angle?" oninput="fieldUpdate('${s.n}','angle',this.value)">${esc(st.angle)}</textarea>
+    </div>
+    <div class="cf">
+      <div class="cl">Notes / sources</div>
+      <textarea placeholder="Key sources, contacts..." oninput="fieldUpdate('${s.n}','notes',this.value)">${esc(st.notes)}</textarea>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="cf">
+      <div class="cl">Format</div>
+      <div class="cxgroup">${FMT_ITEMS.map(f=>`<label><input type="radio" name="fmt${s.n}" value="${f}" ${st.format===f?'checked':''} onchange="fieldUpdate('${s.n}','format','${f}')"> ${f}</label>`).join('')}</div>
+    </div>
+    <div class="cf">
+      <div class="cl">Word count</div>
+      <input type="text" placeholder="e.g. 400" value="${esc(st.word_count)}" oninput="fieldUpdate('${s.n}','word_count',this.value)">
+    </div>
+    <div class="cf">
+      <div class="cl">File by</div>
+      <div class="cxgroup">${DAYS.map(d=>`<label><input type="radio" name="day${s.n}" value="${d}" ${st.file_day===d?'checked':''} onchange="fieldUpdate('${s.n}','file_day','${d}')"> ${d}</label>`).join('')}</div>
+    </div>
+  </div>
+  <div class="cf">
+    <div class="cl">To do</div>
+    <div class="cxgroup">${TODO_ITEMS.map(t=>`<label><input type="checkbox" value="${t}" ${(st.todo||[]).includes(t)?'checked':''} onchange="arrUpdate('${s.n}','todo','${t}',this.checked)"> ${t}</label>`).join('')}</div>
+  </div>
+  <div class="cf">
+    <div class="cl">Posted to</div>
+    <div class="cxgroup">${POST_ITEMS.map(p=>`<label><input type="checkbox" value="${p}" ${(st.posted||[]).includes(p)?'checked':''} onchange="arrUpdate('${s.n}','posted','${p}',this.checked)"> ${p}</label>`).join('')}</div>
+  </div>
+  <div class="filed-row">
+    <label class="filed-label">
+      <input type="checkbox" ${filed?'checked':''} onchange="setFiled('${s.n}',this.checked)">
+      Mark as filed
+    </label>
+    <span class="filed-ok ${filed?'show':''}" id="fok-${s.n}">✓ Great work</span>
+  </div>
+</div>`;
+  return wrap;
+}
+
+function toggleCard(num) {
+  const body = document.getElementById('body-' + num);
+  const chev = document.getElementById('chev-' + num);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function fieldUpdate(num, field, val) {
+  if (!DATA[num]) DATA[num] = blankStory(num);
+  DATA[num][field] = val;
+  if (field === 'headline') {
+    const p = document.getElementById('prev-' + num);
+    if (p) p.textContent = val || 'Tap to add story details';
+  }
+  scheduleSave(num);
+}
+
+function arrUpdate(num, field, val, checked) {
+  if (!DATA[num]) DATA[num] = blankStory(num);
+  let arr = DATA[num][field] || [];
+  if (checked && !arr.includes(val)) arr = [...arr, val];
+  if (!checked) arr = arr.filter(x => x !== val);
+  DATA[num][field] = arr;
+  scheduleSave(num);
+}
+
+function setFiled(num, checked) {
+  if (!DATA[num]) DATA[num] = blankStory(num);
+  DATA[num].filed = checked;
+  const card = document.getElementById('card-' + num);
+  const pill = document.getElementById('fpill-' + num);
+  const ok   = document.getElementById('fok-' + num);
+  if (card) card.className = 'story-card' + (checked ? ' is-filed' : '');
+  if (pill) pill.classList.toggle('show', checked);
+  if (ok)   ok.classList.toggle('show', checked);
+  updateProgress();
+  scheduleSave(num);
+}
+
+function updateProgress() {
+  const stories = STORIES.map(s => getStory(s.n));
+  const total  = stories.filter(s => s.filed).length;
+  const std    = [0,1,2,3,4].filter(i => stories[i].filed).length;
+  const imp    = stories[5].filed ? 1 : 0;
+  const life   = [6,7].filter(i => stories[i].filed).length;
+  const pct    = Math.round(total / 8 * 100);
+  document.getElementById('prog-count').textContent = total;
+  document.getElementById('prog-pct').textContent   = pct + '%';
+  document.getElementById('prog-fill').style.width  = pct + '%';
+  document.getElementById('pill-std').textContent   = std + ' / 5 standard';
+  document.getElementById('pill-imp').textContent   = imp + ' / 1 impact';
+  document.getElementById('pill-life').textContent  = life + ' / 2 lifestyle';
+}
+
+function scheduleSave(num) {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveStory(num), 800);
+}
+
+async function saveStory(num) {
+  if (!DATA[num]) return;
+  const row = {
+    reporter: USER.name,
+    publication: USER.pub,
+    week_of: WEEK,
+    story_num: num,
+    headline:   DATA[num].headline   || '',
+    angle:      DATA[num].angle      || '',
+    notes:      DATA[num].notes      || '',
+    format:     DATA[num].format     || '',
+    word_count: DATA[num].word_count || '',
+    file_day:   DATA[num].file_day   || '',
+    todo:       DATA[num].todo       || [],
+    posted:     DATA[num].posted     || [],
+    filed:      !!DATA[num].filed,
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    await supaFetch('POST', TABLE, row);
+    showToast();
+  } catch(e) {
+    console.error('Save failed:', e);
+  }
+}
+
+function showToast() {
+  const t = document.getElementById('save-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+const saved = localStorage.getItem(LS_KEY);
+if (saved) {
+  try {
+    const u = JSON.parse(saved);
+    if (u.name && u.pub && u.week) {
+      USER = { name: u.name, pub: u.pub };
+      WEEK = u.week;
+      document.getElementById('inp-name').value = u.name;
+      document.getElementById('inp-pub').value  = u.pub;
+      document.getElementById('inp-week').value  = u.week;
+      showApp();
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
