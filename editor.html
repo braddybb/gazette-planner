@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gazette News — Editor Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#0000EE;
+  --blue-lt:#EEF0FF;
+  --blue-dk:#0000AA;
+  --ink:#111111;
+  --white:#ffffff;
+  --acid:#EEFF00;
+  --acid-dk:#4A5200;
+  --grey-lt:#F5F4F1;
+  --grey-md:#888888;
+  --grey-dk:#444444;
+  --cream:#FFFDE7;
+  --cream-dk:#6B4400;
+  --border:#DDDDDD;
+  --success:#15803D;
+  --success-lt:#F0FDF4;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f8f8f6;color:#111;min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-card{background:#fff;border:0.5px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:400px}
+.login-logo{font-size:11px;font-weight:600;letter-spacing:.15em;color:var(--grey-md);text-transform:uppercase;margin-bottom:1.5rem}
+.login-title{font-size:24px;font-weight:600;color:var(--ink);margin-bottom:.4rem}
+.login-sub{font-size:13px;color:var(--grey-md);margin-bottom:2rem;line-height:1.5}
+.login-field{margin-bottom:1rem}
+.login-label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-dk);margin-bottom:.4rem;display:block}
+.login-field input{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#111;outline:none;transition:border-color .2s}
+.login-field input:focus{border-color:var(--blue)}
+.login-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:.5rem;transition:opacity .2s}
+.login-btn:hover{opacity:.88}
+.login-err{font-size:13px;color:#cc0000;margin-top:.75rem;display:none}
+.login-hint{font-size:12px;color:var(--grey-md);margin-top:1rem;text-align:center}
+
+/* ── HEADER ── */
+#dashboard{display:none}
+.app-header{background:var(--ink);padding:0 2rem;display:flex;align-items:center;height:52px;gap:1.5rem;position:sticky;top:0;z-index:100}
+.app-wordmark{font-size:11px;font-weight:600;letter-spacing:.15em;color:#666;text-transform:uppercase}
+.app-divider{width:1px;height:16px;background:#333}
+.header-title{font-size:13px;color:#ccc;font-weight:500}
+.header-spacer{flex:1}
+.week-selector{display:flex;align-items:center;gap:8px}
+.week-selector label{font-size:12px;color:#888}
+.week-selector input{background:#1a1a1a;border:0.5px solid #333;border-radius:6px;padding:4px 10px;font-size:13px;color:#ccc;font-family:inherit;outline:none;width:160px}
+.week-selector input:focus{border-color:#555}
+.refresh-btn{font-size:12px;color:#555;background:none;border:0.5px solid #333;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
+.refresh-btn:hover{border-color:#555;color:#888}
+.signout-btn{font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
+.signout-btn:hover{color:#888}
+
+/* ── NETWORK SUMMARY ── */
+.network-bar{background:#fff;border-bottom:0.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap}
+.net-stat{display:flex;flex-direction:column;gap:2px}
+.net-num{font-size:24px;font-weight:600;color:var(--ink)}
+.net-label{font-size:11px;color:var(--grey-md);text-transform:uppercase;letter-spacing:.07em}
+.net-divider{width:1px;height:40px;background:var(--border)}
+.net-track-wrap{flex:1;min-width:200px}
+.net-track-label{font-size:11px;color:var(--grey-md);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em}
+.net-track{height:8px;background:var(--grey-lt);border-radius:4px;overflow:hidden}
+.net-fill{height:100%;border-radius:4px;background:var(--blue);transition:width .5s ease}
+
+/* ── REPORTER GRID ── */
+.reporter-grid{padding:1.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px;max-width:1400px;margin:0 auto}
+
+/* ── REPORTER CARD ── */
+.rep-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .2s}
+.rep-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.rep-header{background:var(--ink);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.rep-name{font-size:15px;font-weight:600;color:#fff}
+.rep-pub{font-size:11px;color:#666;margin-top:2px}
+.rep-filed-big{font-size:22px;font-weight:600;color:#fff}
+.rep-filed-sub{font-size:10px;color:#555;text-align:right;margin-top:1px}
+.rep-progress{padding:12px 16px;border-bottom:0.5px solid var(--border)}
+.rep-track{height:5px;background:var(--grey-lt);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.rep-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s ease}
+.rep-pills{display:flex;gap:6px;flex-wrap:wrap}
+.rpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;border:0.5px solid}
+.rpill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
+.rpill-imp{background:#1a1a1a;color:#fff;border-color:#333}
+.rpill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
+.rep-stories{padding:0}
+.story-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:0.5px solid var(--border)}
+.story-row:last-child{border-bottom:none}
+.story-num{font-size:11px;font-weight:600;width:24px;color:var(--grey-md)}
+.story-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-std{background:var(--blue)}
+.dot-imp{background:var(--ink)}
+.dot-life{background:var(--acid-dk)}
+.story-headline{font-size:13px;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story-headline.empty{color:var(--grey-md);font-style:italic}
+.story-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.story-day{font-size:11px;color:var(--grey-md);background:var(--grey-lt);padding:2px 6px;border-radius:4px}
+.filed-tick{font-size:13px;color:var(--success)}
+.not-filed{font-size:13px;color:var(--border)}
+
+/* ── DRILL DOWN ── */
+#drilldown{display:none;padding:1.5rem 2rem;max-width:900px;margin:0 auto}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1.5rem;font-weight:500}
+.back-btn:hover{text-decoration:underline}
+.drill-header{margin-bottom:1.5rem}
+.drill-name{font-size:24px;font-weight:600;color:var(--ink)}
+.drill-pub{font-size:14px;color:var(--grey-md);margin-top:2px}
+.drill-stories{display:flex;flex-direction:column;gap:10px}
+.drill-card{background:#fff;border:0.5px solid var(--border);border-radius:10px;overflow:hidden}
+.drill-card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.drill-card-hdr.std{background:var(--blue)}
+.drill-card-hdr.imp{background:var(--ink)}
+.drill-card-hdr.life{background:var(--acid)}
+.drill-num{font-size:24px;font-weight:600;min-width:34px}
+.drill-num.std,.drill-num.imp{color:#fff}
+.drill-num.life{color:var(--acid-dk)}
+.drill-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.drill-type.std{color:#AABBFF}
+.drill-type.imp{color:#777}
+.drill-type.life{color:var(--acid-dk)}
+.drill-headline-hdr{font-size:13px;font-weight:500}
+.drill-headline-hdr.std,.drill-headline-hdr.imp{color:#fff}
+.drill-headline-hdr.life{color:var(--acid-dk)}
+.drill-headline-hdr.empty{opacity:.4;font-style:italic;font-weight:400}
+.drill-filed-badge{margin-left:auto;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.drill-filed-badge.std{background:rgba(255,255,255,.2);color:#fff}
+.drill-filed-badge.imp{background:rgba(255,255,255,.15);color:#aaa}
+.drill-filed-badge.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
+.drill-body{padding:1rem 1.25rem}
+.drill-field{margin-bottom:10px;display:flex;gap:8px}
+.drill-field:last-child{margin-bottom:0}
+.drill-field-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-md);min-width:90px;padding-top:1px}
+.drill-field-val{font-size:13px;color:var(--ink);line-height:1.5;flex:1}
+.drill-field-val.empty{color:var(--grey-md);font-style:italic}
+.drill-checks{display:flex;flex-wrap:wrap;gap:4px 10px}
+.dcheck{font-size:12px;padding:2px 8px;border-radius:10px;border:0.5px solid}
+.dcheck.done{background:var(--success-lt);color:var(--success);border-color:#86EFAC}
+.dcheck.notdone{background:var(--grey-lt);color:var(--grey-md);border-color:var(--border)}
+
+/* ── LOADING ── */
+.loading-screen{display:flex;align-items:center;justify-content:center;min-height:200px;flex-direction:column;gap:1rem}
+.loading-spinner{width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--grey-md)}
+.empty-state{padding:3rem;text-align:center;color:var(--grey-md);font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Gazette News</div>
+    <div class="login-title">Editor Dashboard</div>
+    <div class="login-sub">Log in to see all reporters' weekly filing status across the network.</div>
+    <div class="login-field">
+      <label class="login-label">Editor password</label>
+      <input type="password" id="inp-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkLogin()">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Week of</label>
+      <input type="text" id="inp-week" placeholder="e.g. 29 May 2026" onkeydown="if(event.key==='Enter')checkLogin()">
+    </div>
+    <div class="login-err" id="login-err">Incorrect password.</div>
+    <button class="login-btn" onclick="checkLogin()">View dashboard</button>
+    <div class="login-hint">Contact Brad for the password.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="app-header">
+    <span class="app-wordmark">Gazette News</span>
+    <div class="app-divider"></div>
+    <span class="header-title">Editor Dashboard</span>
+    <div class="header-spacer"></div>
+    <div class="week-selector">
+      <label>Week of</label>
+      <input type="text" id="week-inp" placeholder="e.g. 29 May 2026" onchange="loadWeek()">
+    </div>
+    <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
+    <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
+  </div>
+
+  <div class="network-bar" id="network-bar"></div>
+
+  <div id="main-view">
+    <div class="reporter-grid" id="reporter-grid"></div>
+  </div>
+
+  <div id="drilldown">
+    <button class="back-btn" onclick="closeDrill()">&#8592; Back to all reporters</button>
+    <div class="drill-header">
+      <div class="drill-name" id="drill-name"></div>
+      <div class="drill-pub" id="drill-pub"></div>
+    </div>
+    <div class="drill-stories" id="drill-stories"></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://asgyshkafnrqknnmkbfo.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
+const TABLE   = 'planner_stories';
+const EDITOR_PASS = 'gazette2026';
+
+const REPORTERS = [
+  {name:'Ellie Chamberlain',   pub:'Mid North Coaster'},
+  {name:'Matthew Sims',        pub:'Eastern Melburnian'},
+  {name:'Zara Cuthbertson',    pub:'West Vic Brolga — Wannon'},
+  {name:'Darcie Humphreys',    pub:'West Vic Brolga — Ballarat'},
+  {name:'Jacob Wallace',       pub:'Gippsland Monitor'},
+  {name:'Huw Bradshaw',        pub:'North Shore Lorikeet'},
+  {name:'Archie Milligan',     pub:'National Account'},
+];
+
+const STORY_DEFS = [
+  {n:'01',t:'std',lbl:'Story'},
+  {n:'02',t:'std',lbl:'Story'},
+  {n:'03',t:'std',lbl:'Story'},
+  {n:'04',t:'std',lbl:'Story'},
+  {n:'05',t:'std',lbl:'Story'},
+  {n:'06',t:'imp',lbl:'Impact'},
+  {n:'07',t:'life',lbl:'Lifestyle / Culture'},
+  {n:'08',t:'life',lbl:'Lifestyle / Culture'},
+];
+
+const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
+const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
+
+let WEEK = '';
+let ALL_DATA = {};
+
+async function supaFetch(path) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+    }
+  });
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+function checkLogin() {
+  const pass = document.getElementById('inp-password').value;
+  const week = document.getElementById('inp-week').value.trim();
+  const err  = document.getElementById('login-err');
+  if (pass !== EDITOR_PASS) { err.style.display='block'; return; }
+  if (!week) { err.style.display='block'; err.textContent='Please enter the week.'; return; }
+  err.style.display='none';
+  WEEK = week;
+  localStorage.setItem('gz_editor_week', WEEK);
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('week-inp').value = WEEK;
+  loadWeek();
+}
+
+function editorSignOut() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('inp-password').value = '';
+}
+
+async function loadWeek() {
+  const inp = document.getElementById('week-inp');
+  if (inp.value.trim()) WEEK = inp.value.trim();
+  const grid = document.getElementById('reporter-grid');
+  const netBar = document.getElementById('network-bar');
+  grid.innerHTML = '<div class="loading-screen"><div class="loading-spinner"></div><div class="loading-text">Loading reporter data...</div></div>';
+  netBar.innerHTML = '';
+
+  try {
+    const rows = await supaFetch(
+      `${TABLE}?week_of=eq.${encodeURIComponent(WEEK)}&select=*&order=reporter.asc`
+    );
+    ALL_DATA = {};
+    rows.forEach(r => {
+      const key = r.reporter + '|' + r.publication;
+      if (!ALL_DATA[key]) ALL_DATA[key] = {};
+      ALL_DATA[key][r.story_num] = r;
+    });
+    renderNetworkBar();
+    renderGrid();
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state">Error loading data. Check connection.</div>';
+  }
+}
+
+function getReporterData(reporter, pub) {
+  return ALL_DATA[reporter + '|' + pub] || {};
+}
+
+function getFiledCount(data) {
+  return STORY_DEFS.filter(s => data[s.n] && data[s.n].filed).length;
+}
+
+function renderNetworkBar() {
+  const bar = document.getElementById('network-bar');
+  let totalFiled = 0;
+  let totalStories = REPORTERS.length * 8;
+  REPORTERS.forEach(r => {
+    const data = getReporterData(r.name, r.pub);
+    totalFiled += getFiledCount(data);
+  });
+  const pct = Math.round(totalFiled / totalStories * 100);
+  bar.innerHTML = `
+    <div class="net-stat">
+      <div class="net-num">${totalFiled}</div>
+      <div class="net-label">Stories filed</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-stat">
+      <div class="net-num">${totalStories - totalFiled}</div>
+      <div class="net-label">Still to file</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-stat">
+      <div class="net-num">${REPORTERS.length}</div>
+      <div class="net-label">Reporters</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-track-wrap">
+      <div class="net-track-label">Network progress — week of ${WEEK}</div>
+      <div class="net-track"><div class="net-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="net-stat" style="text-align:right">
+      <div class="net-num">${pct}%</div>
+      <div class="net-label">Complete</div>
+    </div>
+  `;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('reporter-grid');
+  grid.innerHTML = '';
+  REPORTERS.forEach(r => {
+    grid.appendChild(buildRepCard(r));
+  });
+}
+
+function buildRepCard(r) {
+  const data = getReporterData(r.name, r.pub);
+  const filed = getFiledCount(data);
+  const pct   = Math.round(filed / 8 * 100);
+  const std   = [0,1,2,3,4].filter(i => data[STORY_DEFS[i].n] && data[STORY_DEFS[i].n].filed).length;
+  const imp   = data['06'] && data['06'].filed ? 1 : 0;
+  const life  = [6,7].filter(i => data[STORY_DEFS[i].n] && data[STORY_DEFS[i].n].filed).length;
+
+  const card = document.createElement('div');
+  card.className = 'rep-card';
+  card.onclick = () => openDrill(r);
+
+  const storyRows = STORY_DEFS.map(s => {
+    const st = data[s.n];
+    const headline = st && st.headline ? st.headline : null;
+    const fileDay  = st && st.file_day ? st.file_day : null;
+    const isFiled  = st && st.filed;
+    return `
+      <div class="story-row">
+        <span class="story-num">${s.n}</span>
+        <span class="story-type-dot dot-${s.t}"></span>
+        <span class="story-headline ${!headline?'empty':''}">${headline ? headline.substring(0,55)+(headline.length>55?'…':'') : 'No headline yet'}</span>
+        <div class="story-meta">
+          ${fileDay ? `<span class="story-day">${fileDay}</span>` : ''}
+          <span class="${isFiled?'filed-tick':'not-filed'}">${isFiled?'✓':'○'}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="rep-header">
+      <div>
+        <div class="rep-name">${r.name}</div>
+        <div class="rep-pub">${r.pub}</div>
+      </div>
+      <div>
+        <div class="rep-filed-big">${filed}/8</div>
+        <div class="rep-filed-sub">stories filed</div>
+      </div>
+    </div>
+    <div class="rep-progress">
+      <div class="rep-track"><div class="rep-fill" style="width:${pct}%"></div></div>
+      <div class="rep-pills">
+        <span class="rpill rpill-std">${std}/5 standard</span>
+        <span class="rpill rpill-imp">${imp}/1 impact</span>
+        <span class="rpill rpill-life">${life}/2 lifestyle</span>
+      </div>
+    </div>
+    <div class="rep-stories">${storyRows}</div>
+  `;
+  return card;
+}
+
+function openDrill(r) {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('drilldown').style.display = 'block';
+  document.getElementById('drill-name').textContent = r.name;
+  document.getElementById('drill-pub').textContent  = r.pub;
+  const data = getReporterData(r.name, r.pub);
+  const container = document.getElementById('drill-stories');
+  container.innerHTML = '';
+  STORY_DEFS.forEach(s => {
+    container.appendChild(buildDrillCard(s, data[s.n]));
+  });
+}
+
+function closeDrill() {
+  document.getElementById('drilldown').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+
+function buildDrillCard(s, st) {
+  const filed    = st && st.filed;
+  const headline = st && st.headline ? st.headline : null;
+  const angle    = st && st.angle    ? st.angle    : null;
+  const notes    = st && st.notes    ? st.notes    : null;
+  const fmt      = st && st.format   ? st.format   : null;
+  const wc       = st && st.word_count ? st.word_count : null;
+  const day      = st && st.file_day ? st.file_day : null;
+  const todo     = st && st.todo     ? st.todo     : [];
+  const posted   = st && st.posted   ? st.posted   : [];
+
+  const todoChecks = TODO_ITEMS.map(t =>
+    `<span class="dcheck ${todo.includes(t)?'done':'notdone'}">${t}</span>`
+  ).join('');
+
+  const postChecks = POST_ITEMS.map(p =>
+    `<span class="dcheck ${posted.includes(p)?'done':'notdone'}">${p}</span>`
+  ).join('');
+
+  const div = document.createElement('div');
+  div.className = 'drill-card';
+  div.innerHTML = `
+    <div class="drill-card-hdr ${s.t}">
+      <div class="drill-num ${s.t}">${s.n}</div>
+      <div style="flex:1;min-width:0">
+        <div class="drill-type ${s.t}">${s.lbl}</div>
+        <div class="drill-headline-hdr ${s.t} ${!headline?'empty':''}">${headline || 'No headline yet'}</div>
+      </div>
+      ${filed ? `<span class="drill-filed-badge ${s.t}">Filed</span>` : ''}
+    </div>
+    <div class="drill-body">
+      <div class="drill-field">
+        <div class="drill-field-label">Angle</div>
+        <div class="drill-field-val ${!angle?'empty':''}">${angle || '—'}</div>
+      </div>
+      <div class="drill-field">
+        <div class="drill-field-label">Notes</div>
+        <div class="drill-field-val ${!notes?'empty':''}">${notes || '—'}</div>
+      </div>
+      <div class="drill-field">
+        <div class="drill-field-label">Format</div>
+        <div class="drill-field-val ${!fmt?'empty':''}">${fmt || '—'}</div>
+      </div>
+      <div class="drill-field">
+        <div class="drill-field-label">Word count</div>
+        <div class="drill-field-val ${!wc?'empty':''}">${wc || '—'}</div>
+      </div>
+      <div class="drill-field">
+        <div class="drill-field-label">File by</div>
+        <div class="drill-field-val ${!day?'empty':''}">${day || '—'}</div>
+      </div>
+      <div class="drill-field">
+        <div class="drill-field-label">To do</div>
+        <div class="drill-field-val"><div class="drill-checks">${todoChecks}</div></div>
+      </div>
+      <div class="drill-field">
+        <div class="drill-field-label">Posted to</div>
+        <div class="drill-field-val"><div class="drill-checks">${postChecks}</div></div>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+const savedWeek = localStorage.getItem('gz_editor_week');
+if (savedWeek) document.getElementById('inp-week').value = savedWeek;
+</script>
+</body>
+</html>
