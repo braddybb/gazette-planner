@@ -157,6 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;color:var(--grey-md)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -383,13 +384,14 @@ async function loadStories() {
     (rows || []).forEach(r => { DATA[r.story_num] = r; });
     renderGrid();
     updateProgress();
+    initRealtime();
   } catch(e) {
     container.innerHTML = `<div class="loading-screen"><div class="loading-text" style="color:#cc0000">Error loading stories. Check your connection.</div></div>`;
   }
 }
 
 function blankStory(num) {
-  return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false };
+  return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false, editor_note:'' };
 }
 
 function getStory(num) {
@@ -585,6 +587,95 @@ function clearSlot(num, e) {
   updateProgress();
 }
 
+// Supabase Realtime — live updates
+let supabaseClient = null;
+let realtimeChannel = null;
+
+function initRealtime() {
+  if (!USER || !WEEK) return;
+  try {
+    supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
+    // Unsubscribe from any previous channel
+    if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel = supabaseClient
+      .channel('reporter-stories')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'planner_stories',
+        filter: 'reporter=eq.' + USER.name
+      }, payload => {
+        const row = payload.new;
+        if (!row || row.week_of !== WEEK) return;
+        const num = row.story_num;
+        // Update local data
+        if (!DATA[num]) DATA[num] = blankStory(num);
+        // Only update editor_note from realtime (reporter owns their own fields)
+        const note = row.editor_note || '';
+        const existing = DATA[num].editor_note || '';
+        if (note !== existing) {
+          DATA[num].editor_note = note;
+          const body = document.getElementById('body-' + num);
+          if (body) {
+            const existingBanner = body.querySelector('.editor-note-banner');
+            if (note) {
+              if (existingBanner) {
+                existingBanner.querySelector('.en-text').textContent = note;
+              } else {
+                const banner = document.createElement('div');
+                banner.className = 'editor-note-banner';
+                banner.innerHTML = '<span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span>';
+                body.insertBefore(banner, body.firstChild);
+              }
+            } else if (existingBanner) {
+              existingBanner.remove();
+            }
+          }
+        }
+      })
+      .subscribe();
+  } catch(e) {
+    console.warn('Realtime not available, falling back to polling');
+    setInterval(pollEditorNotes, 30000);
+  }
+}
+
+async function pollEditorNotes() {
+  if (!USER || !WEEK) return;
+  try {
+    const rows = await supaFetch('GET',
+      TABLE + '?reporter=eq.' + encodeURIComponent(USER.name) +
+      '&publication=eq.' + encodeURIComponent(USER.pub) +
+      '&week_of=eq.' + encodeURIComponent(WEEK) + '&select=story_num,editor_note'
+    );
+    (rows || []).forEach(r => {
+      const num = r.story_num;
+      const note = r.editor_note || '';
+      if (!DATA[num]) DATA[num] = blankStory(num);
+      const existing = DATA[num].editor_note || '';
+      if (note !== existing) {
+        DATA[num].editor_note = note;
+        const body = document.getElementById('body-' + num);
+        if (body) {
+          const existingBanner = body.querySelector('.editor-note-banner');
+          if (note) {
+            if (existingBanner) {
+              existingBanner.querySelector('.en-text').textContent = note;
+            } else {
+              const banner = document.createElement('div');
+              banner.className = 'editor-note-banner';
+              banner.innerHTML = '<span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span>';
+              body.insertBefore(banner, body.firstChild);
+            }
+          } else if (existingBanner) {
+            existingBanner.remove();
+          }
+        }
+      }
+    });
+  } catch(e) {}
+}
+
 function updateProgress() {
   const stories = STORIES.map(s => getStory(s.n));
   const total  = stories.filter(s => s.filed).length;
@@ -612,15 +703,15 @@ async function saveStory(num) {
     publication: USER.pub,
     week_of: WEEK,
     story_num: num,
-    headline:   DATA[num].headline   || '',
-    angle:      DATA[num].angle      || '',
-    notes:      DATA[num].notes      || '',
-    format:     DATA[num].format     || '',
-    word_count: DATA[num].word_count || '',
-    file_day:   DATA[num].file_day   || '',
-    todo:       DATA[num].todo       || [],
-    posted:     DATA[num].posted     || [],
-    filed:      !!DATA[num].filed,
+    headline:    DATA[num].headline    || '',
+    angle:       DATA[num].angle       || '',
+    notes:       DATA[num].notes       || '',
+    format:      DATA[num].format      || '',
+    word_count:  DATA[num].word_count  || '',
+    file_day:    DATA[num].file_day    || '',
+    todo:        DATA[num].todo        || [],
+    posted:      DATA[num].posted      || [],
+    filed:       !!DATA[num].filed,
     editor_note: DATA[num].editor_note || '',
     updated_at: new Date().toISOString(),
   };
