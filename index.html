@@ -594,7 +594,7 @@ let realtimeChannel = null;
 function initRealtime() {
   if (!USER || !WEEK) return;
   try {
-    supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
+    supabaseClient = window.supabase.createClient(SUPA_URL, SUPA_KEY);
     // Unsubscribe from any previous channel
     if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
     realtimeChannel = supabaseClient
@@ -608,9 +608,8 @@ function initRealtime() {
         const row = payload.new;
         if (!row || row.week_of !== WEEK) return;
         const num = row.story_num;
-        // Update local data
+        // ONLY sync editor_note — never overwrite reporter's own in-progress data
         if (!DATA[num]) DATA[num] = blankStory(num);
-        // Only update editor_note from realtime (reporter owns their own fields)
         const note = row.editor_note || '';
         const existing = DATA[num].editor_note || '';
         if (note !== existing) {
