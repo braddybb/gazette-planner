@@ -156,6 +156,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .loading-text{font-size:13px;color:var(--grey-md)}
 .empty-state{padding:3rem;text-align:center;color:var(--grey-md);font-size:14px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -308,8 +309,57 @@ async function loadWeek() {
     });
     renderNetworkBar();
     renderGrid();
+    initEditorRealtime();
   } catch(e) {
     grid.innerHTML = '<div class="empty-state">Error loading data. Check connection.</div>';
+  }
+}
+
+let editorSupabase = null;
+let editorChannel = null;
+
+function initEditorRealtime() {
+  try {
+    if (!editorSupabase) editorSupabase = supabase.createClient(SUPA_URL, SUPA_KEY);
+    if (editorChannel) editorSupabase.removeChannel(editorChannel);
+    editorChannel = editorSupabase
+      .channel('editor-dashboard')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'planner_stories',
+      }, payload => {
+        const row = payload.new;
+        if (!row || row.week_of !== WEEK) return;
+        // Update local cache
+        const key = row.reporter + '|' + row.publication;
+        if (!ALL_DATA[key]) ALL_DATA[key] = {};
+        ALL_DATA[key][row.story_num] = row;
+        // Refresh the network bar and grid live
+        renderNetworkBar();
+        renderGrid();
+        // If drilldown is open for this reporter, refresh it too
+        const drilldown = document.getElementById('drilldown');
+        if (drilldown && drilldown.style.display !== 'none') {
+          const nameEl = document.getElementById('drill-name');
+          const pubEl  = document.getElementById('drill-pub');
+          if (nameEl && pubEl &&
+              nameEl.textContent === row.reporter &&
+              pubEl.textContent  === row.publication) {
+            const container = document.getElementById('drill-stories');
+            container.innerHTML = '';
+            STORY_DEFS.forEach(s => {
+              container.appendChild(buildDrillCard(
+                s, ALL_DATA[key][s.n], row.reporter, row.publication, WEEK
+              ));
+            });
+          }
+        }
+      })
+      .subscribe();
+    console.log('Editor realtime connected');
+  } catch(e) {
+    console.warn('Editor realtime unavailable');
   }
 }
 
@@ -428,40 +478,69 @@ function buildRepCard(r) {
 
 async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
   if (!noteText.trim()) return;
-  const row = {
-    reporter, publication: pub, week_of: week, story_num: storyNum,
-    editor_note: noteText.trim(),
-    // preserve other fields by upserting only editor_note
-    headline: '', angle: '', notes: '', format: '', word_count: '',
-    file_day: '', todo: [], posted: [], filed: false,
-    updated_at: new Date().toISOString(),
-  };
-  // First fetch existing row to preserve data
   try {
+    // Step 1: fetch the existing row so we can preserve all reporter data
     const existing = await supaFetch(
-      `${TABLE}?reporter=eq.${encodeURIComponent(reporter)}&publication=eq.${encodeURIComponent(pub)}&week_of=eq.${encodeURIComponent(week)}&story_num=eq.${encodeURIComponent(storyNum)}&select=*`
+      TABLE + '?reporter=eq.' + encodeURIComponent(reporter) +
+      '&publication=eq.' + encodeURIComponent(pub) +
+      '&week_of=eq.' + encodeURIComponent(week) +
+      '&story_num=eq.' + encodeURIComponent(storyNum) + '&select=*'
     );
+    let row;
     if (existing && existing.length > 0) {
-      Object.assign(row, existing[0], { editor_note: noteText.trim(), updated_at: new Date().toISOString() });
+      // Preserve all existing reporter data, just update editor_note
+      row = Object.assign({}, existing[0], {
+        editor_note: noteText.trim(),
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      // Row doesn't exist yet — create minimal row with just the note
+      row = {
+        reporter, publication: pub, week_of: week, story_num: storyNum,
+        headline: '', angle: '', notes: '', format: '', word_count: '',
+        file_day: '', todo: [], posted: [], filed: false,
+        editor_note: noteText.trim(),
+        updated_at: new Date().toISOString()
+      };
     }
-    await fetch(`${SUPA_URL}/rest/v1/${TABLE}`, {
+    // Step 2: upsert
+    const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
       method: 'POST',
       headers: {
         'apikey': SUPA_KEY,
-        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates',
       },
       body: JSON.stringify(row)
     });
-    const sent = btnEl.parentElement.querySelector('.note-sent');
-    const ta = btnEl.parentElement.querySelector('textarea');
+    if (!res.ok) throw new Error('Save failed');
+    // Show confirmation
+    const noteForm = btnEl.closest('.note-form');
+    const sent = noteForm ? noteForm.querySelector('.note-sent') : null;
+    const ta = noteForm ? noteForm.querySelector('textarea') : null;
     if (sent) { sent.style.display='block'; setTimeout(()=>sent.style.display='none',2500); }
-    // Update local data
+    if (ta) ta.value = '';
+    // Update existing note display in the form
+    if (noteForm) {
+      let existingEl = noteForm.querySelector('.existing-note');
+      if (!existingEl) {
+        existingEl = document.createElement('div');
+        existingEl.className = 'existing-note';
+        existingEl.innerHTML = '<div class="existing-note-label">Current note to reporter</div><span class="en-val"></span>';
+        noteForm.insertBefore(existingEl, noteForm.firstChild);
+      }
+      const valEl = existingEl.querySelector('.en-val') || existingEl;
+      if (valEl) valEl.textContent = noteText.trim();
+    }
+    // Update local cache
     if (!ALL_DATA[reporter+'|'+pub]) ALL_DATA[reporter+'|'+pub] = {};
     if (!ALL_DATA[reporter+'|'+pub][storyNum]) ALL_DATA[reporter+'|'+pub][storyNum] = {};
     ALL_DATA[reporter+'|'+pub][storyNum].editor_note = noteText.trim();
-  } catch(e) { alert('Failed to send note. Check connection.'); }
+  } catch(e) {
+    alert('Failed to send note. Check your connection and try again.');
+    console.error(e);
+  }
 }
 
 function openDrill(r) {
