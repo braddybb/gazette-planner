@@ -276,6 +276,8 @@ function checkLogin() {
   if (!week) { err.style.display='block'; err.textContent='Please enter the week.'; return; }
   err.style.display='none';
   WEEK = getMondayOf(week);
+  // Persist full session
+  localStorage.setItem('gz_editor_session', JSON.stringify({ pass, week: WEEK }));
   localStorage.setItem('gz_editor_week', WEEK);
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
@@ -284,6 +286,8 @@ function checkLogin() {
 }
 
 function editorSignOut() {
+  localStorage.removeItem('gz_editor_session');
+  localStorage.removeItem('gz_editor_week');
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('inp-password').value = '';
@@ -643,8 +647,23 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
   return div;
 }
 
-const savedWeek = localStorage.getItem('gz_editor_week');
-if (savedWeek) document.getElementById('inp-week').value = savedWeek;
+// Restore session on refresh
+const editorSession = localStorage.getItem('gz_editor_session');
+if (editorSession) {
+  try {
+    const sess = JSON.parse(editorSession);
+    if (sess.pass === EDITOR_PASS && sess.week) {
+      WEEK = sess.week;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('week-inp').value = WEEK;
+      loadWeek();
+    }
+  } catch(e) {}
+} else {
+  const savedWeek = localStorage.getItem('gz_editor_week');
+  if (savedWeek) document.getElementById('inp-week').value = savedWeek;
+}
 </script>
 </body>
 </html>
