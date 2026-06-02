@@ -286,11 +286,26 @@ async function supaFetch(method, path, body) {
   return text ? JSON.parse(text) : null;
 }
 
+
+function getMondayOf(dateStr) {
+  if (!dateStr) return dateStr;
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const diff = (day === 0) ? -6 : 1 - day; // adjust to Monday
+  d.setDate(d.getDate() + diff);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return yyyy + '-' + mm + '-' + dd;
+}
+
 function formatWeek(dateStr) {
   if (!dateStr) return '';
   try {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    const mon = new Date(dateStr + 'T00:00:00');
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+    return fmt(mon) + ' – ' + fmt(sun) + ' ' + mon.getFullYear();
   } catch(e) { return dateStr; }
 }
 
@@ -302,8 +317,8 @@ function startApp() {
   if (!name || !pub || !week) { err.style.display='block'; return; }
   err.style.display = 'none';
   USER = { name, pub };
-  WEEK = week;
-  localStorage.setItem(LS_KEY, JSON.stringify({ name, pub, week }));
+  WEEK = getMondayOf(week);
+  localStorage.setItem(LS_KEY, JSON.stringify({ name, pub, week: WEEK }));
   showApp();
 }
 
@@ -347,7 +362,7 @@ function toggleWeekBanner() {
 async function changeWeek() {
   const val = document.getElementById('new-week-inp').value.trim();
   if (!val) return;
-  WEEK = val;
+  WEEK = getMondayOf(val);
   document.getElementById('hdr-week').textContent = formatWeek(WEEK);
   const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
   saved.week = WEEK;
@@ -402,65 +417,110 @@ function buildCard(s, i) {
   wrap.className = 'story-card' + (filed ? ' is-filed' : '');
   wrap.id = 'card-' + s.n;
 
-  wrap.innerHTML = `
-<div class="card-hdr ${s.t}" onclick="toggleCard('${s.n}')">
-  <div class="hdr-num ${s.t}">${s.n}</div>
-  <div class="hdr-info">
-    <div class="hdr-type ${s.t}">${s.lbl}</div>
-    <div class="hdr-preview ${s.t}" id="prev-${s.n}">${esc(prev)}</div>
-  </div>
-  <div class="hdr-right">
-    <span class="filed-pill ${s.t} ${filed?'show':''}" id="fpill-${s.n}">Filed</span>
-    <span class="hdr-chev ${s.t}" id="chev-${s.n}">▾</span>
-  </div>
-</div>
-<div class="card-body" id="body-${s.n}">
-  \${st.editor_note ? '<div class="editor-note-banner"><span class="en-label">Editor</span><span class="en-text">' + esc(st.editor_note) + '</div>' : ''}
-  <div class="cf">
-    <div class="cl">Headline idea</div>
-    <input type="text" placeholder="The headline or story idea..." value="\${esc(st.headline)}" oninput="fieldUpdate('\${s.n}','headline',this.value)">
-  </div>
-  <div class="grid2">
-    <div class="cf">
-      <div class="cl">Angle</div>
-      <textarea placeholder="What's the angle?" oninput="fieldUpdate('${s.n}','angle',this.value)">${esc(st.angle)}</textarea>
-    </div>
-    <div class="cf">
-      <div class="cl">Notes / sources</div>
-      <textarea placeholder="Key sources, contacts..." oninput="fieldUpdate('${s.n}','notes',this.value)">${esc(st.notes)}</textarea>
-    </div>
-  </div>
-  <div class="grid3">
-    <div class="cf">
-      <div class="cl">Format</div>
-      <div class="cxgroup">${FMT_ITEMS.map(f=>`<label><input type="radio" name="fmt${s.n}" value="${f}" ${st.format===f?'checked':''} onchange="fieldUpdate('${s.n}','format','${f}')"> ${f}</label>`).join('')}</div>
-    </div>
-    <div class="cf">
-      <div class="cl">Word count</div>
-      <input type="text" placeholder="e.g. 400" value="${esc(st.word_count)}" oninput="fieldUpdate('${s.n}','word_count',this.value)">
-    </div>
-    <div class="cf">
-      <div class="cl">File by</div>
-      <div class="cxgroup">${DAYS.map(d=>`<label><input type="radio" name="day${s.n}" value="${d}" ${st.file_day===d?'checked':''} onchange="fieldUpdate('${s.n}','file_day','${d}')"> ${d}</label>`).join('')}</div>
-    </div>
-  </div>
-  <div class="cf">
-    <div class="cl">To do</div>
-    <div class="cxgroup">${TODO_ITEMS.map(t=>`<label><input type="checkbox" value="${t}" ${(st.todo||[]).includes(t)?'checked':''} onchange="arrUpdate('${s.n}','todo','${t}',this.checked)"> ${t}</label>`).join('')}</div>
-  </div>
-  <div class="cf">
-    <div class="cl">Posted to</div>
-    <div class="cxgroup">${POST_ITEMS.map(p=>`<label><input type="checkbox" value="${p}" ${(st.posted||[]).includes(p)?'checked':''} onchange="arrUpdate('${s.n}','posted','${p}',this.checked)"> ${p}</label>`).join('')}</div>
-  </div>
-  <div class="filed-row">
-    <label class="filed-label">
-      <input type="checkbox" ${filed?'checked':''} onchange="setFiled('${s.n}',this.checked)">
-      Mark as filed
-    </label>
-    <span class="filed-ok ${filed?'show':''}" id="fok-${s.n}">✓ Great work</span>
-    <button class="clear-slot-btn" onclick="clearSlot('${s.n}',event)" title="Clear this story slot">Clear slot</button>
-  </div>
-</div>`;
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'card-hdr ' + s.t;
+  hdr.onclick = () => toggleCard(s.n);
+  hdr.innerHTML =
+    '<div class="hdr-num ' + s.t + '">' + s.n + '</div>' +
+    '<div class="hdr-info">' +
+      '<div class="hdr-type ' + s.t + '">' + s.lbl + '</div>' +
+      '<div class="hdr-preview ' + s.t + '" id="prev-' + s.n + '">' + esc(prev) + '</div>' +
+    '</div>' +
+    '<div class="hdr-right">' +
+      '<span class="filed-pill ' + s.t + (filed ? ' show' : '') + '" id="fpill-' + s.n + '">Filed</span>' +
+      '<span class="hdr-chev ' + s.t + '" id="chev-' + s.n + '">\u25be</span>' +
+    '</div>';
+  wrap.appendChild(hdr);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'card-body';
+  body.id = 'body-' + s.n;
+
+  // Editor note banner (if present)
+  if (st.editor_note) {
+    const banner = document.createElement('div');
+    banner.className = 'editor-note-banner';
+    banner.innerHTML = '<span class="en-label">Editor</span><span class="en-text">' + esc(st.editor_note) + '</span>';
+    body.appendChild(banner);
+  }
+
+  // Headline
+  const hlDiv = document.createElement('div');
+  hlDiv.className = 'cf';
+  hlDiv.innerHTML = '<div class="cl">Headline idea</div>';
+  const hlInput = document.createElement('input');
+  hlInput.type = 'text';
+  hlInput.placeholder = 'The headline or story idea...';
+  hlInput.value = st.headline || '';
+  hlInput.oninput = function() { fieldUpdate(s.n, 'headline', this.value); };
+  hlDiv.appendChild(hlInput);
+  body.appendChild(hlDiv);
+
+  // Angle + Notes
+  const anDiv = document.createElement('div');
+  anDiv.className = 'grid2';
+  anDiv.innerHTML =
+    '<div class="cf"><div class="cl">Angle</div><textarea placeholder="What\'s the angle?" oninput="fieldUpdate(\'' + s.n + '\',\'angle\',this.value)">' + esc(st.angle) + '</textarea></div>' +
+    '<div class="cf"><div class="cl">Notes / sources</div><textarea placeholder="Key sources, contacts..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea></div>';
+  body.appendChild(anDiv);
+
+  // Format + Word count + File by
+  const fmtDiv = document.createElement('div');
+  fmtDiv.className = 'grid3';
+  fmtDiv.innerHTML =
+    '<div class="cf"><div class="cl">Format</div><div class="cxgroup">' +
+    FMT_ITEMS.map(f => '<label><input type="radio" name="fmt' + s.n + '" value="' + f + '" ' + (st.format === f ? 'checked' : '') + ' onchange="fieldUpdate(\'' + s.n + '\',\'format\',\'' + f + '\')"> ' + f + '</label>').join('') +
+    '</div></div>' +
+    '<div class="cf"><div class="cl">Word count</div><input type="text" placeholder="e.g. 400" value="' + esc(st.word_count) + '" oninput="fieldUpdate(\'' + s.n + '\',\'word_count\',this.value)"></div>' +
+    '<div class="cf"><div class="cl">File by</div><div class="cxgroup">' +
+    DAYS.map(d => '<label><input type="radio" name="day' + s.n + '" value="' + d + '" ' + (st.file_day === d ? 'checked' : '') + ' onchange="fieldUpdate(\'' + s.n + '\',\'file_day\',\'' + d + '\')"> ' + d + '</label>').join('') +
+    '</div></div>';
+  body.appendChild(fmtDiv);
+
+  // To do
+  const tdDiv = document.createElement('div');
+  tdDiv.className = 'cf';
+  tdDiv.innerHTML = '<div class="cl">To do</div><div class="cxgroup">' +
+    TODO_ITEMS.map(t => '<label><input type="checkbox" value="' + t + '" ' + ((st.todo||[]).includes(t) ? 'checked' : '') + ' onchange="arrUpdate(\'' + s.n + '\',\'todo\',\'' + t + '\',this.checked)"> ' + t + '</label>').join('') +
+    '</div>';
+  body.appendChild(tdDiv);
+
+  // Posted to
+  const ptDiv = document.createElement('div');
+  ptDiv.className = 'cf';
+  ptDiv.innerHTML = '<div class="cl">Posted to</div><div class="cxgroup">' +
+    POST_ITEMS.map(p => '<label><input type="checkbox" value="' + p + '" ' + ((st.posted||[]).includes(p) ? 'checked' : '') + ' onchange="arrUpdate(\'' + s.n + '\',\'posted\',\'' + p + '\',this.checked)"> ' + p + '</label>').join('') +
+    '</div>';
+  body.appendChild(ptDiv);
+
+  // Filed row
+  const filedRow = document.createElement('div');
+  filedRow.className = 'filed-row';
+  const filedLabel = document.createElement('label');
+  filedLabel.className = 'filed-label';
+  const filedCb = document.createElement('input');
+  filedCb.type = 'checkbox';
+  filedCb.checked = filed;
+  filedCb.onchange = function() { setFiled(s.n, this.checked); };
+  filedLabel.appendChild(filedCb);
+  filedLabel.appendChild(document.createTextNode(' Mark as filed'));
+  const filedOk = document.createElement('span');
+  filedOk.className = 'filed-ok' + (filed ? ' show' : '');
+  filedOk.id = 'fok-' + s.n;
+  filedOk.textContent = '\u2713 Great work';
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'clear-slot-btn';
+  clearBtn.textContent = 'Clear slot';
+  clearBtn.title = 'Clear this story slot';
+  clearBtn.onclick = function(e) { clearSlot(s.n, e); };
+  filedRow.appendChild(filedLabel);
+  filedRow.appendChild(filedOk);
+  filedRow.appendChild(clearBtn);
+  body.appendChild(filedRow);
+
+  wrap.appendChild(body);
   return wrap;
 }
 
