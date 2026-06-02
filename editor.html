@@ -520,14 +520,24 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
         <div class="drill-field-label">Posted to</div>
         <div class="drill-field-val"><div class="drill-checks">${postChecks}</div></div>
       </div>
-    <div class="note-form">
-      \${(st && st.editor_note) ? \`<div class="existing-note"><div class="existing-note-label">Current note to reporter</div>\${st.editor_note}</div>\` : ''}
-      <textarea placeholder="Send a note to the reporter about this story..." id="note-\${s.n}"></textarea>
-      <span class="note-sent">✓ Sent</span>
-      <button class="note-send-btn" onclick="sendNote('\${r_name}','\${r_pub}','\${r_week}','\${s.n}',document.getElementById('note-\${s.n}').value,this)">Send note</button>
     </div>
-  </div>
-  \`;
+  `;
+
+  // Add note form separately to avoid nested template literal issues
+  const noteForm = document.createElement('div');
+  noteForm.className = 'note-form';
+  const existingNote = (st && st.editor_note)
+    ? '<div class="existing-note"><div class="existing-note-label">Current note to reporter</div>' + st.editor_note + '</div>'
+    : '';
+  noteForm.innerHTML = existingNote +
+    '<textarea placeholder="Send a note to the reporter about this story..." id="note-' + s.n + '"></textarea>' +
+    '<span class="note-sent">\u2713 Sent</span>' +
+    '<button class="note-send-btn">Send note</button>';
+  noteForm.querySelector('.note-send-btn').addEventListener('click', function() {
+    const ta = noteForm.querySelector('textarea');
+    sendNote(r_name, r_pub, r_week, s.n, ta.value, this);
+  });
+  div.querySelector('.drill-body').appendChild(noteForm);
   return div;
 }
 
