@@ -130,6 +130,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-filed-badge.std{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.imp{background:rgba(255,255,255,.15);color:#aaa}
 .drill-filed-badge.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
+.note-form{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
+.note-form textarea{flex:1;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;resize:none;min-height:60px;outline:none}
+.note-form textarea:focus{border-color:var(--blue)}
+.note-send-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;align-self:flex-end}
+.note-send-btn:hover{opacity:.88}
+.note-sent{font-size:12px;color:var(--success);display:none;align-self:flex-end;padding-bottom:8px}
+.existing-note{background:#FFF9C4;border:1px solid #F0E060;border-radius:6px;padding:8px 12px;font-size:12px;color:#5A4A00;margin-top:8px}
+.existing-note-label{font-weight:600;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#8A6A00;margin-bottom:3px}
 .drill-body{padding:1rem 1.25rem}
 .drill-field{margin-bottom:10px;display:flex;gap:8px}
 .drill-field:last-child{margin-bottom:0}
@@ -397,6 +405,44 @@ function buildRepCard(r) {
   return card;
 }
 
+async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
+  if (!noteText.trim()) return;
+  const row = {
+    reporter, publication: pub, week_of: week, story_num: storyNum,
+    editor_note: noteText.trim(),
+    // preserve other fields by upserting only editor_note
+    headline: '', angle: '', notes: '', format: '', word_count: '',
+    file_day: '', todo: [], posted: [], filed: false,
+    updated_at: new Date().toISOString(),
+  };
+  // First fetch existing row to preserve data
+  try {
+    const existing = await supaFetch(
+      `${TABLE}?reporter=eq.${encodeURIComponent(reporter)}&publication=eq.${encodeURIComponent(pub)}&week_of=eq.${encodeURIComponent(week)}&story_num=eq.${encodeURIComponent(storyNum)}&select=*`
+    );
+    if (existing && existing.length > 0) {
+      Object.assign(row, existing[0], { editor_note: noteText.trim(), updated_at: new Date().toISOString() });
+    }
+    await fetch(`${SUPA_URL}/rest/v1/${TABLE}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify(row)
+    });
+    const sent = btnEl.parentElement.querySelector('.note-sent');
+    const ta = btnEl.parentElement.querySelector('textarea');
+    if (sent) { sent.style.display='block'; setTimeout(()=>sent.style.display='none',2500); }
+    // Update local data
+    if (!ALL_DATA[reporter+'|'+pub]) ALL_DATA[reporter+'|'+pub] = {};
+    if (!ALL_DATA[reporter+'|'+pub][storyNum]) ALL_DATA[reporter+'|'+pub][storyNum] = {};
+    ALL_DATA[reporter+'|'+pub][storyNum].editor_note = noteText.trim();
+  } catch(e) { alert('Failed to send note. Check connection.'); }
+}
+
 function openDrill(r) {
   document.getElementById('main-view').style.display = 'none';
   document.getElementById('drilldown').style.display = 'block';
@@ -406,7 +452,7 @@ function openDrill(r) {
   const container = document.getElementById('drill-stories');
   container.innerHTML = '';
   STORY_DEFS.forEach(s => {
-    container.appendChild(buildDrillCard(s, data[s.n]));
+    container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
   });
 }
 
@@ -415,7 +461,7 @@ function closeDrill() {
   document.getElementById('main-view').style.display = 'block';
 }
 
-function buildDrillCard(s, st) {
+function buildDrillCard(s, st, r_name, r_pub, r_week) {
   const filed    = st && st.filed;
   const headline = st && st.headline ? st.headline : null;
   const angle    = st && st.angle    ? st.angle    : null;
@@ -474,8 +520,14 @@ function buildDrillCard(s, st) {
         <div class="drill-field-label">Posted to</div>
         <div class="drill-field-val"><div class="drill-checks">${postChecks}</div></div>
       </div>
+    <div class="note-form">
+      \${(st && st.editor_note) ? \`<div class="existing-note"><div class="existing-note-label">Current note to reporter</div>\${st.editor_note}</div>\` : ''}
+      <textarea placeholder="Send a note to the reporter about this story..." id="note-\${s.n}"></textarea>
+      <span class="note-sent">✓ Sent</span>
+      <button class="note-send-btn" onclick="sendNote('\${r_name}','\${r_pub}','\${r_week}','\${s.n}',document.getElementById('note-\${s.n}').value,this)">Send note</button>
     </div>
-  `;
+  </div>
+  \`;
   return div;
 }
 
