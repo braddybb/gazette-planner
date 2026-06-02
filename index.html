@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -135,6 +136,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .cxgroup label{display:flex;align-items:center;gap:5px;font-size:13px;color:#111;cursor:pointer;white-space:nowrap}
 .cxgroup input[type=checkbox],.cxgroup input[type=radio]{accent-color:var(--blue);width:13px;height:13px;cursor:pointer}
 
+.clear-slot-btn{font-size:11px;color:var(--grey-md);background:none;border:0.5px solid var(--border);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;margin-left:auto}
+.clear-slot-btn:hover{color:#cc0000;border-color:#cc0000}
 .filed-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
 .filed-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#111;cursor:pointer}
 .filed-label input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer}
@@ -142,6 +145,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-ok.show{display:flex}
 
 /* ── SAVING INDICATOR ── */
+.editor-note-banner{background:#FFF9C4;border:1px solid #F0E060;border-radius:8px;padding:10px 14px;margin:0 0 10px 0;font-size:13px;color:#5A4A00;line-height:1.4;display:flex;gap:8px;align-items:flex-start}
+.editor-note-banner .en-label{font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#8A6A00;white-space:nowrap;padding-top:1px}
+.editor-note-banner .en-text{flex:1}
 .save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;font-size:12px;padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
 .save-toast.show{opacity:1}
 
@@ -179,7 +185,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
     <div class="setup-field">
       <label class="setup-label">Week of</label>
-      <input type="text" id="inp-week" placeholder="e.g. 2 Jun 2026">
+      <input type="date" id="inp-week" style="font-family:inherit">
     </div>
     <div class="setup-err" id="setup-err">Please fill in all fields.</div>
     <button class="setup-btn" onclick="startApp()">Open my planner</button>
@@ -205,7 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
   <div class="week-banner" id="week-banner" style="display:none">
     <label>Change week to:</label>
-    <input type="text" id="new-week-inp" placeholder="e.g. 9 Jun 2026">
+    <input type="date" id="new-week-inp" style="font-family:inherit">
     <button class="week-save-btn" onclick="changeWeek()">Save</button>
     <button class="week-banner-close" onclick="toggleWeekBanner()">×</button>
   </div>
@@ -280,6 +286,14 @@ async function supaFetch(method, path, body) {
   return text ? JSON.parse(text) : null;
 }
 
+function formatWeek(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch(e) { return dateStr; }
+}
+
 function startApp() {
   const name = document.getElementById('inp-name').value.trim();
   const pub  = document.getElementById('inp-pub').value;
@@ -298,9 +312,21 @@ function showApp() {
   document.getElementById('app').style.display = 'block';
   document.getElementById('hdr-reporter').textContent = USER.name;
   document.getElementById('hdr-pub').textContent = USER.pub;
-  document.getElementById('hdr-week').textContent = WEEK;
+  document.getElementById('hdr-week').textContent = formatWeek(WEEK);
+  // Push state so back button doesn't sign out
+  if (history.state !== 'app') {
+    history.pushState('app', '', window.location.pathname);
+  }
   loadStories();
 }
+
+// Intercept back button
+window.addEventListener('popstate', function(e) {
+  if (USER) {
+    // Push state again to prevent leaving
+    history.pushState('app', '', window.location.pathname);
+  }
+});
 
 function signOut() {
   localStorage.removeItem(LS_KEY);
@@ -322,7 +348,7 @@ async function changeWeek() {
   const val = document.getElementById('new-week-inp').value.trim();
   if (!val) return;
   WEEK = val;
-  document.getElementById('hdr-week').textContent = WEEK;
+  document.getElementById('hdr-week').textContent = formatWeek(WEEK);
   const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
   saved.week = WEEK;
   localStorage.setItem(LS_KEY, JSON.stringify(saved));
@@ -389,9 +415,10 @@ function buildCard(s, i) {
   </div>
 </div>
 <div class="card-body" id="body-${s.n}">
+  \${st.editor_note ? \`<div class="editor-note-banner"><span class="en-label">Editor</span><span class="en-text">\${esc(st.editor_note)}</span></div>\` : ''}
   <div class="cf">
     <div class="cl">Headline idea</div>
-    <input type="text" placeholder="The headline or story idea..." value="${esc(st.headline)}" oninput="fieldUpdate('${s.n}','headline',this.value)">
+    <input type="text" placeholder="The headline or story idea..." value="\${esc(st.headline)}" oninput="fieldUpdate('\${s.n}','headline',this.value)">
   </div>
   <div class="grid2">
     <div class="cf">
@@ -431,6 +458,7 @@ function buildCard(s, i) {
       Mark as filed
     </label>
     <span class="filed-ok ${filed?'show':''}" id="fok-${s.n}">✓ Great work</span>
+    <button class="clear-slot-btn" onclick="clearSlot('${s.n}',event)" title="Clear this story slot">Clear slot</button>
   </div>
 </div>`;
   return wrap;
@@ -475,6 +503,28 @@ function setFiled(num, checked) {
   scheduleSave(num);
 }
 
+function clearSlot(num, e) {
+  e.stopPropagation();
+  if (!confirm('Clear all data in this story slot?')) return;
+  DATA[num] = {
+    headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'',
+    todo:[], posted:[], filed:false, editor_note:''
+  };
+  // Save the cleared state immediately
+  saveStory(num);
+  // Rebuild just this card
+  const grid = document.getElementById('stories-container').querySelector('.stories-grid');
+  if (grid) {
+    const idx = STORIES.findIndex(s => s.n === num);
+    if (idx >= 0) {
+      const old = document.getElementById('card-' + num);
+      const newCard = buildCard(STORIES[idx], idx);
+      if (old) old.replaceWith(newCard);
+    }
+  }
+  updateProgress();
+}
+
 function updateProgress() {
   const stories = STORIES.map(s => getStory(s.n));
   const total  = stories.filter(s => s.filed).length;
@@ -492,7 +542,7 @@ function updateProgress() {
 
 function scheduleSave(num) {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => saveStory(num), 800);
+  saveTimer = setTimeout(() => saveStory(num), 150);
 }
 
 async function saveStory(num) {
@@ -511,6 +561,7 @@ async function saveStory(num) {
     todo:       DATA[num].todo       || [],
     posted:     DATA[num].posted     || [],
     filed:      !!DATA[num].filed,
+    editor_note: DATA[num].editor_note || '',
     updated_at: new Date().toISOString(),
   };
   try {
