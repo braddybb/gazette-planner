@@ -136,6 +136,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .cxgroup label{display:flex;align-items:center;gap:5px;font-size:13px;color:#111;cursor:pointer;white-space:nowrap}
 .cxgroup input[type=checkbox],.cxgroup input[type=radio]{accent-color:var(--blue);width:13px;height:13px;cursor:pointer}
 
+.save-card-btn{font-size:12px;font-weight:600;padding:5px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.save-card-btn:hover{opacity:.85}
+.save-card-btn.saving{opacity:.5;pointer-events:none}
+.save-card-btn.saved{background:var(--success);}
+.save-err{font-size:12px;color:#cc0000;display:none;align-self:center}
+.save-err.show{display:block}
 .clear-slot-btn{font-size:11px;color:var(--grey-md);background:none;border:0.5px solid var(--border);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;margin-left:auto}
 .clear-slot-btn:hover{color:#cc0000;border-color:#cc0000}
 .filed-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
@@ -517,8 +523,22 @@ function buildCard(s, i) {
   clearBtn.textContent = 'Clear slot';
   clearBtn.title = 'Clear this story slot';
   clearBtn.onclick = function(e) { clearSlot(s.n, e); };
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'save-card-btn';
+  saveBtn.textContent = 'Save';
+  saveBtn.id = 'savebtn-' + s.n;
+  saveBtn.onclick = function(e) {
+    e.stopPropagation();
+    manualSave(s.n);
+  };
+  const saveErr = document.createElement('span');
+  saveErr.className = 'save-err';
+  saveErr.id = 'saveerr-' + s.n;
+  saveErr.textContent = 'Save failed — check connection';
   filedRow.appendChild(filedLabel);
   filedRow.appendChild(filedOk);
+  filedRow.appendChild(saveErr);
+  filedRow.appendChild(saveBtn);
   filedRow.appendChild(clearBtn);
   body.appendChild(filedRow);
 
@@ -690,18 +710,17 @@ function updateProgress() {
   document.getElementById('pill-life').textContent  = life + ' / 2 lifestyle';
 }
 
-function scheduleSave(num) {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => saveStory(num), 150);
-}
-
-async function saveStory(num) {
-  if (!DATA[num]) return;
+async function manualSave(num) {
+  const btn = document.getElementById('savebtn-' + num);
+  const err = document.getElementById('saveerr-' + num);
+  if (btn) { btn.classList.add('saving'); btn.textContent = 'Saving...'; }
+  if (err) err.classList.remove('show');
+  if (!DATA[num]) DATA[num] = blankStory(num);
   const row = {
-    reporter: USER.name,
+    reporter:    USER.name,
     publication: USER.pub,
-    week_of: WEEK,
-    story_num: num,
+    week_of:     WEEK,
+    story_num:   num,
     headline:    DATA[num].headline    || '',
     angle:       DATA[num].angle       || '',
     notes:       DATA[num].notes       || '',
@@ -712,13 +731,77 @@ async function saveStory(num) {
     posted:      DATA[num].posted      || [],
     filed:       !!DATA[num].filed,
     editor_note: DATA[num].editor_note || '',
-    updated_at: new Date().toISOString(),
+    updated_at:  new Date().toISOString(),
   };
   try {
-    await supaFetch('POST', TABLE, row);
+    const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify(row),
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt);
+    }
+    if (btn) { btn.classList.remove('saving'); btn.classList.add('saved'); btn.textContent = 'Saved ✓'; }
+    setTimeout(() => {
+      if (btn) { btn.classList.remove('saved'); btn.textContent = 'Save'; }
+    }, 2000);
+  } catch(e) {
+    console.error('Manual save failed:', e);
+    if (btn) { btn.classList.remove('saving'); btn.textContent = 'Save'; }
+    if (err) err.classList.add('show');
+  }
+}
+
+function scheduleSave(num) {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveStory(num), 150);
+}
+
+async function saveStory(num) {
+  if (!DATA[num]) return;
+  const row = {
+    reporter:    USER.name,
+    publication: USER.pub,
+    week_of:     WEEK,
+    story_num:   num,
+    headline:    DATA[num].headline    || '',
+    angle:       DATA[num].angle       || '',
+    notes:       DATA[num].notes       || '',
+    format:      DATA[num].format      || '',
+    word_count:  DATA[num].word_count  || '',
+    file_day:    DATA[num].file_day    || '',
+    todo:        DATA[num].todo        || [],
+    posted:      DATA[num].posted      || [],
+    filed:       !!DATA[num].filed,
+    editor_note: DATA[num].editor_note || '',
+    updated_at:  new Date().toISOString(),
+  };
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify(row),
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error('Auto-save failed:', txt);
+      return;
+    }
     showToast();
   } catch(e) {
-    console.error('Save failed:', e);
+    console.error('Auto-save error:', e);
   }
 }
 
