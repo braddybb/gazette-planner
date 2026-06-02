@@ -320,7 +320,7 @@ let editorChannel = null;
 
 function initEditorRealtime() {
   try {
-    if (!editorSupabase) editorSupabase = supabase.createClient(SUPA_URL, SUPA_KEY);
+    if (!editorSupabase) editorSupabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
     if (editorChannel) editorSupabase.removeChannel(editorChannel);
     editorChannel = editorSupabase
       .channel('editor-dashboard')
@@ -331,10 +331,12 @@ function initEditorRealtime() {
       }, payload => {
         const row = payload.new;
         if (!row || row.week_of !== WEEK) return;
-        // Update local cache
+        // Merge into local cache, preserving existing data
         const key = row.reporter + '|' + row.publication;
         if (!ALL_DATA[key]) ALL_DATA[key] = {};
-        ALL_DATA[key][row.story_num] = row;
+        ALL_DATA[key][row.story_num] = Object.assign(
+          {}, ALL_DATA[key][row.story_num] || {}, row
+        );
         // Refresh the network bar and grid live
         renderNetworkBar();
         renderGrid();
