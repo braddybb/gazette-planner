@@ -171,7 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
     <div class="login-field">
       <label class="login-label">Week of</label>
-      <input type="text" id="inp-week" placeholder="e.g. 29 May 2026" onkeydown="if(event.key==='Enter')checkLogin()">
+      <input type="date" id="inp-week" onkeydown="if(event.key==='Enter')checkLogin()" style="font-family:inherit">
     </div>
     <div class="login-err" id="login-err">Incorrect password.</div>
     <button class="login-btn" onclick="checkLogin()">View dashboard</button>
@@ -188,7 +188,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <div class="header-spacer"></div>
     <div class="week-selector">
       <label>Week of</label>
-      <input type="text" id="week-inp" placeholder="e.g. 29 May 2026" onchange="loadWeek()">
+      <input type="date" id="week-inp" onchange="loadWeek()" style="font-family:inherit;color:#ccc;background:#1a1a1a;border:0.5px solid #333;border-radius:6px;padding:4px 8px;font-size:13px">
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
@@ -254,6 +254,19 @@ async function supaFetch(path) {
   return text ? JSON.parse(text) : [];
 }
 
+
+function getMondayOf(dateStr) {
+  if (!dateStr) return dateStr;
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const diff = (day === 0) ? -6 : 1 - day; // adjust to Monday
+  d.setDate(d.getDate() + diff);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return yyyy + '-' + mm + '-' + dd;
+}
+
 function checkLogin() {
   const pass = document.getElementById('inp-password').value;
   const week = document.getElementById('inp-week').value.trim();
@@ -261,7 +274,7 @@ function checkLogin() {
   if (pass !== EDITOR_PASS) { err.style.display='block'; return; }
   if (!week) { err.style.display='block'; err.textContent='Please enter the week.'; return; }
   err.style.display='none';
-  WEEK = week;
+  WEEK = getMondayOf(week);
   localStorage.setItem('gz_editor_week', WEEK);
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
@@ -277,7 +290,7 @@ function editorSignOut() {
 
 async function loadWeek() {
   const inp = document.getElementById('week-inp');
-  if (inp.value.trim()) WEEK = inp.value.trim();
+  if (inp.value.trim()) WEEK = getMondayOf(inp.value.trim());
   const grid = document.getElementById('reporter-grid');
   const netBar = document.getElementById('network-bar');
   grid.innerHTML = '<div class="loading-screen"><div class="loading-spinner"></div><div class="loading-text">Loading reporter data...</div></div>';
@@ -317,6 +330,14 @@ function renderNetworkBar() {
     totalFiled += getFiledCount(data);
   });
   const pct = Math.round(totalFiled / totalStories * 100);
+  function fmtWk(ds) {
+    try {
+      const m = new Date(ds+'T00:00:00');
+      const s = new Date(m); s.setDate(m.getDate()+6);
+      const f = d => d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+      return f(m)+' – '+f(s)+' '+m.getFullYear();
+    } catch(e){ return ds; }
+  }
   bar.innerHTML = `
     <div class="net-stat">
       <div class="net-num">${totalFiled}</div>
