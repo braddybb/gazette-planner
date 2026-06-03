@@ -764,7 +764,7 @@ async function manualSave(num) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify(row),
     });
@@ -814,7 +814,7 @@ async function saveStory(num) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify(row),
     });
