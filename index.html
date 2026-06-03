@@ -151,9 +151,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-ok.show{display:flex}
 
 /* ── SAVING INDICATOR ── */
-.editor-note-banner{background:#FFF9C4;border:1px solid #F0E060;border-radius:8px;padding:10px 14px;margin:0 0 10px 0;font-size:13px;color:#5A4A00;line-height:1.4;display:flex;gap:8px;align-items:flex-start}
-.editor-note-banner .en-label{font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#8A6A00;white-space:nowrap;padding-top:1px}
-.editor-note-banner .en-text{flex:1}
+.editor-note-banner{
+  background:#fff;
+  border-left:3px solid var(--blue);
+  border-radius:0 6px 6px 0;
+  padding:10px 14px;
+  margin:0 0 14px 0;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.editor-note-banner .en-label{
+  font-weight:700;
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--blue);
+  white-space:nowrap;
+  padding-top:2px;
+  font-family:var(--mono, monospace);
+}
+.editor-note-banner .en-text{
+  flex:1;
+  font-size:13px;
+  color:#333;
+  line-height:1.5;
+}
 .save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;font-size:12px;padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
 .save-toast.show{opacity:1}
 
@@ -281,7 +305,7 @@ async function supaFetch(method, path, body) {
       'apikey': SUPA_KEY,
       'Authorization': `Bearer ${SUPA_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=representation',
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -593,7 +617,7 @@ function clearSlot(num, e) {
     todo:[], posted:[], filed:false, editor_note:''
   };
   // Save the cleared state immediately
-  saveStory(num);
+  manualSave(num);
   // Rebuild just this card
   const grid = document.getElementById('stories-container').querySelector('.stories-grid');
   if (grid) {
@@ -740,7 +764,7 @@ async function manualSave(num) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates',
+        'Prefer': 'return=minimal',
       },
       body: JSON.stringify(row),
     });
@@ -790,7 +814,7 @@ async function saveStory(num) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates',
+        'Prefer': 'return=minimal',
       },
       body: JSON.stringify(row),
     });
