@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -227,16 +228,20 @@ const REPORTERS = [
   {name:'Archie Milligan',     pub:'National Account'},
 ];
 
-const STORY_DEFS = [
-  {n:'01',t:'std',lbl:'Story'},
-  {n:'02',t:'std',lbl:'Story'},
-  {n:'03',t:'std',lbl:'Story'},
-  {n:'04',t:'std',lbl:'Story'},
-  {n:'05',t:'std',lbl:'Story'},
-  {n:'06',t:'imp',lbl:'Impact'},
-  {n:'07',t:'life',lbl:'Lifestyle / Culture'},
-  {n:'08',t:'life',lbl:'Lifestyle / Culture'},
-];
+function getStoryDefs(pub) {
+  const isNat = pub && pub.toLowerCase().includes('national');
+  return [
+    {n:'01',t:'std',lbl:'Story'},
+    {n:'02',t:'std',lbl:'Story'},
+    {n:'03',t:'std',lbl:'Story'},
+    {n:'04',t:'std',lbl:'Story'},
+    {n:'05',t:'std',lbl:'Story'},
+    {n:'06',t:'imp',lbl:'Impact'},
+    {n:'07',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
+    {n:'08',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
+  ];
+}
+const STORY_DEFS = getStoryDefs(null);
 
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
 const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
@@ -354,7 +359,7 @@ function initEditorRealtime() {
               pubEl.textContent  === row.publication) {
             const container = document.getElementById('drill-stories');
             container.innerHTML = '';
-            STORY_DEFS.forEach(s => {
+            getStoryDefs(row.publication).forEach(s => {
               container.appendChild(buildDrillCard(
                 s, ALL_DATA[key][s.n], row.reporter, row.publication, WEEK
               ));
@@ -441,7 +446,8 @@ function buildRepCard(r) {
   card.className = 'rep-card';
   card.onclick = () => openDrill(r);
 
-  const storyRows = STORY_DEFS.map(s => {
+  const repDefs = getStoryDefs(r.pub);
+  const storyRows = repDefs.map(s => {
     const st = data[s.n];
     const headline = st && st.headline ? st.headline : null;
     const fileDay  = st && st.file_day ? st.file_day : null;
@@ -474,7 +480,7 @@ function buildRepCard(r) {
       <div class="rep-pills">
         <span class="rpill rpill-std">${std}/5 standard</span>
         <span class="rpill rpill-imp">${imp}/1 impact</span>
-        <span class="rpill rpill-life">${life}/2 lifestyle</span>
+        <span class="rpill rpill-life">${life}/2 ${r.pub.toLowerCase().includes('national') ? 'youtube/podcast' : 'lifestyle'}</span>
       </div>
     </div>
     <div class="rep-stories">${storyRows}</div>
@@ -557,7 +563,8 @@ function openDrill(r) {
   const data = getReporterData(r.name, r.pub);
   const container = document.getElementById('drill-stories');
   container.innerHTML = '';
-  STORY_DEFS.forEach(s => {
+  const defs = getStoryDefs(r.pub);
+  defs.forEach(s => {
     container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
   });
 }
