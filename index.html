@@ -734,6 +734,46 @@ function updateProgress() {
   document.getElementById('pill-life').textContent  = life + ' / 2 lifestyle';
 }
 
+async function upsertRow(row) {
+  // Try PATCH first (update existing row)
+  const filter = 'reporter=eq.' + encodeURIComponent(row.reporter) +
+    '&publication=eq.' + encodeURIComponent(row.publication) +
+    '&week_of=eq.' + encodeURIComponent(row.week_of) +
+    '&story_num=eq.' + encodeURIComponent(row.story_num);
+  
+  const patchRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE + '?' + filter, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal,count=exact',
+    },
+    body: JSON.stringify(row),
+  });
+  
+  if (!patchRes.ok) throw new Error(await patchRes.text());
+  
+  // Check if any rows were updated
+  const count = patchRes.headers.get('content-range');
+  const updated = count && !count.startsWith('0/');
+  
+  if (!updated) {
+    // Row doesn't exist yet — INSERT it
+    const postRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(row),
+    });
+    if (!postRes.ok) throw new Error(await postRes.text());
+  }
+}
+
 async function manualSave(num) {
   const btn = document.getElementById('savebtn-' + num);
   const err = document.getElementById('saveerr-' + num);
@@ -758,20 +798,7 @@ async function manualSave(num) {
     updated_at:  new Date().toISOString(),
   };
   try {
-    const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(row),
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(txt);
-    }
+    await upsertRow(row);
     if (btn) { btn.classList.remove('saving'); btn.classList.add('saved'); btn.textContent = 'Saved ✓'; }
     setTimeout(() => {
       if (btn) { btn.classList.remove('saved'); btn.textContent = 'Save'; }
@@ -808,21 +835,7 @@ async function saveStory(num) {
     updated_at:  new Date().toISOString(),
   };
   try {
-    const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(row),
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error('Auto-save failed:', txt);
-      return;
-    }
+    await upsertRow(row);
     showToast();
   } catch(e) {
     console.error('Auto-save error:', e);
