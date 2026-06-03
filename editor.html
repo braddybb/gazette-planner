@@ -516,7 +516,7 @@ async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates',
+        'Prefer': 'return=minimal',
       },
       body: JSON.stringify(row)
     });
