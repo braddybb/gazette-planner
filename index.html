@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -277,16 +278,20 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const TABLE = 'planner_stories';
 const LS_KEY = 'gz_planner_user';
 
-const STORIES = [
-  {n:'01',t:'std',lbl:'Story'},
-  {n:'02',t:'std',lbl:'Story'},
-  {n:'03',t:'std',lbl:'Story'},
-  {n:'04',t:'std',lbl:'Story'},
-  {n:'05',t:'std',lbl:'Story'},
-  {n:'06',t:'imp',lbl:'Impact'},
-  {n:'07',t:'life',lbl:'Lifestyle / Culture'},
-  {n:'08',t:'life',lbl:'Lifestyle / Culture'},
-];
+function getStoryDefs(pub) {
+  const isNat = pub && pub.toLowerCase().includes('national');
+  return [
+    {n:'01',t:'std',lbl:'Story'},
+    {n:'02',t:'std',lbl:'Story'},
+    {n:'03',t:'std',lbl:'Story'},
+    {n:'04',t:'std',lbl:'Story'},
+    {n:'05',t:'std',lbl:'Story'},
+    {n:'06',t:'imp',lbl:'Impact'},
+    {n:'07',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
+    {n:'08',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
+  ];
+}
+let STORIES = getStoryDefs(null);
 
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
 const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
@@ -359,6 +364,7 @@ function showApp() {
   document.getElementById('hdr-reporter').textContent = USER.name;
   document.getElementById('hdr-pub').textContent = USER.pub;
   document.getElementById('hdr-week').textContent = formatWeek(WEEK);
+  STORIES = getStoryDefs(USER.pub);
   // Push state so back button doesn't sign out
   if (history.state !== 'app') {
     history.pushState('app', '', window.location.pathname);
@@ -731,7 +737,8 @@ function updateProgress() {
   document.getElementById('prog-fill').style.width  = pct + '%';
   document.getElementById('pill-std').textContent   = std + ' / 5 standard';
   document.getElementById('pill-imp').textContent   = imp + ' / 1 impact';
-  document.getElementById('pill-life').textContent  = life + ' / 2 lifestyle';
+  const lifeLabel = (USER && USER.pub && USER.pub.toLowerCase().includes('national')) ? 'youtube / podcast' : 'lifestyle';
+  document.getElementById('pill-life').textContent  = life + ' / 2 ' + lifeLabel;
 }
 
 async function upsertRow(row) {
