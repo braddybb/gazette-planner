@@ -85,11 +85,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .stories-grid{padding:1.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;max-width:1400px;margin:0 auto}
 
 /* ── STORY CARD ── */
-.story-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .2s}
+.story-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .2s;position:relative}
 .story-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .story-card.is-filed{opacity:.6}
 
-.card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none;position:relative;overflow:hidden}
+.card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
 .card-hdr.std{background:var(--blue)}
 .card-hdr.imp{background:var(--ink)}
 .card-hdr.life{background:var(--acid)}
@@ -651,19 +651,19 @@ function setFiled(num, checked) {
 }
 
 function stampFiled(num) {
-  const hdr = document.querySelector('#card-' + num + ' .card-hdr');
-  if (!hdr) return;
+  const card = document.getElementById('card-' + num);
+  if (!card) return;
   // Remove any existing stamp
-  const existing = hdr.querySelector('.stamp-overlay');
+  const existing = card.querySelector('.stamp-overlay');
   if (existing) existing.remove();
-  // Create overlay
+  // Create overlay covering the whole card
   const overlay = document.createElement('div');
   overlay.className = 'stamp-overlay';
   const stamp = document.createElement('div');
   stamp.className = 'stamp';
   stamp.textContent = 'Filed';
   overlay.appendChild(stamp);
-  hdr.appendChild(overlay);
+  card.appendChild(overlay);
   // Trigger animation on next frame
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
