@@ -149,6 +149,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#111;cursor:pointer}
 .filed-label input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer}
 .filed-ok{font-size:12px;color:var(--success);display:none;align-items:center;gap:4px}
+.stamp-overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:10;
+}
+.stamp{
+  font-family:'Courier New',monospace;
+  font-size:42px;
+  font-weight:900;
+  color:var(--blue);
+  border:5px solid var(--blue);
+  padding:6px 18px;
+  letter-spacing:.15em;
+  border-radius:4px;
+  opacity:0;
+  transform:rotate(-15deg) scale(2);
+  text-transform:uppercase;
+  text-shadow:2px 2px 0 rgba(0,0,255,.15);
+  box-shadow:inset 0 0 0 2px rgba(0,0,255,.1);
+}
+@keyframes stampIn {
+  0%   { opacity:0; transform:rotate(-15deg) scale(2.5); }
+  40%  { opacity:1; transform:rotate(-15deg) scale(0.9); }
+  55%  { opacity:1; transform:rotate(-15deg) scale(1.05); }
+  70%  { opacity:1; transform:rotate(-15deg) scale(1); }
+  85%  { opacity:1; transform:rotate(-15deg) scale(1); }
+  100% { opacity:0; transform:rotate(-15deg) scale(1); }
+}
+.stamp.animate {
+  animation: stampIn 1.2s cubic-bezier(.17,.67,.35,1.2) forwards;
+}
+.card-hdr { position:relative; }
 .filed-ok.show{display:flex}
 
 /* ── SAVING INDICATOR ── */
@@ -611,8 +643,33 @@ function setFiled(num, checked) {
   if (card) card.className = 'story-card' + (checked ? ' is-filed' : '');
   if (pill) pill.classList.toggle('show', checked);
   if (ok)   ok.classList.toggle('show', checked);
+  if (checked) stampFiled(num);
   updateProgress();
   scheduleSave(num);
+}
+
+function stampFiled(num) {
+  const hdr = document.querySelector('#card-' + num + ' .card-hdr');
+  if (!hdr) return;
+  // Remove any existing stamp
+  const existing = hdr.querySelector('.stamp-overlay');
+  if (existing) existing.remove();
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'stamp-overlay';
+  const stamp = document.createElement('div');
+  stamp.className = 'stamp';
+  stamp.textContent = 'Filed';
+  overlay.appendChild(stamp);
+  hdr.appendChild(overlay);
+  // Trigger animation on next frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      stamp.classList.add('animate');
+    });
+  });
+  // Remove overlay after animation
+  setTimeout(() => overlay.remove(), 1400);
 }
 
 function clearSlot(num, e) {
