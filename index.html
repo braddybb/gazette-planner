@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -507,7 +508,7 @@ function buildCard(s, i) {
 
   // Body
   const body = document.createElement('div');
-  body.className = 'card-body';
+  body.className = 'card-body';  // starts closed (no 'open' class)
   body.id = 'body-' + s.n;
 
   // Editor note banner (if present)
@@ -613,8 +614,15 @@ function buildCard(s, i) {
 function toggleCard(num) {
   const body = document.getElementById('body-' + num);
   const chev = document.getElementById('chev-' + num);
-  body.classList.toggle('open');
-  chev.classList.toggle('open');
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    if (chev) chev.classList.remove('open');
+  } else {
+    body.classList.add('open');
+    if (chev) chev.classList.add('open');
+  }
 }
 
 function fieldUpdate(num, field, val) {
@@ -801,31 +809,35 @@ function updateProgress() {
 }
 
 async function upsertRow(row) {
-  // Try PATCH first (update existing row)
+  // Use PATCH with return=representation so we can see if a row was actually updated
   const filter = 'reporter=eq.' + encodeURIComponent(row.reporter) +
     '&publication=eq.' + encodeURIComponent(row.publication) +
     '&week_of=eq.' + encodeURIComponent(row.week_of) +
     '&story_num=eq.' + encodeURIComponent(row.story_num);
-  
+
   const patchRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE + '?' + filter, {
     method: 'PATCH',
     headers: {
       'apikey': SUPA_KEY,
       'Authorization': 'Bearer ' + SUPA_KEY,
       'Content-Type': 'application/json',
-      'Prefer': 'return=minimal,count=exact',
+      'Prefer': 'return=representation',
     },
     body: JSON.stringify(row),
   });
-  
-  if (!patchRes.ok) throw new Error(await patchRes.text());
-  
-  // Check if any rows were updated
-  const count = patchRes.headers.get('content-range');
-  const updated = count && !count.startsWith('0/');
-  
-  if (!updated) {
-    // Row doesn't exist yet — INSERT it
+
+  if (!patchRes.ok) {
+    const errText = await patchRes.text();
+    console.error('PATCH failed:', patchRes.status, errText);
+    throw new Error('PATCH ' + patchRes.status + ': ' + errText);
+  }
+
+  // return=representation gives us the updated rows as an array
+  let updatedRows = [];
+  try { updatedRows = await patchRes.json(); } catch(e) { updatedRows = []; }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    // No existing row — INSERT
     const postRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
       method: 'POST',
       headers: {
@@ -836,7 +848,11 @@ async function upsertRow(row) {
       },
       body: JSON.stringify(row),
     });
-    if (!postRes.ok) throw new Error(await postRes.text());
+    if (!postRes.ok) {
+      const errText = await postRes.text();
+      console.error('POST failed:', postRes.status, errText);
+      throw new Error('POST ' + postRes.status + ': ' + errText);
+    }
   }
 }
 
