@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -298,6 +299,8 @@ function editorSignOut() {
   document.getElementById('inp-password').value = '';
 }
 
+let editorPollTimer = null;
+
 async function loadWeek() {
   const inp = document.getElementById('week-inp');
   if (inp.value.trim()) WEEK = getMondayOf(inp.value.trim());
@@ -307,20 +310,75 @@ async function loadWeek() {
   netBar.innerHTML = '';
 
   try {
+    await refreshData();
+    initEditorRealtime();
+    // Polling fallback — refresh every 20s in case realtime is unavailable
+    if (editorPollTimer) clearInterval(editorPollTimer);
+    editorPollTimer = setInterval(refreshDataQuietly, 20000);
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state">Error loading data. Check connection.</div>';
+  }
+}
+
+// Full refresh with loading state
+async function refreshData() {
+  const rows = await supaFetch(
+    `${TABLE}?week_of=eq.${encodeURIComponent(WEEK)}&select=*&order=reporter.asc`
+  );
+  ALL_DATA = {};
+  rows.forEach(r => {
+    const key = r.reporter + '|' + r.publication;
+    if (!ALL_DATA[key]) ALL_DATA[key] = {};
+    ALL_DATA[key][r.story_num] = r;
+  });
+  renderNetworkBar();
+  renderGrid();
+}
+
+// Quiet background refresh — no loading spinner, preserves open drilldown
+async function refreshDataQuietly() {
+  if (!WEEK) return;
+  try {
     const rows = await supaFetch(
       `${TABLE}?week_of=eq.${encodeURIComponent(WEEK)}&select=*&order=reporter.asc`
     );
-    ALL_DATA = {};
+    const fresh = {};
     rows.forEach(r => {
       const key = r.reporter + '|' + r.publication;
-      if (!ALL_DATA[key]) ALL_DATA[key] = {};
-      ALL_DATA[key][r.story_num] = r;
+      if (!fresh[key]) fresh[key] = {};
+      fresh[key][r.story_num] = r;
     });
+    ALL_DATA = fresh;
     renderNetworkBar();
-    renderGrid();
-    initEditorRealtime();
+    // Only re-render grid if drilldown isn't open (don't disrupt active editing)
+    const drilldown = document.getElementById('drilldown');
+    const drillOpen = drilldown && drilldown.style.display !== 'none';
+    if (!drillOpen) {
+      renderGrid();
+    } else {
+      // Refresh the open drilldown with fresh data
+      const nameEl = document.getElementById('drill-name');
+      const pubEl  = document.getElementById('drill-pub');
+      if (nameEl && pubEl) {
+        const key = nameEl.textContent + '|' + pubEl.textContent;
+        const container = document.getElementById('drill-stories');
+        if (container && ALL_DATA[key]) {
+          // Only refresh if the editor isn't actively typing a note
+          const activeEl = document.activeElement;
+          const typingNote = activeEl && activeEl.tagName === 'TEXTAREA';
+          if (!typingNote) {
+            container.innerHTML = '';
+            getStoryDefs(pubEl.textContent).forEach(s => {
+              container.appendChild(buildDrillCard(
+                s, ALL_DATA[key][s.n], nameEl.textContent, pubEl.textContent, WEEK
+              ));
+            });
+          }
+        }
+      }
+    }
   } catch(e) {
-    grid.innerHTML = '<div class="empty-state">Error loading data. Check connection.</div>';
+    // Silent — don't disrupt the editor on a failed background poll
   }
 }
 
