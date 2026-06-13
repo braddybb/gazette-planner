@@ -157,6 +157,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:13px;color:var(--grey-md)}
 .empty-state{padding:3rem;text-align:center;color:var(--grey-md);font-size:14px}
+
+/* ── Editorial Calendar Strip (editor, dark) ── */
+.ecal-section{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0}
+.ecal-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.ecal-head h2{font-size:14px;font-weight:700;letter-spacing:-.01em;color:#fff;margin:0}
+.ecal-head .ecal-sub{font-size:11px;color:#888}
+.ecal-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 14px;scroll-snap-type:x mandatory}
+.ecal-strip::-webkit-scrollbar{height:6px}
+.ecal-strip::-webkit-scrollbar-track{background:transparent}
+.ecal-strip::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+.ecal-card{
+  flex:0 0 240px;scroll-snap-align:start;
+  background:#161616;border:0.5px solid #2a2a2a;border-radius:12px;
+  padding:14px;display:flex;flex-direction:column;gap:8px;min-height:104px;
+  transition:transform .18s cubic-bezier(.2,.7,.3,1),border-color .18s;
+}
+.ecal-card:hover{transform:translateY(-2px);border-color:#444}
+.ecal-chip{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 8px;border-radius:999px;
+  background:#1e2a4a;color:#9db4ff;white-space:nowrap}
+.ecal-chip.soon{background:#3a1e14;color:#ff9d72}
+.ecal-chip.tbc{background:#262626;color:#999}
+.ecal-moment{font-size:13px;font-weight:600;line-height:1.3;color:#f0f0f0;letter-spacing:-.01em}
+.ecal-why{font-size:11.5px;line-height:1.45;color:#999;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ecal-card.expanded .ecal-why{-webkit-line-clamp:unset;overflow:visible}
+.ecal-more{font-size:10.5px;font-weight:600;color:#9db4ff;cursor:pointer;align-self:flex-start}
+
+/* ── Clear note button ── */
+.note-clear-btn{background:none;border:0.5px solid var(--border);color:var(--grey-md);
+  border-radius:6px;padding:8px 12px;font-size:13px;font-weight:500;cursor:pointer;
+  font-family:inherit;align-self:flex-end;transition:all .15s}
+.note-clear-btn:hover{border-color:#cc0000;color:#cc0000}
+.note-form-btns{display:flex;gap:8px;align-self:flex-end;align-items:center}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -199,6 +234,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
   <div class="network-bar" id="network-bar"></div>
 
+  <div id="ecal-container"></div>
+
   <div id="main-view">
     <div class="reporter-grid" id="reporter-grid"></div>
   </div>
@@ -217,6 +254,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 const SUPA_URL = 'https://asgyshkafnrqknnmkbfo.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
 const TABLE   = 'planner_stories';
+
+// ── Editorial calendar: Victoria reporting moments ──
+const PUB_TO_BRAND = {
+  'West Vic Brolga — Wannon': 'WVB',
+  'West Vic Brolga — Ballarat': 'WVB',
+  'Gippsland Monitor': 'GM',
+  'Eastern Melburnian': 'EM',
+  'National Account': 'NA',
+};
+const CALENDAR_MOMENTS = [{"timeframe": "June", "brands": ["WVB", "GM"], "moment": "VicGrid finalises REZs", "why": "Regional communities get certainty, can start framing a conversation towards benefits"}, {"timeframe": "Imminent (VicGrid TBC)", "brands": ["WVB", "GM"], "moment": "VicGrid community engagement & social value guidelines", "why": "Meant to make engagement better and streamline community benefits"}, {"timeframe": "2026 (VicGrid TBC)", "brands": ["WVB", "GM"], "moment": "Victorian Access Regime", "why": "The new rules developers must meet to get access to the grid."}, {"timeframe": "Early winter (TBC)", "brands": ["WVB", "GM", "EM"], "moment": "BoM declares El Niño", "why": "Climate change amplifies El Niño effects — longer droughts, extreme heat and heatwaves, fire risk and less snow."}, {"timeframe": "16 June or 28 July sitting", "brands": ["WVB", "GM", "EM"], "moment": "Electoral Further Amendment Bill 2026", "why": ""}, {"timeframe": "End of June", "brands": ["NA", "WVB", "GM"], "moment": "AEMO finalises ISP", "why": "The Integrated Systems Plan is the national roadmap for Australia's shift away from fossil fuels — transmission, batteries and the role of gas. In draft consultation for 12+ months."}, {"timeframe": "July", "brands": ["NA", "WVB", "GM"], "moment": "ALP National Conference", "why": "Up for vote: major changes to the diesel fuel rebate affecting big mining but protecting farmers — historically divisive in the regions without the farmer carve-out."}, {"timeframe": "August", "brands": ["NA", "WVB", "GM", "EM"], "moment": "Bush Summit", "why": "VIC events expected. Last year Albanese was chased by tractors down the streets of Ballarat. This year sponsored by Woolworths, Toyota and Gina Rinehart."}, {"timeframe": "18–19 August", "brands": ["GM"], "moment": "Gippsland New Energy Conference", "why": ""}, {"timeframe": "October", "brands": ["WVB", "GM", "EM"], "moment": "Victorian bushfire season begins", "why": "Local bushfire impact reporting."}, {"timeframe": "10 November 2026", "brands": ["WVB", "GM", "EM"], "moment": "Deadline to enrol to vote — VIC election", "why": ""}, {"timeframe": "12 November 2026", "brands": ["WVB", "GM", "EM"], "moment": "Nominations close for candidates", "why": "Final cut-off — most nominate earlier. Local impact: who's running in your area and what are they campaigning for?"}, {"timeframe": "18 November 2026", "brands": ["WVB", "GM", "EM"], "moment": "Early voting opens", "why": ""}, {"timeframe": "28 November 2026", "brands": ["NA", "WVB", "GM", "EM"], "moment": "Victorian state election", "why": "Vic Labor has been in office over a decade. Polling suggests a very tight race with a chance of a hung parliament. Seats will be won or lost on local issues."}, {"timeframe": "December", "brands": ["WVB"], "moment": "Western Renewables Link construction commences", "why": "Expect protest in the lead-up. Nats, Libs and PHON have all said they'll pause or scrap the project (and VNI West). Crucial for the renewables transition."}, {"timeframe": "Late 2026 (TBC)", "brands": ["WVB", "GM"], "moment": "VNI West EES public exhibition & review", "why": "VNI West must be built across western Vic to connect renewables to the grid. Public hearings on the environmental effects statement take place during this process."}];
 const EDITOR_PASS = 'gazette2026';
 
 const REPORTERS = [
@@ -332,6 +379,7 @@ async function refreshData() {
     ALL_DATA[key][r.story_num] = r;
   });
   renderNetworkBar();
+  renderEditorCalendar();
   renderGrid();
 }
 
@@ -440,6 +488,48 @@ function getFiledCount(data) {
   return STORY_DEFS.filter(s => data[s.n] && data[s.n].filed).length;
 }
 
+function renderEditorCalendar() {
+  const container = document.getElementById('ecal-container');
+  if (!container) return;
+  // Editor sees all moments, sorted as in the calendar
+  const moments = CALENDAR_MOMENTS;
+  if (!moments.length) { container.innerHTML = ''; return; }
+
+  function chipClass(tf) {
+    const t = tf.toLowerCase();
+    if (t.includes('tbc') || t.includes('imminent') || t.includes('unknown')) return 'tbc';
+    if (t.includes('june') || t.includes('july') || t.includes('end of')) return 'soon';
+    return '';
+  }
+
+  let h = '<div class="ecal-section">';
+  h += '<div class="ecal-head"><h2>On the radar</h2><span class="ecal-sub">Upcoming Victorian reporting moments across the network</span></div>';
+  h += '<div class="ecal-strip">';
+  moments.forEach((m, i) => {
+    const brandTags = m.brands.join(' · ');
+    h += '<div class="ecal-card" id="ecal-card-' + i + '">';
+    h += '<span class="ecal-chip ' + chipClass(m.timeframe) + '">' + esc(m.timeframe) + '</span>';
+    h += '<div class="ecal-moment">' + esc(m.moment) + '</div>';
+    if (m.why) {
+      h += '<div class="ecal-why" id="ecal-why-' + i + '">' + esc(m.why) + '</div>';
+      if (m.why.length > 110) {
+        h += '<span class="ecal-more" onclick="toggleEcalWhy(' + i + ')">Read more</span>';
+      }
+    }
+    h += '</div>';
+  });
+  h += '</div></div>';
+  container.innerHTML = h;
+}
+
+function toggleEcalWhy(i) {
+  const card = document.getElementById('ecal-card-' + i);
+  if (!card) return;
+  const more = card.querySelector('.ecal-more');
+  const expanded = card.classList.toggle('expanded');
+  if (more) more.textContent = expanded ? 'Show less' : 'Read more';
+}
+
 function renderNetworkBar() {
   const bar = document.getElementById('network-bar');
   let totalFiled = 0;
@@ -546,6 +636,70 @@ function buildRepCard(r) {
   return card;
 }
 
+async function editorUpsert(row) {
+  const filter = 'reporter=eq.' + encodeURIComponent(row.reporter) +
+    '&publication=eq.' + encodeURIComponent(row.publication) +
+    '&week_of=eq.' + encodeURIComponent(row.week_of) +
+    '&story_num=eq.' + encodeURIComponent(row.story_num);
+  const patchRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE + '?' + filter, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json', 'Prefer': 'return=representation',
+    },
+    body: JSON.stringify(row),
+  });
+  if (!patchRes.ok) throw new Error('PATCH ' + patchRes.status + ': ' + await patchRes.text());
+  let updated = [];
+  try { updated = await patchRes.json(); } catch(e) { updated = []; }
+  if (!updated || updated.length === 0) {
+    const postRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(row),
+    });
+    if (!postRes.ok) throw new Error('POST ' + postRes.status + ': ' + await postRes.text());
+  }
+}
+
+async function clearNote(reporter, pub, week, storyNum, btnEl) {
+  if (!confirm('Clear the note sent to this reporter?')) return;
+  try {
+    const existing = await supaFetch(
+      TABLE + '?reporter=eq.' + encodeURIComponent(reporter) +
+      '&publication=eq.' + encodeURIComponent(pub) +
+      '&week_of=eq.' + encodeURIComponent(week) +
+      '&story_num=eq.' + encodeURIComponent(storyNum) + '&select=*'
+    );
+    if (existing && existing.length > 0) {
+      const row = Object.assign({}, existing[0], {
+        editor_note: '',
+        updated_at: new Date().toISOString()
+      });
+      await editorUpsert(row);
+    }
+    // Remove the existing-note display from the form
+    const noteForm = btnEl.closest('.note-form');
+    if (noteForm) {
+      const existingEl = noteForm.querySelector('.existing-note');
+      if (existingEl) existingEl.remove();
+      const ta = noteForm.querySelector('textarea');
+      if (ta) ta.value = '';
+    }
+    // Update local cache
+    const key = reporter + '|' + pub;
+    if (ALL_DATA[key] && ALL_DATA[key][storyNum]) {
+      ALL_DATA[key][storyNum].editor_note = '';
+    }
+  } catch(e) {
+    alert('Failed to clear note. Check your connection and try again.');
+    console.error(e);
+  }
+}
+
 async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
   if (!noteText.trim()) return;
   try {
@@ -573,18 +727,8 @@ async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
         updated_at: new Date().toISOString()
       };
     }
-    // Step 2: upsert
-    const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(row)
-    });
-    if (!res.ok) throw new Error('Save failed');
+    // Step 2: upsert via PATCH-then-POST (reliable)
+    await editorUpsert(row);
     // Show confirmation
     const noteForm = btnEl.closest('.note-form');
     const sent = noteForm ? noteForm.querySelector('.note-sent') : null;
@@ -602,6 +746,18 @@ async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
       }
       const valEl = existingEl.querySelector('.en-val') || existingEl;
       if (valEl) valEl.textContent = noteText.trim();
+      // Add a Clear button if the form doesn't have one yet
+      const btnRow = noteForm.querySelector('.note-form-btns');
+      if (btnRow && !btnRow.querySelector('.note-clear-btn')) {
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'note-clear-btn';
+        clearBtn.textContent = 'Clear note';
+        clearBtn.addEventListener('click', function() {
+          clearNote(reporter, pub, week, storyNum, this);
+        });
+        const sendBtn = btnRow.querySelector('.note-send-btn');
+        btnRow.insertBefore(clearBtn, sendBtn);
+      }
     }
     // Update local cache
     if (!ALL_DATA[reporter+'|'+pub]) ALL_DATA[reporter+'|'+pub] = {};
@@ -697,17 +853,27 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
   // Add note form separately to avoid nested template literal issues
   const noteForm = document.createElement('div');
   noteForm.className = 'note-form';
-  const existingNote = (st && st.editor_note)
+  const hasNote = !!(st && st.editor_note);
+  const existingNote = hasNote
     ? '<div class="existing-note"><div class="existing-note-label">Current note to reporter</div>' + st.editor_note + '</div>'
     : '';
   noteForm.innerHTML = existingNote +
     '<textarea placeholder="Send a note to the reporter about this story..." id="note-' + s.n + '"></textarea>' +
-    '<span class="note-sent">\u2713 Sent</span>' +
-    '<button class="note-send-btn">Send note</button>';
+    '<div class="note-form-btns">' +
+      '<span class="note-sent">\u2713 Sent</span>' +
+      (hasNote ? '<button class="note-clear-btn">Clear note</button>' : '') +
+      '<button class="note-send-btn">Send note</button>' +
+    '</div>';
   noteForm.querySelector('.note-send-btn').addEventListener('click', function() {
     const ta = noteForm.querySelector('textarea');
     sendNote(r_name, r_pub, r_week, s.n, ta.value, this);
   });
+  const clearBtn = noteForm.querySelector('.note-clear-btn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      clearNote(r_name, r_pub, r_week, s.n, this);
+    });
+  }
   div.querySelector('.drill-body').appendChild(noteForm);
   return div;
 }
