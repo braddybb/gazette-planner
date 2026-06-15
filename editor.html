@@ -71,7 +71,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .net-fill{height:100%;border-radius:4px;background:var(--blue);transition:width .5s ease}
 
 /* ── REPORTER GRID ── */
-.reporter-grid{padding:1.5rem 2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px;max-width:1400px;margin:0 auto}
+.reporter-grid{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:2rem}
+.region-section{display:flex;flex-direction:column;gap:12px}
+.region-header{display:flex;align-items:baseline;gap:12px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.region-name{font-size:15px;font-weight:700;letter-spacing:.02em;color:var(--ink,#111)}
+.region-count{font-size:12px;color:#888;font-weight:500}
+.region-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px;align-items:start}
 
 /* ── REPORTER CARD ── */
 .rep-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .2s}
@@ -132,12 +137,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-filed-badge.std{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.imp{background:rgba(255,255,255,.15);color:#aaa}
 .drill-filed-badge.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
-.note-form{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
-.note-form textarea{flex:1;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;resize:none;min-height:60px;outline:none}
+.note-form{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
+.note-form textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical;min-height:64px;outline:none}
 .note-form textarea:focus{border-color:var(--blue)}
-.note-send-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;align-self:flex-end}
+.note-send-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .note-send-btn:hover{opacity:.88}
-.note-sent{font-size:12px;color:var(--success);display:none;align-self:flex-end;padding-bottom:8px}
+.note-sent{font-size:12px;color:var(--success);display:none;align-items:center}
 .existing-note{background:#FFF9C4;border:1px solid #F0E060;border-radius:6px;padding:8px 12px;font-size:12px;color:#5A4A00;margin-top:8px}
 .existing-note-label{font-weight:600;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#8A6A00;margin-bottom:3px}
 .drill-body{padding:1rem 1.25rem}
@@ -187,10 +192,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 /* ── Clear note button ── */
 .note-clear-btn{background:none;border:0.5px solid var(--border);color:var(--grey-md);
-  border-radius:6px;padding:8px 12px;font-size:13px;font-weight:500;cursor:pointer;
-  font-family:inherit;align-self:flex-end;transition:all .15s}
+  border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;
+  font-family:inherit;transition:all .15s}
 .note-clear-btn:hover{border-color:#cc0000;color:#cc0000}
-.note-form-btns{display:flex;gap:8px;align-self:flex-end;align-items:center}
+.note-form-btns{display:flex;gap:8px;align-items:center;justify-content:flex-end}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -277,14 +282,17 @@ function esc(s) {
 const EDITOR_PASS = 'gazette2026';
 
 const REPORTERS = [
-  {name:'Douglas Connor',   pub:'Mid North Coaster'},
-  {name:'Matthew Sims',        pub:'Eastern Melburnian'},
-  {name:'Zara Cuthbertson',    pub:'West Vic Brolga — Wannon'},
-  {name:'Darcie Humphreys',    pub:'West Vic Brolga — Ballarat'},
-  {name:'Jacob Wallace',       pub:'Gippsland Monitor'},
-  {name:'Huw Bradshaw',        pub:'North Shore Lorikeet'},
-  {name:'Archie Milligan',     pub:'National Account'},
+  {name:'Douglas Connor',   pub:'Mid North Coaster',          region:'New South Wales'},
+  {name:'Huw Bradshaw',        pub:'North Shore Lorikeet',       region:'New South Wales'},
+  {name:'Matthew Sims',        pub:'Eastern Melburnian',         region:'Victoria'},
+  {name:'Zara Cuthbertson',    pub:'West Vic Brolga — Wannon',   region:'Victoria'},
+  {name:'Darcie Humphreys',    pub:'West Vic Brolga — Ballarat', region:'Victoria'},
+  {name:'Jacob Wallace',       pub:'Gippsland Monitor',          region:'Victoria'},
+  {name:'Archie Milligan',     pub:'National Account',           region:'National'},
 ];
+
+// Region display order
+const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
 
 function getStoryDefs(pub) {
   const isNat = pub && pub.toLowerCase().includes('national');
@@ -587,8 +595,26 @@ function renderNetworkBar() {
 function renderGrid() {
   const grid = document.getElementById('reporter-grid');
   grid.innerHTML = '';
-  REPORTERS.forEach(r => {
-    grid.appendChild(buildRepCard(r));
+  REGION_ORDER.forEach(region => {
+    const inRegion = REPORTERS.filter(r => r.region === region);
+    if (!inRegion.length) return;
+    // Region section wrapper
+    const section = document.createElement('div');
+    section.className = 'region-section';
+    // Region header
+    const header = document.createElement('div');
+    header.className = 'region-header';
+    const filedTotal = inRegion.reduce((sum, r) => sum + getFiledCount(getReporterData(r.name, r.pub)), 0);
+    const possibleTotal = inRegion.length * 8;
+    header.innerHTML = '<span class="region-name">' + esc(region) + '</span>' +
+      '<span class="region-count">' + filedTotal + ' / ' + possibleTotal + ' filed</span>';
+    section.appendChild(header);
+    // Cards row for this region
+    const row = document.createElement('div');
+    row.className = 'region-cards';
+    inRegion.forEach(r => row.appendChild(buildRepCard(r)));
+    section.appendChild(row);
+    grid.appendChild(section);
   });
 }
 
