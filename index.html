@@ -350,6 +350,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .cal-plan-btn:hover{background:var(--blue);color:#fff;transform:translateY(-1px)}
 .cal-card{justify-content:flex-start}
 
+
+/* Editor-note notification dot */
+.note-dot {
+  display: none;
+  color: #E5341F;
+  font-size: 12px;
+  line-height: 1;
+  margin-right: 2px;
+  animation: notePulse 1.6s ease-in-out infinite;
+}
+.note-dot.show { display: inline-block; }
+@keyframes notePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: .7; }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -758,6 +774,7 @@ function buildCard(s, i) {
   const hdr = document.createElement('div');
   hdr.className = 'card-hdr ' + s.t + (hasContent ? ' has-content' : '');
   hdr.onclick = () => toggleCard(s.n);
+  const showDot = st.editor_note && !noteSeen(s.n, st.editor_note);
   hdr.innerHTML =
     '<div class="hdr-num ' + s.t + '">' + s.n + '</div>' +
     '<div class="hdr-info">' +
@@ -765,6 +782,7 @@ function buildCard(s, i) {
       '<div class="hdr-preview ' + s.t + '" id="prev-' + s.n + '">' + esc(prev) + '</div>' +
     '</div>' +
     '<div class="hdr-right">' +
+      '<span class="note-dot' + (showDot ? ' show' : '') + '" id="notedot-' + s.n + '" title="New note from your editor">&#9679;</span>' +
       '<span class="filed-pill ' + s.t + (filed ? ' show' : '') + '" id="fpill-' + s.n + '">Filed</span>' +
       '<span class="hdr-chev ' + s.t + '" id="chev-' + s.n + '">\u25be</span>' +
     '</div>';
@@ -880,6 +898,40 @@ function buildCard(s, i) {
   return wrap;
 }
 
+
+// ── Editor-note "seen" tracking ──
+
+// Show/hide the note dot for a card based on whether the note is unseen
+function refreshNoteDot(num) {
+  const dot = document.getElementById('notedot-' + num);
+  if (!dot) return;
+  const note = DATA[num] && DATA[num].editor_note;
+  const show = note && !noteSeen(num, note);
+  dot.classList.toggle('show', !!show);
+}
+
+function noteSeenKey() {
+  return 'gz_notes_seen_' + (USER ? (USER.name + '|' + USER.pub + '|' + WEEK) : 'anon');
+}
+function getSeenNotes() {
+  try { return JSON.parse(localStorage.getItem(noteSeenKey())) || {}; }
+  catch(e) { return {}; }
+}
+function noteSeen(num, noteText) {
+  if (!noteText) return true;
+  const seen = getSeenNotes();
+  return seen[num] === noteText;
+}
+function markNoteSeen(num, noteText) {
+  if (!noteText) return;
+  const seen = getSeenNotes();
+  if (seen[num] === noteText) return;
+  seen[num] = noteText;
+  localStorage.setItem(noteSeenKey(), JSON.stringify(seen));
+  const dot = document.getElementById('notedot-' + num);
+  if (dot) dot.classList.remove('show');
+}
+
 function toggleCard(num) {
   const body = document.getElementById('body-' + num);
   const chev = document.getElementById('chev-' + num);
@@ -898,6 +950,10 @@ function toggleCard(num) {
       void card.offsetWidth; // reflow to restart animation
       card.classList.add('just-opened');
       setTimeout(() => card.classList.remove('just-opened'), 400);
+    }
+    // Opening the card means the reporter has seen any editor note — clear the dot
+    if (DATA[num] && DATA[num].editor_note) {
+      markNoteSeen(num, DATA[num].editor_note);
     }
   }
 }
@@ -1072,6 +1128,7 @@ function initRealtime() {
               existingBanner.remove();
             }
           }
+          refreshNoteDot(num);
         }
       })
       .subscribe();
@@ -1112,6 +1169,7 @@ async function pollEditorNotes() {
             existingBanner.remove();
           }
         }
+        refreshNoteDot(num);
       }
     });
   } catch(e) {}
