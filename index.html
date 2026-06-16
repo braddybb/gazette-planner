@@ -200,36 +200,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-time{font-size:11px;color:var(--grey-md);font-style:italic}
 .stamp-overlay{
   position:absolute;
-  inset:0;
-  display:flex;align-items:center;justify-content:center;
+  top:0;left:0;right:0;
+  background:var(--blue);
+  padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;
   pointer-events:none;z-index:10;
-  margin:0;
+  transform:translateY(-100%);
+  opacity:0;
 }
 .stamp{
-  font-family:'Courier New',monospace;
-  font-size:42px;
-  font-weight:900;
-  color:var(--blue);
-  border:5px solid var(--blue);
-  padding:6px 18px;
-  letter-spacing:.15em;
-  border-radius:4px;
-  opacity:0;
-  transform:rotate(-15deg) scale(2);
+  font-family:Arial,sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.2em;
+  color:#fff;
   text-transform:uppercase;
-  text-shadow:2px 2px 0 rgba(0,0,255,.15);
-  box-shadow:inset 0 0 0 2px rgba(0,0,255,.1);
+}
+.stamp-time{
+  font-size:11px;
+  color:rgba(255,255,255,.65);
+  letter-spacing:.04em;
 }
 @keyframes stampIn {
-  0%   { opacity:0; transform:rotate(-15deg) scale(2.5); }
-  40%  { opacity:1; transform:rotate(-15deg) scale(0.9); }
-  55%  { opacity:1; transform:rotate(-15deg) scale(1.05); }
-  70%  { opacity:1; transform:rotate(-15deg) scale(1); }
-  85%  { opacity:1; transform:rotate(-15deg) scale(1); }
-  100% { opacity:0; transform:rotate(-15deg) scale(1); }
+  0%   { transform:translateY(-100%); opacity:0; }
+  18%  { transform:translateY(0);     opacity:1; }
+  75%  { transform:translateY(0);     opacity:1; }
+  100% { transform:translateY(0);     opacity:0; }
 }
-.stamp.animate {
-  animation: stampIn 1.2s cubic-bezier(.17,.67,.35,1.2) forwards;
+.stamp-overlay.animate {
+  animation: stampIn 2s cubic-bezier(.16,1,.3,1) forwards;
 }
 
 .filed-ok.show{display:flex}
@@ -1046,22 +1045,27 @@ function stampFiled(num) {
   // Remove any existing stamp
   const existing = card.querySelector('.stamp-overlay');
   if (existing) existing.remove();
-  // Create overlay covering the whole card
+  // Build F2 banner
   const overlay = document.createElement('div');
   overlay.className = 'stamp-overlay';
   const stamp = document.createElement('div');
   stamp.className = 'stamp';
-  stamp.textContent = 'Filed';
+  stamp.textContent = 'FILED';
+  const timeEl = document.createElement('div');
+  timeEl.className = 'stamp-time';
+  const now = new Date();
+  timeEl.textContent = now.toLocaleString('en-AU', { weekday:'short', hour:'numeric', minute:'2-digit', hour12:true }).replace(',','');
   overlay.appendChild(stamp);
-  card.appendChild(overlay);
+  overlay.appendChild(timeEl);
+  card.insertBefore(overlay, card.firstChild);
   // Trigger animation on next frame
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      stamp.classList.add('animate');
+      overlay.classList.add('animate');
     });
   });
   // Remove overlay after animation
-  setTimeout(() => overlay.remove(), 1400);
+  setTimeout(() => overlay.remove(), 2100);
 }
 
 function clearSlot(num, e) {
