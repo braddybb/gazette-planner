@@ -200,35 +200,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-time{font-size:11px;color:var(--grey-md);font-style:italic}
 .stamp-overlay{
   position:absolute;
-  top:0;left:0;right:0;
-  background:var(--blue);
-  padding:10px 16px;
-  display:flex;align-items:center;justify-content:space-between;
+  inset:0;
+  display:flex;align-items:center;justify-content:center;
   pointer-events:none;z-index:10;
-  transform:translateY(-100%);
-  opacity:0;
+  margin:0;
 }
 .stamp{
-  font-family:Arial,sans-serif;
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:.2em;
-  color:#fff;
+  font-family:'Courier New',monospace;
+  font-size:42px;
+  font-weight:900;
+  color:var(--blue);
+  border:5px solid var(--blue);
+  padding:6px 18px;
+  letter-spacing:.15em;
+  border-radius:4px;
+  opacity:0;
+  transform:rotate(-15deg) scale(2);
   text-transform:uppercase;
-}
-.stamp-time{
-  font-size:11px;
-  color:rgba(255,255,255,.65);
-  letter-spacing:.04em;
+  text-shadow:2px 2px 0 rgba(0,0,255,.15);
+  box-shadow:inset 0 0 0 2px rgba(0,0,255,.1);
 }
 @keyframes stampIn {
-  0%   { transform:translateY(-100%); opacity:0; }
-  18%  { transform:translateY(0);     opacity:1; }
-  75%  { transform:translateY(0);     opacity:1; }
-  100% { transform:translateY(0);     opacity:0; }
+  0%   { opacity:0; transform:rotate(-15deg) scale(2.5); }
+  40%  { opacity:1; transform:rotate(-15deg) scale(0.9); }
+  55%  { opacity:1; transform:rotate(-15deg) scale(1.05); }
+  70%  { opacity:1; transform:rotate(-15deg) scale(1); }
+  85%  { opacity:1; transform:rotate(-15deg) scale(1); }
+  100% { opacity:0; transform:rotate(-15deg) scale(1); }
 }
-.stamp-overlay.animate {
-  animation: stampIn 2s cubic-bezier(.16,1,.3,1) forwards;
+.stamp.animate {
+  animation: stampIn 1.2s cubic-bezier(.17,.67,.35,1.2) forwards;
 }
 
 .filed-ok.show{display:flex}
@@ -366,6 +367,89 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   50% { transform: scale(1.25); opacity: .7; }
 }
 
+
+/* ── Crossword nav button ── */
+.crossword-nav{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.crossword-nav:hover{background:rgba(255,255,255,.16)}
+.crossword-nav.locked{opacity:.5;cursor:default}
+.crossword-nav.unlocked{background:var(--acid);color:var(--ink);border-color:var(--acid);animation:cwGlow 2.4s ease-in-out infinite}
+@keyframes cwGlow{0%,100%{box-shadow:0 0 0 0 rgba(238,255,0,.0)}50%{box-shadow:0 0 0 4px rgba(238,255,0,.25)}}
+.cw-ico{font-size:14px;line-height:1}
+.golden-gazette-hdr{font-size:20px;line-height:1;filter:drop-shadow(0 0 4px rgba(255,200,0,.6));animation:ggPulse 2.6s ease-in-out infinite}
+@keyframes ggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* ── Crossword modal ── */
+.cw-overlay{position:fixed;inset:0;background:rgba(17,17,17,.55);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;z-index:300;overflow-y:auto}
+.cw-overlay.show{display:flex}
+.cw-modal{background:var(--bg,#f8f8f6);border-radius:18px;max-width:1040px;width:100%;margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;animation:cwIn .3s cubic-bezier(.2,.7,.3,1)}
+@keyframes cwIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cw-head{background:var(--ink);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px}
+.cw-head-name{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#888}
+.cw-head-title{font-size:14px;font-weight:700}
+.cw-head-close{margin-left:auto;background:none;border:none;color:#999;font-size:24px;cursor:pointer;line-height:1}
+.cw-head-close:hover{color:#fff}
+.cw-body{padding:22px}
+
+/* Locked state */
+.cw-locked{text-align:center;padding:3rem 2rem}
+.cw-locked-ico{font-size:48px;margin-bottom:1rem;opacity:.4}
+.cw-locked-title{font-size:20px;font-weight:800;margin-bottom:.5rem}
+.cw-locked-sub{font-size:14px;color:var(--ink-2,#555);line-height:1.6;max-width:420px;margin:0 auto 1.25rem}
+.cw-countdown{font-size:13px;font-weight:600;color:var(--blue);background:var(--blue-lt);border-radius:999px;padding:6px 16px;display:inline-block}
+
+.cw-intro{margin-bottom:16px}
+.cw-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:.3rem}
+.cw-h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:.4rem}
+.cw-sub{font-size:13.5px;color:var(--ink-2,#555);line-height:1.5;max-width:560px}
+.cw-streak-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#9A6440;background:#FFF7ED;border:1px solid #FFE0B8;border-radius:999px;padding:4px 12px;margin-top:8px}
+
+.cw-layout{display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:start}
+@media(max-width:840px){.cw-layout{grid-template-columns:1fr}}
+.cw-board-wrap{background:#fff;border:1px solid var(--border,#ddd);border-radius:14px;padding:14px}
+#cw-board{display:grid;gap:0;background:var(--ink);border:2px solid var(--ink);width:max-content;margin:0 auto}
+.cwc{position:relative;background:#fff;border-right:1px solid #ccc;border-bottom:1px solid #ccc}
+.cwc.block{background:transparent;border:none}
+.cwc input{width:30px;height:30px;border:none;text-align:center;font-size:15px;font-weight:600;text-transform:uppercase;color:var(--ink);background:transparent;outline:none;font-family:inherit;padding:0;caret-color:transparent}
+.cwc input:focus{background:var(--blue-lt)}
+.cwc.hl input{background:#FBFBE0}
+.cwc.hl-active input{background:var(--acid)}
+.cwc .cwn{position:absolute;top:0;left:1px;font-size:7px;font-weight:700;color:#999;pointer-events:none;line-height:1}
+.cwc.correct input{color:var(--success,#15803D)}
+.cwc.wrong input{color:var(--blue)}
+@media(max-width:520px){.cwc input{width:26px;height:26px;font-size:13px}}
+
+.cw-clues{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:520px){.cw-clues{grid-template-columns:1fr}}
+.cw-cg h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:2px solid var(--ink)}
+.cw-clue{display:flex;gap:7px;font-size:13px;line-height:1.4;padding:5px 7px;border-radius:6px;cursor:pointer;margin-bottom:1px}
+.cw-clue:hover{background:var(--blue-lt)}
+.cw-clue.active{background:#FBFBE0}
+.cw-clue-num{font-weight:700;flex-shrink:0;min-width:18px}
+.cw-clue-len{color:#999;font-weight:500}
+
+.cw-toolbar{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+.cw-btn{font-size:13px;font-weight:600;font-family:inherit;border-radius:9px;padding:8px 15px;cursor:pointer;border:1px solid var(--border,#ddd);background:#fff;color:var(--ink-2,#555);transition:all .15s}
+.cw-btn:hover{border-color:var(--blue);color:var(--blue)}
+.cw-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cw-msg{margin-top:.85rem;font-size:14px;font-weight:600;min-height:20px}
+.cw-msg.win{color:var(--success,#15803D)}
+.cw-msg.near{color:var(--acid-dk,#4A5200)}
+
+/* Golden Gazette award overlay */
+.gg-award{position:fixed;inset:0;background:rgba(17,17,17,.7);display:none;align-items:center;justify-content:center;z-index:400}
+.gg-award.show{display:flex}
+.gg-card{background:#fff;border-radius:20px;padding:2.5rem 2.75rem;text-align:center;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:ggIn .5s cubic-bezier(.2,.7,.3,1.5)}
+@keyframes ggIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.gg-emoji{font-size:72px;line-height:1;margin-bottom:1rem;filter:drop-shadow(0 0 14px rgba(255,190,0,.7));animation:ggSpin .8s cubic-bezier(.2,.7,.3,1.4)}
+@keyframes ggSpin{from{transform:rotate(-12deg) scale(.6)}to{transform:rotate(0) scale(1)}}
+.gg-title{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:.5rem;color:#B8860B}
+.gg-text{font-size:14px;color:var(--ink-2,#555);line-height:1.6;margin-bottom:1.5rem}
+.gg-close{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* Profile / badge row on setup or header */
+.gg-profile-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#B8860B;background:#FFFBEB;border:1px solid #F0E0B0;border-radius:999px;padding:5px 13px}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -417,6 +501,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <strong id="hdr-week" style="color:#ccc"></strong>
     </div>
     <button class="change-week-btn" onclick="toggleWeekBanner()">Change week</button>
+    <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
+    <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
+      <span class="cw-ico" id="cw-ico">&#128279;</span>
+      <span class="cw-label" id="cw-label">Crossword</span>
+    </button>
     <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()" title="Sound on completion">&#128266;</button>
     <button class="signout-btn" onclick="signOut()">Sign out</button>
   </div>
@@ -466,7 +555,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 <div class="save-toast" id="save-toast">Saved</div>
 
+<!-- CROSSWORD MODAL -->
+<div class="cw-overlay" id="cw-overlay">
+  <div class="cw-modal">
+    <div class="cw-head">
+      <span class="cw-head-name">Gazette News</span>
+      <span class="cw-head-title">The Friday Crossword</span>
+      <button class="cw-head-close" onclick="closeCrossword()">&times;</button>
+    </div>
+    <div class="cw-body" id="cw-body"><!-- filled by JS --></div>
+  </div>
+</div>
+
+<!-- GOLDEN GAZETTE AWARD -->
+<div class="gg-award" id="gg-award">
+  <div class="gg-card">
+    <div class="gg-emoji">&#129309;</div>
+    <div class="gg-title">The Golden Gazette</div>
+    <div class="gg-text" id="gg-text">You solved this week\'s Friday crossword. The Golden Gazette is yours &mdash; it\'ll sit on your profile all week.</div>
+    <button class="gg-close" onclick="closeAward()">Wear it with pride</button>
+  </div>
+</div>
+
 <script>
+
 const SUPA_URL = 'https://asgyshkafnrqknnmkbfo.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
 const TABLE = 'planner_stories';
@@ -574,6 +686,7 @@ function showApp() {
     history.pushState('app', '', window.location.pathname);
   }
   loadStories();
+  refreshCrosswordNav();
 }
 
 // Intercept back button
@@ -1045,27 +1158,22 @@ function stampFiled(num) {
   // Remove any existing stamp
   const existing = card.querySelector('.stamp-overlay');
   if (existing) existing.remove();
-  // Build F2 banner
+  // Create overlay covering the whole card
   const overlay = document.createElement('div');
   overlay.className = 'stamp-overlay';
   const stamp = document.createElement('div');
   stamp.className = 'stamp';
-  stamp.textContent = 'FILED';
-  const timeEl = document.createElement('div');
-  timeEl.className = 'stamp-time';
-  const now = new Date();
-  timeEl.textContent = now.toLocaleString('en-AU', { weekday:'short', hour:'numeric', minute:'2-digit', hour12:true }).replace(',','');
+  stamp.textContent = 'Filed';
   overlay.appendChild(stamp);
-  overlay.appendChild(timeEl);
-  card.insertBefore(overlay, card.firstChild);
+  card.appendChild(overlay);
   // Trigger animation on next frame
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      overlay.classList.add('animate');
+      stamp.classList.add('animate');
     });
   });
   // Remove overlay after animation
-  setTimeout(() => overlay.remove(), 2100);
+  setTimeout(() => overlay.remove(), 1400);
 }
 
 function clearSlot(num, e) {
@@ -1542,6 +1650,272 @@ if (saved) {
     }
   } catch(e) {}
 }
+
+
+// ══════════════════════════════════════════
+//  FRIDAY CROSSWORD  +  GOLDEN GAZETTE BADGE
+// ══════════════════════════════════════════
+const CW_PUZZLE = {"rows": 26, "cols": 23, "cells": [{"r": 0, "c": 21, "ch": "B", "num": 1}, {"r": 1, "c": 21, "ch": "R", "num": 0}, {"r": 2, "c": 18, "ch": "A", "num": 2}, {"r": 2, "c": 19, "ch": "X", "num": 0}, {"r": 2, "c": 20, "ch": "I", "num": 0}, {"r": 2, "c": 21, "ch": "O", "num": 0}, {"r": 2, "c": 22, "ch": "S", "num": 0}, {"r": 3, "c": 2, "ch": "L", "num": 3}, {"r": 3, "c": 3, "ch": "E", "num": 0}, {"r": 3, "c": 4, "ch": "D", "num": 0}, {"r": 3, "c": 5, "ch": "E", "num": 4}, {"r": 3, "c": 10, "ch": "R", "num": 5}, {"r": 3, "c": 13, "ch": "T", "num": 6}, {"r": 3, "c": 21, "ch": "L", "num": 0}, {"r": 4, "c": 5, "ch": "L", "num": 0}, {"r": 4, "c": 10, "ch": "E", "num": 0}, {"r": 4, "c": 13, "ch": "H", "num": 0}, {"r": 4, "c": 21, "ch": "G", "num": 0}, {"r": 5, "c": 3, "ch": "D", "num": 7}, {"r": 5, "c": 4, "ch": "A", "num": 0}, {"r": 5, "c": 5, "ch": "N", "num": 0}, {"r": 5, "c": 6, "ch": "D", "num": 0}, {"r": 5, "c": 7, "ch": "E", "num": 0}, {"r": 5, "c": 8, "ch": "N", "num": 0}, {"r": 5, "c": 9, "ch": "O", "num": 0}, {"r": 5, "c": 10, "ch": "N", "num": 0}, {"r": 5, "c": 11, "ch": "G", "num": 0}, {"r": 5, "c": 13, "ch": "O", "num": 0}, {"r": 5, "c": 17, "ch": "D", "num": 8}, {"r": 5, "c": 18, "ch": "O", "num": 0}, {"r": 5, "c": 19, "ch": "U", "num": 0}, {"r": 5, "c": 20, "ch": "K", "num": 9}, {"r": 5, "c": 21, "ch": "A", "num": 0}, {"r": 5, "c": 22, "ch": "S", "num": 0}, {"r": 6, "c": 5, "ch": "I", "num": 0}, {"r": 6, "c": 10, "ch": "E", "num": 0}, {"r": 6, "c": 13, "ch": "R", "num": 0}, {"r": 6, "c": 17, "ch": "U", "num": 0}, {"r": 6, "c": 20, "ch": "O", "num": 0}, {"r": 7, "c": 0, "ch": "L", "num": 10}, {"r": 7, "c": 1, "ch": "E", "num": 0}, {"r": 7, "c": 2, "ch": "N", "num": 0}, {"r": 7, "c": 3, "ch": "N", "num": 0}, {"r": 7, "c": 4, "ch": "O", "num": 0}, {"r": 7, "c": 5, "ch": "N", "num": 0}, {"r": 7, "c": 10, "ch": "W", "num": 0}, {"r": 7, "c": 13, "ch": "N", "num": 0}, {"r": 7, "c": 17, "ch": "N", "num": 0}, {"r": 7, "c": 20, "ch": "A", "num": 0}, {"r": 8, "c": 5, "ch": "O", "num": 0}, {"r": 8, "c": 10, "ch": "A", "num": 0}, {"r": 8, "c": 13, "ch": "T", "num": 0}, {"r": 8, "c": 17, "ch": "D", "num": 0}, {"r": 8, "c": 20, "ch": "L", "num": 0}, {"r": 9, "c": 10, "ch": "B", "num": 0}, {"r": 9, "c": 13, "ch": "O", "num": 0}, {"r": 9, "c": 17, "ch": "O", "num": 0}, {"r": 9, "c": 20, "ch": "A", "num": 0}, {"r": 10, "c": 8, "ch": "W", "num": 11}, {"r": 10, "c": 9, "ch": "E", "num": 0}, {"r": 10, "c": 10, "ch": "L", "num": 0}, {"r": 10, "c": 11, "ch": "L", "num": 0}, {"r": 10, "c": 12, "ch": "I", "num": 0}, {"r": 10, "c": 13, "ch": "N", "num": 0}, {"r": 10, "c": 14, "ch": "G", "num": 12}, {"r": 10, "c": 15, "ch": "T", "num": 0}, {"r": 10, "c": 16, "ch": "O", "num": 0}, {"r": 10, "c": 17, "ch": "N", "num": 0}, {"r": 11, "c": 10, "ch": "E", "num": 0}, {"r": 11, "c": 14, "ch": "I", "num": 0}, {"r": 11, "c": 17, "ch": "N", "num": 0}, {"r": 12, "c": 10, "ch": "S", "num": 0}, {"r": 12, "c": 14, "ch": "P", "num": 0}, {"r": 12, "c": 17, "ch": "E", "num": 0}, {"r": 13, "c": 9, "ch": "B", "num": 13}, {"r": 13, "c": 14, "ch": "P", "num": 0}, {"r": 13, "c": 17, "ch": "L", "num": 0}, {"r": 14, "c": 8, "ch": "H", "num": 14}, {"r": 14, "c": 9, "ch": "U", "num": 0}, {"r": 14, "c": 10, "ch": "N", "num": 0}, {"r": 14, "c": 11, "ch": "T", "num": 0}, {"r": 14, "c": 12, "ch": "E", "num": 0}, {"r": 14, "c": 13, "ch": "R", "num": 0}, {"r": 14, "c": 14, "ch": "S", "num": 0}, {"r": 14, "c": 15, "ch": "H", "num": 0}, {"r": 14, "c": 16, "ch": "I", "num": 0}, {"r": 14, "c": 17, "ch": "L", "num": 0}, {"r": 14, "c": 18, "ch": "L", "num": 0}, {"r": 15, "c": 9, "ch": "N", "num": 0}, {"r": 15, "c": 14, "ch": "L", "num": 0}, {"r": 16, "c": 7, "ch": "K", "num": 15}, {"r": 16, "c": 9, "ch": "I", "num": 0}, {"r": 16, "c": 14, "ch": "A", "num": 0}, {"r": 17, "c": 7, "ch": "I", "num": 0}, {"r": 17, "c": 9, "ch": "N", "num": 0}, {"r": 17, "c": 11, "ch": "V", "num": 16}, {"r": 17, "c": 14, "ch": "N", "num": 17}, {"r": 17, "c": 15, "ch": "B", "num": 0}, {"r": 17, "c": 16, "ch": "N", "num": 0}, {"r": 18, "c": 7, "ch": "C", "num": 0}, {"r": 18, "c": 9, "ch": "Y", "num": 0}, {"r": 18, "c": 11, "ch": "L", "num": 0}, {"r": 18, "c": 14, "ch": "D", "num": 0}, {"r": 19, "c": 4, "ch": "K", "num": 18}, {"r": 19, "c": 7, "ch": "K", "num": 0}, {"r": 19, "c": 9, "ch": "O", "num": 0}, {"r": 19, "c": 11, "ch": "I", "num": 0}, {"r": 20, "c": 3, "ch": "H", "num": 19}, {"r": 20, "c": 4, "ch": "E", "num": 0}, {"r": 20, "c": 5, "ch": "F", "num": 0}, {"r": 20, "c": 6, "ch": "F", "num": 0}, {"r": 20, "c": 7, "ch": "E", "num": 0}, {"r": 20, "c": 8, "ch": "R", "num": 0}, {"r": 20, "c": 9, "ch": "N", "num": 0}, {"r": 20, "c": 10, "ch": "A", "num": 0}, {"r": 20, "c": 11, "ch": "N", "num": 0}, {"r": 21, "c": 4, "ch": "M", "num": 0}, {"r": 21, "c": 7, "ch": "R", "num": 0}, {"r": 21, "c": 9, "ch": "G", "num": 0}, {"r": 21, "c": 11, "ch": "E", "num": 0}, {"r": 22, "c": 4, "ch": "P", "num": 0}, {"r": 23, "c": 0, "ch": "C", "num": 20}, {"r": 23, "c": 1, "ch": "O", "num": 0}, {"r": 23, "c": 2, "ch": "F", "num": 0}, {"r": 23, "c": 3, "ch": "F", "num": 0}, {"r": 23, "c": 4, "ch": "S", "num": 0}, {"r": 24, "c": 4, "ch": "E", "num": 0}, {"r": 25, "c": 4, "ch": "Y", "num": 0}], "across": [{"num": 2, "clue": "The bullet-point structure encouraged across the network", "len": 5}, {"num": 3, "clue": "The opening line \u2014 burying it is the cardinal sin", "len": 4}, {"num": 7, "clue": "The ___ Ranges, scene of Matthew's storm-anniversary climate piece", "len": 9}, {"num": 8, "clue": "Moyne Shire councillor quoted in Zara's wind-farm benefit story", "len": 6}, {"num": 10, "clue": "John ___, subject of the One to One documentary at Buninyong", "len": 6}, {"num": 11, "clue": "Gippsland shire overhauling flood maps for 2100 sea-level rise (Jacob)", "len": 10}, {"num": 14, "clue": "Heritage-rich North Shore suburb with the lowest solar uptake (Huw, 2 words)", "len": 11}, {"num": 17, "clue": "TV network whose local bulletin cuts Doug reported (abbr.)", "len": 3}, {"num": 19, "clue": "The '___ problem' \u2014 leaning only on government sources", "len": 9}, {"num": 20, "clue": "___ Harbour \u2014 flights from here cost more than New Zealand (Doug)", "len": 5}], "down": [{"num": 1, "clue": "The West Vic masthead \u2014 also a tall native crane", "len": 6}, {"num": 4, "clue": "Weather pattern BOM declared in Jacob's Gippsland story (2 words)", "len": 6}, {"num": 5, "clue": "Wind and solar, the energy category behind several Wannon stories", "len": 10}, {"num": 6, "clue": "Warwick ___, the Australian director opening the Buninyong festival", "len": 8}, {"num": 8, "clue": "Wind farm whose community fund pays out $50k a year (Zara)", "len": 10}, {"num": 9, "clue": "Great ___ National Park, subject of the forestry moratorium story", "len": 5}, {"num": 12, "clue": "Region east of Melbourne; Jacob's patch", "len": 9}, {"num": 13, "clue": "Village whose 32-year international film festival Zara previewed", "len": 9}, {"num": 15, "clue": "A story's strong closing line", "len": 6}, {"num": 16, "clue": "Victorian regional rail operator in Zara's capacity story (2 words)", "len": 5}, {"num": 18, "clue": "Mid North Coast town whose flood anniversary Ellie covered", "len": 7}]};
+
+// Which week's puzzle (use the Planner's current week so the badge is per-week)
+function cwWeekKey(){ return (typeof WEEK !== 'undefined' && WEEK) ? WEEK : 'nowk'; }
+function cwUser(){ return (typeof USER !== 'undefined' && USER) ? (USER.name + '|' + USER.pub) : 'anon'; }
+
+// Is it Friday? (local time)
+function isFriday(){ return new Date().getDay() === 5; }
+// For testing/preview we allow a manual override
+let CW_FORCE_UNLOCK = false;
+function cwUnlocked(){ return CW_FORCE_UNLOCK || isFriday(); }
+
+// ── Badge + streak storage ──
+function ggKey(){ return 'gz_golden_' + cwUser(); }
+function getGolden(){
+  try { return JSON.parse(localStorage.getItem(ggKey())) || { weeks:[], streak:0, lastWeek:null }; }
+  catch(e){ return { weeks:[], streak:0, lastWeek:null }; }
+}
+function hasGoldenThisWeek(){
+  const g = getGolden();
+  return g.weeks.indexOf(cwWeekKey()) !== -1;
+}
+function awardGolden(){
+  const g = getGolden();
+  const wk = cwWeekKey();
+  if(g.weeks.indexOf(wk) !== -1) return false; // already have it
+  g.weeks.push(wk);
+  // streak: increment if last earned week was different & recent; simple count of total here
+  g.streak = (g.streak || 0) + 1;
+  g.lastWeek = wk;
+  localStorage.setItem(ggKey(), JSON.stringify(g));
+  return true;
+}
+
+// ── Header chrome reflects state ──
+function refreshCrosswordNav(){
+  const nav = document.getElementById('crossword-nav');
+  const ico = document.getElementById('cw-ico');
+  const label = document.getElementById('cw-label');
+  const ggHdr = document.getElementById('gg-hdr');
+  if(!nav) return;
+  if(cwUnlocked()){
+    nav.classList.remove('locked'); nav.classList.add('unlocked');
+    ico.innerHTML = '&#10005;'; // little cross like a crossword square
+    ico.innerHTML = '&#9745;';  // boxed tick
+    label.textContent = hasGoldenThisWeek() ? 'Crossword solved' : 'Friday crossword';
+  } else {
+    nav.classList.add('locked'); nav.classList.remove('unlocked');
+    ico.innerHTML = '&#128274;'; // lock
+    label.textContent = 'Crossword';
+  }
+  // golden gazette on profile (header) if earned this week
+  if(ggHdr) ggHdr.style.display = hasGoldenThisWeek() ? 'inline-block' : 'none';
+}
+
+// ── Open / close ──
+function openCrossword(){
+  const body = document.getElementById('cw-body');
+  if(!cwUnlocked()){
+    body.innerHTML = renderLocked();
+  } else {
+    body.innerHTML = renderPuzzleShell();
+    buildCwBoard();
+    renderCwClues();
+    const f = CW_PUZZLE.cells.find(c=>c.num===1);
+    if(f) cwFocus(f.r,f.c);
+  }
+  document.getElementById('cw-overlay').classList.add('show');
+}
+function closeCrossword(){ document.getElementById('cw-overlay').classList.remove('show'); }
+
+function renderLocked(){
+  // days until Friday
+  const now = new Date(); const day = now.getDay();
+  let until = (5 - day + 7) % 7; if(until===0) until = 0;
+  const dayName = until===1 ? 'tomorrow' : 'in ' + until + ' days';
+  return '<div class="cw-locked">' +
+    '<div class="cw-locked-ico">&#128274;</div>' +
+    '<div class="cw-locked-title">The Friday crossword is locked</div>' +
+    '<div class="cw-locked-sub">Every Friday, a fresh crossword unlocks here &mdash; all its answers drawn from the week\'s reporting across the network. Solve it to earn the Golden Gazette on your profile.</div>' +
+    '<span class="cw-countdown">Unlocks ' + (until===0?'today':dayName) + '</span>' +
+    '</div>';
+}
+
+function renderPuzzleShell(){
+  const g = getGolden();
+  const solved = hasGoldenThisWeek();
+  let streakChip = '';
+  if(g.streak > 0){
+    streakChip = '<div class="cw-streak-chip">&#129309; ' + g.streak + ' Golden Gazette' + (g.streak===1?'':'s') + ' earned</div>';
+  }
+  const sub = solved
+    ? 'You\'ve already earned this week\'s Golden Gazette &mdash; but the grid\'s here if you want to finish it again.'
+    : 'Every answer comes from the week\'s reporting across the network. Solve the whole grid to earn the Golden Gazette.';
+  return '<div class="cw-intro">' +
+      '<div class="cw-eyebrow">Newsroom edition &middot; this week</div>' +
+      '<div class="cw-h1">The week on the desk</div>' +
+      '<div class="cw-sub">' + sub + '</div>' +
+      streakChip +
+    '</div>' +
+    '<div class="cw-layout">' +
+      '<div class="cw-board-wrap"><div id="cw-board"></div>' +
+        '<div class="cw-toolbar">' +
+          '<button class="cw-btn primary" onclick="cwCheck()">Check answers</button>' +
+          '<button class="cw-btn" onclick="cwReveal()">Reveal word</button>' +
+          '<button class="cw-btn" onclick="cwClear()">Clear</button>' +
+        '</div>' +
+        '<div class="cw-msg" id="cw-msg"></div>' +
+      '</div>' +
+      '<div class="cw-clues">' +
+        '<div class="cw-cg"><h3>Across</h3><div id="cw-across"></div></div>' +
+        '<div class="cw-cg"><h3>Down</h3><div id="cw-down"></div></div>' +
+      '</div>' +
+    '</div>';
+}
+
+// ── Grid engine ──
+const cwCellMap = {};
+CW_PUZZLE.cells.forEach(c => cwCellMap[c.r+','+c.c] = c);
+function cwAt(r,c){ return cwCellMap[r+','+c]; }
+let CW_ENTRIES = null;
+function cwBuildEntries(){
+  const e = {across:{},down:{}};
+  CW_PUZZLE.cells.forEach(c=>{
+    if(c.num){
+      if(!cwAt(c.r,c.c-1) && cwAt(c.r,c.c+1)){ const s=[];let cc=c.c;while(cwAt(c.r,cc)){s.push([c.r,cc]);cc++;}e.across[c.num]=s; }
+      if(!cwAt(c.r-1,c.c) && cwAt(c.r+1,c.c)){ const s=[];let rr=c.r;while(cwAt(rr,c.c)){s.push([rr,c.c]);rr++;}e.down[c.num]=s; }
+    }
+  });
+  return e;
+}
+let cwInputs = {};
+let cwDir='across', cwNum=null;
+
+function buildCwBoard(){
+  CW_ENTRIES = cwBuildEntries();
+  cwInputs = {};
+  const board = document.getElementById('cw-board');
+  board.style.gridTemplateColumns = 'repeat('+CW_PUZZLE.cols+', auto)';
+  let html='';
+  for(let r=0;r<CW_PUZZLE.rows;r++){
+    for(let c=0;c<CW_PUZZLE.cols;c++){
+      const cd=cwAt(r,c);
+      if(!cd){ html+='<div class="cwc block"></div>'; continue; }
+      html+='<div class="cwc" id="cwc-'+r+'-'+c+'">'+
+        (cd.num?'<span class="cwn">'+cd.num+'</span>':'')+
+        '<input maxlength="1" data-r="'+r+'" data-c="'+c+'">'+
+      '</div>';
+    }
+  }
+  board.innerHTML=html;
+  // wire inputs
+  board.querySelectorAll('input').forEach(inp=>{
+    const r=+inp.dataset.r, c=+inp.dataset.c;
+    cwInputs[r+','+c]=inp;
+    inp.addEventListener('focus',()=>cwOnFocus(r,c));
+    inp.addEventListener('input',(e)=>cwOnInput(e,r,c));
+    inp.addEventListener('keydown',(e)=>cwOnKey(e,r,c));
+  });
+}
+
+function cwClearHL(){
+  document.querySelectorAll('.cwc').forEach(el=>el.classList.remove('hl','hl-active'));
+  document.querySelectorAll('.cw-clue').forEach(el=>el.classList.remove('active'));
+}
+function cwEntryFor(r,c,dir){
+  const list=CW_ENTRIES[dir];
+  for(const num in list){ if(list[num].some(([rr,cc])=>rr===r&&cc===c)) return {num:+num,seq:list[num]}; }
+  return null;
+}
+function cwOnFocus(r,c){
+  let e=cwEntryFor(r,c,cwDir);
+  if(!e){ cwDir = cwDir==='across'?'down':'across'; e=cwEntryFor(r,c,cwDir); }
+  if(!e) return;
+  cwClearHL(); cwNum=e.num;
+  e.seq.forEach(([rr,cc])=>{ document.getElementById('cwc-'+rr+'-'+cc).classList.add(rr===r&&cc===c?'hl-active':'hl'); });
+  const ce=document.getElementById('cwclue-'+cwDir+'-'+e.num); if(ce) ce.classList.add('active');
+}
+function cwFocus(r,c){ const i=cwInputs[r+','+c]; if(i) i.focus(); }
+function cwOnInput(ev,r,c){
+  const v=ev.target.value.toUpperCase().replace(/[^A-Z]/g,''); ev.target.value=v;
+  document.getElementById('cwc-'+r+'-'+c).classList.remove('correct','wrong');
+  if(v){ const e=cwEntryFor(r,c,cwDir); if(e){ const i=e.seq.findIndex(([rr,cc])=>rr===r&&cc===c); if(i<e.seq.length-1){ const [nr,nc]=e.seq[i+1]; cwFocus(nr,nc); } } }
+}
+function cwOnKey(ev,r,c){
+  const k=ev.key;
+  if(k==='Backspace'){ if(!ev.target.value){ ev.preventDefault(); const e=cwEntryFor(r,c,cwDir); if(e){ const i=e.seq.findIndex(([rr,cc])=>rr===r&&cc===c); if(i>0){ const [pr,pc]=e.seq[i-1]; cwFocus(pr,pc); } } } document.getElementById('cwc-'+r+'-'+c).classList.remove('correct','wrong'); }
+  else if(k==='ArrowRight'){ ev.preventDefault(); cwFocus(r,c+1); }
+  else if(k==='ArrowLeft'){ ev.preventDefault(); cwFocus(r,c-1); }
+  else if(k==='ArrowDown'){ ev.preventDefault(); cwDir='down'; cwFocus(r+1,c); }
+  else if(k==='ArrowUp'){ ev.preventDefault(); cwDir='down'; cwFocus(r-1,c); }
+}
+function renderCwClues(){
+  const ac=document.getElementById('cw-across'), dn=document.getElementById('cw-down');
+  let ah='',dh='';
+  CW_PUZZLE.across.forEach(w=>{ ah+='<div class="cw-clue" id="cwclue-across-'+w.num+'" onclick="cwGoto(\'across\','+w.num+')"><span class="cw-clue-num">'+w.num+'</span><span>'+w.clue+' <span class="cw-clue-len">('+w.len+')</span></span></div>'; });
+  CW_PUZZLE.down.forEach(w=>{ dh+='<div class="cw-clue" id="cwclue-down-'+w.num+'" onclick="cwGoto(\'down\','+w.num+')"><span class="cw-clue-num">'+w.num+'</span><span>'+w.clue+' <span class="cw-clue-len">('+w.len+')</span></span></div>'; });
+  ac.innerHTML=ah; dn.innerHTML=dh;
+}
+function cwGoto(dir,num){ cwDir=dir; const seq=CW_ENTRIES[dir][num]; if(seq){ cwFocus(seq[0][0],seq[0][1]); } }
+
+function cwCheck(){
+  let filled=0,correct=0,total=0;
+  CW_PUZZLE.cells.forEach(cd=>{
+    total++; const inp=cwInputs[cd.r+','+cd.c]; const el=document.getElementById('cwc-'+cd.r+'-'+cd.c);
+    el.classList.remove('correct','wrong');
+    if(inp.value){ filled++; if(inp.value.toUpperCase()===cd.ch){ correct++; el.classList.add('correct'); } else el.classList.add('wrong'); }
+  });
+  const msg=document.getElementById('cw-msg');
+  if(correct===total){
+    msg.className='cw-msg win'; msg.textContent='Filed and clean \u2014 every answer correct.';
+    onCrosswordSolved();
+  } else if(filled===total){ msg.className='cw-msg near'; msg.textContent=correct+' of '+total+' right. The blue squares need another look.'; }
+  else { msg.className='cw-msg near'; msg.textContent=correct+' correct so far \u2014 '+(total-filled)+' squares still empty.'; }
+}
+function cwReveal(){
+  if(!cwNum){ document.getElementById('cw-msg').textContent='Pick a clue first, then reveal.'; return; }
+  const seq=CW_ENTRIES[cwDir][cwNum]; if(!seq) return;
+  seq.forEach(([r,c])=>{ cwInputs[r+','+c].value=cwAt(r,c).ch; document.getElementById('cwc-'+r+'-'+c).classList.remove('wrong'); });
+}
+function cwClear(){
+  Object.values(cwInputs).forEach(i=>i.value='');
+  document.querySelectorAll('.cwc').forEach(el=>el.classList.remove('correct','wrong'));
+  document.getElementById('cw-msg').textContent='';
+}
+
+// ── Solved → award Golden Gazette ──
+function onCrosswordSolved(){
+  const fresh = awardGolden();
+  refreshCrosswordNav();
+  if(fresh){
+    // confetti burst (reuses the Planner's overlay + chime)
+    try{
+      const overlay = document.getElementById('celebrate-overlay');
+      if(overlay){
+        const colours = ['#FFD700','#EEFF00','#B8860B','#0000EE','#FFC400','#fff3b0'];
+        for(let i=0;i<70;i++){ const c=document.createElement('div'); c.className='confetti';
+          c.style.left=Math.random()*100+'vw'; c.style.background=colours[Math.floor(Math.random()*colours.length)];
+          c.style.animation='confettiFall '+(1.8+Math.random()*1.4)+'s '+(Math.random()*0.5)+'s ease-in forwards';
+          overlay.appendChild(c); }
+        overlay.classList.add('show');
+        setTimeout(()=>{ overlay.classList.remove('show'); overlay.innerHTML=''; }, 3200);
+      }
+      if(typeof playCompleteChime==='function'){ playCompleteChime(); }
+    }catch(e){}
+    const g = getGolden();
+    const txt = document.getElementById('gg-text');
+    if(txt){
+      txt.innerHTML = 'You solved this week\'s Friday crossword. The Golden Gazette is yours &mdash; it\'ll sit on your profile all week.' +
+        (g.streak>1 ? ' That\'s <strong>'+g.streak+'</strong> you\'ve earned now.' : '');
+    }
+    setTimeout(()=>{ document.getElementById('gg-award').classList.add('show'); }, 600);
+  }
+}
+function closeAward(){ document.getElementById('gg-award').classList.remove('show'); }
+
+// close overlays on backdrop / escape
+document.getElementById('cw-overlay').addEventListener('click', e=>{ if(e.target.id==='cw-overlay') closeCrossword(); });
+document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.id==='gg-award') closeAward(); });
+
+
 </script>
 </body>
 </html>
