@@ -197,6 +197,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .note-clear-btn:hover{border-color:#cc0000;color:#cc0000}
 .note-form-btns{display:flex;gap:8px;align-items:center;justify-content:flex-end}
 
+
+/* ── Editor assignment ── */
+.assign-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px}
+.assign-btn:hover{opacity:.85}
+.assign-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:300;padding:1.5rem}
+.assign-modal-overlay.show{display:flex}
+.assign-modal{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:0;box-shadow:0 24px 70px rgba(0,0,0,.25);animation:amIn .25s ease}
+@keyframes amIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.am-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.am-title{font-size:17px;font-weight:700}
+.am-close{background:none;border:none;font-size:20px;color:var(--grey-md);cursor:pointer}
+.am-body{padding:18px 22px}
+.am-field{margin-bottom:12px}
+.am-field label{display:block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#555;margin-bottom:4px}
+.am-field input,.am-field textarea,.am-field select{width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;outline:none}
+.am-field textarea{resize:vertical;min-height:60px}
+.am-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.am-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.am-cancel{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.am-save{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.assigned-badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#EDE9FE;color:#6D28D9;margin-left:8px;display:inline-block}
+
+/* ── Progress tracking ── */
+.progress-section{margin-top:2rem;background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem}
+.progress-title{font-size:15px;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.progress-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.progress-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.pc-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.pc-pub{font-size:11px;color:var(--grey-md);margin-bottom:10px}
+.pc-sparkline{display:flex;align-items:flex-end;gap:3px;height:40px;margin-bottom:8px}
+.pc-bar{background:var(--blue);border-radius:3px 3px 0 0;min-width:20px;transition:height .3s ease}
+.pc-bar.current{background:var(--ink)}
+.pc-bar.zero{background:#eee}
+.pc-stats{display:flex;gap:12px;font-size:11px;color:var(--grey-md)}
+.pc-stat{display:flex;flex-direction:column;gap:1px}
+.pc-stat-num{font-size:16px;font-weight:700;color:var(--ink)}
+.pc-trend{font-weight:600}
+.pc-trend.up{color:#15803D}
+.pc-trend.down{color:#CC0000}
+.pc-trend.flat{color:var(--grey-md)}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -399,6 +440,7 @@ async function refreshData() {
   renderNetworkBar();
   renderEditorCalendar();
   renderGrid();
+  initProgress();
 }
 
 // Quiet background refresh — no loading spinner, preserves open drilldown
@@ -810,6 +852,18 @@ function openDrill(r) {
   document.getElementById('drilldown').style.display = 'block';
   document.getElementById('drill-name').textContent = r.name;
   document.getElementById('drill-pub').textContent  = r.pub;
+  // Assign button
+  let assignBtn = document.getElementById('drill-assign-btn');
+  if (!assignBtn) {
+    assignBtn = document.createElement('button');
+    assignBtn.id = 'drill-assign-btn';
+    assignBtn.className = 'assign-btn';
+    assignBtn.textContent = '+ Assign a story';
+    document.querySelector('.drill-header').appendChild(assignBtn);
+  }
+  assignBtn.onclick = () => openAssign(r);
+  // Store current reporter for assignment
+  window._assignReporter = r;
   const data = getReporterData(r.name, r.pub);
   const container = document.getElementById('drill-stories');
   container.innerHTML = '';
@@ -852,7 +906,7 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
         <div class="drill-type ${s.t}">${s.lbl}</div>
         <div class="drill-headline-hdr ${s.t} ${!headline?'empty':''}">${headline || 'No headline yet'}</div>
       </div>
-      ${filed ? `<span class="drill-filed-badge ${s.t}">Filed</span>` : ''}
+      ${filed ? `<span class="drill-filed-badge ${s.t}">Filed</span>` : ''}${st && st.assigned_by ? '<span class="assigned-badge">Assigned</span>' : ''}
     </div>
     <div class="drill-body">
       <div class="drill-field">
@@ -931,6 +985,229 @@ if (editorSession) {
   const savedWeek = localStorage.getItem('gz_editor_week');
   if (savedWeek) document.getElementById('inp-week').value = savedWeek;
 }
+
+// ══════════════════════════════════════════
+//  EDITOR STORY ASSIGNMENT
+// ══════════════════════════════════════════
+function openAssign(r) {
+  window._assignReporter = r;
+  document.getElementById('am-title').textContent = 'Assign a story to ' + r.name;
+  document.getElementById('am-headline').value = '';
+  document.getElementById('am-angle').value = '';
+  document.getElementById('am-notes').value = '';
+  document.getElementById('am-format').value = '';
+  // Populate slot dropdown: first empty + all slots
+  const defs = getStoryDefs(r.pub);
+  const data = getReporterData(r.name, r.pub);
+  const sel = document.getElementById('am-slot');
+  sel.innerHTML = '<option value="auto">First empty slot</option>';
+  defs.forEach(s => {
+    const taken = data[s.n] && data[s.n].headline;
+    sel.innerHTML += '<option value="' + s.n + '">' + s.n + '. ' + s.lbl + (taken ? ' (has: ' + (data[s.n].headline||'').slice(0,30) + ')' : ' (empty)') + '</option>';
+  });
+  document.getElementById('assign-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('am-headline').focus(), 50);
+}
+function closeAssign() { document.getElementById('assign-overlay').classList.remove('show'); }
+
+async function saveAssignment() {
+  const r = window._assignReporter;
+  if (!r) return;
+  const headline = document.getElementById('am-headline').value.trim();
+  if (!headline) { document.getElementById('am-headline').focus(); return; }
+  const btn = document.getElementById('am-save');
+  btn.disabled = true; btn.textContent = 'Assigning...';
+
+  const slotVal = document.getElementById('am-slot').value;
+  let slot = slotVal;
+  if (slotVal === 'auto') {
+    const defs = getStoryDefs(r.pub);
+    const data = getReporterData(r.name, r.pub);
+    const empty = defs.find(s => !data[s.n] || !data[s.n].headline);
+    slot = empty ? empty.n : defs[defs.length - 1].n;
+  }
+
+  const row = {
+    reporter: r.name,
+    publication: r.pub,
+    week_of: WEEK,
+    story_num: slot,
+    headline: headline,
+    angle: document.getElementById('am-angle').value.trim(),
+    notes: document.getElementById('am-notes').value.trim(),
+    format: document.getElementById('am-format').value,
+    assigned_by: 'Editor',
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    await editorUpsert(row);
+    closeAssign();
+    // Refresh the drilldown to show the new assignment
+    openDrill(r);
+  } catch(e) {
+    alert('Could not assign story. Check your connection.');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Assign story';
+  }
+}
+
+document.getElementById('assign-overlay').addEventListener('click', e => {
+  if (e.target.id === 'assign-overlay') closeAssign();
+});
+
+// ══════════════════════════════════════════
+//  REPORTER PROGRESS TRACKING
+// ══════════════════════════════════════════
+
+// Get the Monday of a given date
+function getMondayOfDate(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+  dt.setDate(diff);
+  return dt.toISOString().slice(0, 10);
+}
+
+// Get the last N Mondays before (and including) the current week
+function getLastNWeeks(n) {
+  const weeks = [];
+  const base = new Date(WEEK + 'T00:00:00');
+  for (let i = 0; i < n; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() - (i * 7));
+    weeks.push(d.toISOString().slice(0, 10));
+  }
+  return weeks.reverse(); // oldest first
+}
+
+async function loadProgressData() {
+  const weeks = getLastNWeeks(8);
+  const oldest = weeks[0];
+  try {
+    const rows = await supaFetch(
+      TABLE + '?week_of=gte.' + encodeURIComponent(oldest) +
+      '&filed=eq.true&select=reporter,publication,week_of'
+    );
+    if (!rows) return {};
+    // Build: { "Name|Pub": { weekStr: filedCount, ... }, ... }
+    const byReporter = {};
+    rows.forEach(r => {
+      const key = r.reporter + '|' + r.publication;
+      if (!byReporter[key]) byReporter[key] = {};
+      byReporter[key][r.week_of] = (byReporter[key][r.week_of] || 0) + 1;
+    });
+    return { byReporter, weeks };
+  } catch(e) {
+    console.error('Progress data load failed:', e);
+    return {};
+  }
+}
+
+function renderProgressSection(data) {
+  let existing = document.getElementById('progress-section');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.id = 'progress-section';
+    existing.className = 'progress-section';
+    const mainView = document.getElementById('main-view');
+    if (mainView) mainView.appendChild(existing);
+  }
+  if (!data || !data.weeks) { existing.innerHTML = ''; return; }
+
+  const { byReporter, weeks } = data;
+  let html = '<div class="progress-title">Reporter progress <span style="font-size:11px;color:#888;font-weight:500">last ' + weeks.length + ' weeks</span></div>';
+  html += '<div class="progress-grid">';
+
+  REPORTERS.forEach(r => {
+    const key = r.name + '|' + r.pub;
+    const rData = byReporter[key] || {};
+    const counts = weeks.map(w => rData[w] || 0);
+    const maxBar = 8;
+    const avg = counts.length ? (counts.reduce((a,b)=>a+b,0) / counts.length) : 0;
+    const recent = counts.slice(-3);
+    const earlier = counts.slice(0, -3);
+    const recentAvg = recent.length ? recent.reduce((a,b)=>a+b,0)/recent.length : 0;
+    const earlierAvg = earlier.length ? earlier.reduce((a,b)=>a+b,0)/earlier.length : 0;
+    let trend = 'flat', trendLabel = 'Steady';
+    if (recentAvg > earlierAvg + 0.5) { trend = 'up'; trendLabel = 'Improving'; }
+    else if (recentAvg < earlierAvg - 0.5) { trend = 'down'; trendLabel = 'Declining'; }
+
+    html += '<div class="progress-card">';
+    html += '<div class="pc-name">' + esc(r.name) + '</div>';
+    html += '<div class="pc-pub">' + esc(r.pub) + '</div>';
+    // Sparkline bars
+    html += '<div class="pc-sparkline">';
+    counts.forEach((c, i) => {
+      const h = c === 0 ? 4 : Math.round((c / maxBar) * 40);
+      const cls = i === counts.length - 1 ? 'current' : (c === 0 ? 'zero' : '');
+      html += '<div class="pc-bar ' + cls + '" style="height:' + h + 'px" title="' + weeks[i] + ': ' + c + '/8 filed"></div>';
+    });
+    html += '</div>';
+    // Stats
+    html += '<div class="pc-stats">';
+    html += '<div class="pc-stat"><span class="pc-stat-num">' + avg.toFixed(1) + '</span>avg/week</div>';
+    html += '<div class="pc-stat"><span class="pc-stat-num">' + counts[counts.length-1] + '/8</span>this week</div>';
+    html += '<div class="pc-stat"><span class="pc-trend ' + trend + '">' + trendLabel + '</span></div>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  html += '</div>';
+  existing.innerHTML = html;
+}
+
+// Load progress data after initial data load
+async function initProgress() {
+  const data = await loadProgressData();
+  renderProgressSection(data);
+}
+
 </script>
+
+<!-- Assignment modal -->
+<div class="assign-modal-overlay" id="assign-overlay">
+  <div class="assign-modal">
+    <div class="am-head">
+      <div class="am-title" id="am-title">Assign a story</div>
+      <button class="am-close" onclick="closeAssign()">&times;</button>
+    </div>
+    <div class="am-body">
+      <div class="am-field">
+        <label>Headline / story idea *</label>
+        <input type="text" id="am-headline" placeholder="What's the story?">
+      </div>
+      <div class="am-row">
+        <div class="am-field">
+          <label>Angle</label>
+          <input type="text" id="am-angle" placeholder="The angle or approach">
+        </div>
+        <div class="am-field">
+          <label>Format</label>
+          <select id="am-format">
+            <option value="">Select...</option>
+            <option value="Written-first">Written-first</option>
+            <option value="Video-first">Video-first</option>
+          </select>
+        </div>
+      </div>
+      <div class="am-field">
+        <label>Notes / brief</label>
+        <textarea id="am-notes" placeholder="Context, sources to chase, what you want from this story..."></textarea>
+      </div>
+      <div class="am-field">
+        <label>Story slot</label>
+        <select id="am-slot"></select>
+        <div style="font-size:11px;color:#888;margin-top:3px">Pick the slot, or leave on "First empty" to fill the next available one.</div>
+      </div>
+    </div>
+    <div class="am-foot">
+      <button class="am-cancel" onclick="closeAssign()">Cancel</button>
+      <button class="am-save" id="am-save" onclick="saveAssignment()">Assign story</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
