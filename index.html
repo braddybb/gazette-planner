@@ -450,6 +450,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 /* Profile / badge row on setup or header */
 .gg-profile-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#B8860B;background:#FFFBEB;border:1px solid #F0E0B0;border-radius:999px;padding:5px 13px}
 
+
+/* Distribution gate warning */
+.dist-warning{font-size:12.5px;color:#9A4400;background:#FFF7ED;border:1px solid #FFE0B8;border-radius:8px;padding:9px 12px;margin-top:8px;line-height:1.5;display:none}
+.dist-warning.shake{animation:distShake .4s ease}
+@keyframes distShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+
+/* Headline nudge */
+.hl-nudge{font-size:12px;color:var(--amber,#B45309);background:var(--amber-lt,#FFFBEB);border:1px solid #F0E0B0;border-radius:7px;padding:6px 10px;margin-top:6px;line-height:1.45;display:none;animation:nudgeFade .3s ease}
+@keyframes nudgeFade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+
+/* Assigned story indicator */
+.story-card.is-assigned .card-hdr{animation:assignPulse 2s ease-in-out infinite;box-shadow:inset 0 0 0 2px #7C3AED}
+@keyframes assignPulse{0%,100%{box-shadow:inset 0 0 0 2px #7C3AED}50%{box-shadow:inset 0 0 0 2px #7C3AED,0 0 12px rgba(124,58,237,.25)}}
+.assigned-label{font-size:11px;font-weight:600;color:#6D28D9;background:#EDE9FE;border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -610,8 +626,8 @@ function getStoryDefs(pub) {
 let STORIES = getStoryDefs(null);
 
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
-const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
-const FMT_ITEMS  = ['Written-first','Video-first','Both'];
+const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube','dotcom'];
+const FMT_ITEMS  = ['Written-first','Video-first'];
 const DAYS       = ['Mon','Tue','Wed','Thu','Fri'];
 
 let USER = null;
@@ -922,8 +938,13 @@ function buildCard(s, i) {
   hlInput.type = 'text';
   hlInput.placeholder = 'The headline or story idea...';
   hlInput.value = st.headline || '';
-  hlInput.oninput = function() { fieldUpdate(s.n, 'headline', this.value); };
+  hlInput.oninput = function() { fieldUpdate(s.n, 'headline', this.value); checkHeadlineNudge(s.n, this.value); };
   hlDiv.appendChild(hlInput);
+  // Headline nudge (hidden by default, shown if too vague)
+  const hlNudge = document.createElement('div');
+  hlNudge.className = 'hl-nudge';
+  hlNudge.id = 'hl-nudge-' + s.n;
+  hlDiv.appendChild(hlNudge);
   body.appendChild(hlDiv);
 
   // Angle + Notes
@@ -1135,8 +1156,69 @@ function refreshFiledStamp(num) {
   el.textContent = t ? timeAgo(t) : '';
 }
 
+
+// ── Headline nudge: gentle prompt if headline is too vague ──
+function checkHeadlineNudge(num, val) {
+  const el = document.getElementById('hl-nudge-' + num);
+  if (!el) return;
+  const text = (val || '').trim();
+  const words = text ? text.split(/\s+/) : [];
+  // Only nudge if they've typed something (not on empty) but it's too short/vague
+  if (text.length === 0 || words.length >= 5) {
+    el.style.display = 'none';
+    return;
+  }
+  // Check for specifics: numbers, proper nouns (capitalised words beyond first), places
+  const hasNumber = /\d/.test(text);
+  const hasProperNoun = words.slice(1).some(w => /^[A-Z]/.test(w));
+  if (words.length >= 4 && (hasNumber || hasProperNoun)) {
+    el.style.display = 'none';
+    return;
+  }
+  // Show the nudge
+  el.textContent = 'This headline helps your editor know what the story is — try adding the who, what or where so they can see it at a glance.';
+  el.style.display = 'block';
+}
+
+// Distribution requirements per format
+const DIST_REQUIRED = {
+  'Video-first':   ['Instagram','TikTok','YouTube','dotcom'],
+  'Written-first': ['Instagram','Facebook','dotcom'],
+};
+
 function setFiled(num, checked) {
   if (!DATA[num]) DATA[num] = blankStory(num);
+
+  // ── Distribution gate: only when trying to FILE (not unfile) ──
+  if (checked) {
+    const st = DATA[num];
+    const fmt = st.format;
+
+    // Must have a format selected first
+    if (!fmt || !DIST_REQUIRED[fmt]) {
+      showDistWarning(num, 'Select a format (Written-first or Video-first) before filing — the distribution requirements depend on it.');
+      bounceFiledCheckbox(num);
+      return;
+    }
+
+    // Check required distribution channels are ticked
+    const posted = st.posted || [];
+    const required = DIST_REQUIRED[fmt];
+    const missing = required.filter(ch => !posted.includes(ch));
+    if (missing.length) {
+      const fmtLabel = fmt;
+      const missingStr = missing.join(', ');
+      showDistWarning(num, fmtLabel + ' stories must be distributed to ' + required.join(', ') + ' before filing. You\'re still missing: ' + missingStr + '.');
+      bounceFiledCheckbox(num);
+      return;
+    }
+
+    // Clear any previous warning
+    clearDistWarning(num);
+  } else {
+    clearDistWarning(num);
+  }
+
   DATA[num].filed = checked;
   const card = document.getElementById('card-' + num);
   const pill = document.getElementById('fpill-' + num);
@@ -1150,6 +1232,32 @@ function setFiled(num, checked) {
   if (checked) stampFiled(num);
   updateProgress();
   scheduleSave(num);
+}
+
+function bounceFiledCheckbox(num) {
+  const cb = document.querySelector('#card-' + num + ' .filed-label input[type=checkbox]');
+  if (cb) { cb.checked = false; }
+}
+
+function showDistWarning(num, msg) {
+  let el = document.getElementById('dist-warn-' + num);
+  if (!el) {
+    const row = document.querySelector('#card-' + num + ' .filed-row');
+    if (!row) return;
+    el = document.createElement('div');
+    el.id = 'dist-warn-' + num;
+    el.className = 'dist-warning';
+    row.parentNode.insertBefore(el, row.nextSibling);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  // gentle shake
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+}
+
+function clearDistWarning(num) {
+  const el = document.getElementById('dist-warn-' + num);
+  if (el) el.style.display = 'none';
 }
 
 function stampFiled(num) {
