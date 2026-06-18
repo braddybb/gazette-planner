@@ -871,6 +871,18 @@ function openDrill(r) {
   defs.forEach(s => {
     container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
   });
+  // Also render extras (story_num > 08)
+  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > 8).sort();
+  if (extraNums.length) {
+    const extraHdr = document.createElement('div');
+    extraHdr.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:16px;margin-bottom:8px';
+    extraHdr.textContent = 'Extra stories';
+    container.appendChild(extraHdr);
+    extraNums.forEach(num => {
+      const sDef = { n: num, t: data[num].assigned_by ? 'imp' : 'std', lbl: data[num].assigned_by ? 'Editor assignment' : 'Extra story' };
+      container.appendChild(buildDrillCard(sDef, data[num], r.name, r.pub, WEEK));
+    });
+  }
 }
 
 function closeDrill() {
@@ -996,15 +1008,11 @@ function openAssign(r) {
   document.getElementById('am-angle').value = '';
   document.getElementById('am-notes').value = '';
   document.getElementById('am-format').value = '';
-  // Populate slot dropdown: first empty + all slots
-  const defs = getStoryDefs(r.pub);
+  // Auto-assign slot: next extra number (09+)
   const data = getReporterData(r.name, r.pub);
-  const sel = document.getElementById('am-slot');
-  sel.innerHTML = '<option value="auto">First empty slot</option>';
-  defs.forEach(s => {
-    const taken = data[s.n] && data[s.n].headline;
-    sel.innerHTML += '<option value="' + s.n + '">' + s.n + '. ' + s.lbl + (taken ? ' (has: ' + (data[s.n].headline||'').slice(0,30) + ')' : ' (empty)') + '</option>';
-  });
+  const used = Object.keys(data).map(n => parseInt(n, 10)).filter(n => n > 8);
+  const nextNum = String(Math.max(9, ...used.map(n => n + 1))).padStart(2, '0');
+  document.getElementById('am-slot').innerHTML = '<option value="' + nextNum + '">Extra slot ' + nextNum + ' (new card)</option>';
   document.getElementById('assign-overlay').classList.add('show');
   setTimeout(() => document.getElementById('am-headline').focus(), 50);
 }
