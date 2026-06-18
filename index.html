@@ -193,6 +193,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .save-err.show{display:block}
 .clear-slot-btn{font-size:11px;color:var(--grey-md);background:none;border:0.5px solid var(--border);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;margin-left:auto}
 .clear-slot-btn:hover{color:#cc0000;border-color:#cc0000}
+.clear-slot-btn.del{color:#cc0000;border-color:rgba(204,0,0,.3)}
+.clear-slot-btn.del:hover{background:#FFF5F5}
 .filed-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
 .filed-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#111;cursor:pointer}
 .filed-label input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer}
@@ -462,10 +464,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 
 /* Assigned story indicator */
-.story-card.is-assigned{animation:assignGlow 2.2s ease-in-out infinite;border:2px solid #7C3AED}
-.story-card.is-assigned .card-hdr{border-left:3px solid #7C3AED}
-@keyframes assignGlow{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.0)}50%{box-shadow:0 0 16px 4px rgba(124,58,237,.2)}}
-.assigned-label{font-size:11px;font-weight:600;color:#6D28D9;background:#EDE9FE;border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
+.story-card.is-assigned{animation:assignGlow 2.2s ease-in-out infinite;border:2px solid var(--blue)}
+.story-card.is-assigned .card-hdr{border-left:3px solid var(--blue)}
+@keyframes assignGlow{0%,100%{box-shadow:0 0 0 0 rgba(0,0,238,.0)}50%{box-shadow:0 0 18px 5px rgba(0,0,238,.18)}}
+.assigned-label{font-size:11px;font-weight:600;color:var(--blue-dk);background:var(--blue-lt);border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
 
 
 /* ── Extra stories section ── */
@@ -499,6 +501,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .aab-title{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:.5rem;color:var(--blue)}
 .aab-text{font-size:14px;color:var(--ink-2,#555);line-height:1.6;margin-bottom:1.5rem}
 .aab-close{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+
+/* Earned badges display */
+.badges-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.badge-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  padding:4px 12px;border-radius:999px;animation:badgeIn .4s cubic-bezier(.2,.7,.3,1.5)}
+@keyframes badgeIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.badge-chip.golden{background:#FFFBEB;border:1px solid #F0E0B0;color:#B8860B}
+.badge-chip.aab{background:#EEF0FF;border:1px solid #CCE;color:var(--blue-dk)}
+.badge-chip .badge-ico{font-size:14px}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -552,6 +564,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
     <button class="change-week-btn" onclick="toggleWeekBanner()">Change week</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
+    <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than 8 stories" style="display:none">&#11088;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
       <span class="cw-label" id="cw-label">Crossword</span>
@@ -590,6 +603,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <span class="ppill ppill-std" id="pill-std">0 / 5 standard</span>
       <span class="ppill ppill-imp" id="pill-imp">0 / 1 impact</span>
       <span class="ppill ppill-life" id="pill-life">0 / 2 lifestyle</span>
+      <div class="badges-row" id="badges-row"></div>
     </div>
   </div>
   <div id="celebrate-overlay"></div>
@@ -747,6 +761,7 @@ function showApp() {
   }
   loadStories();
   refreshCrosswordNav();
+  renderBadges();
 }
 
 // Intercept back button
@@ -1117,11 +1132,12 @@ function buildCard(s, i, isExtra) {
   filedTime.className = 'filed-time';
   filedTime.id = 'filedtime-' + s.n;
   filedTime.textContent = filed ? timeAgo(getFiledTimes()[s.n]) : '';
+  const isExtraCard = parseInt(s.n, 10) > 8;
   const clearBtn = document.createElement('button');
-  clearBtn.className = 'clear-slot-btn';
-  clearBtn.textContent = 'Clear slot';
-  clearBtn.title = 'Clear this story slot';
-  clearBtn.onclick = function(e) { clearSlot(s.n, e); };
+  clearBtn.className = 'clear-slot-btn' + (isExtraCard ? ' del' : '');
+  clearBtn.textContent = isExtraCard ? 'Delete' : 'Clear slot';
+  clearBtn.title = isExtraCard ? 'Remove this extra story' : 'Clear this story slot';
+  clearBtn.onclick = function(e) { isExtraCard ? deleteExtra(s.n, e) : clearSlot(s.n, e); };
   const saveBtn = document.createElement('button');
   saveBtn.className = 'save-card-btn';
   saveBtn.textContent = 'Save';
@@ -1398,6 +1414,32 @@ function stampFiled(num) {
   setTimeout(() => overlay.remove(), 1400);
 }
 
+
+// Delete an extra story card entirely (removes from DB + DOM)
+async function deleteExtra(num, e) {
+  e.stopPropagation();
+  const st = DATA[num];
+  const name = (st && st.headline) || 'this extra story';
+  if (!confirm('Delete "' + name + '"? This removes it completely.')) return;
+  // Delete from Supabase if it has a real ID (not just local)
+  try {
+    await fetch(SUPA_URL + '/rest/v1/' + TABLE +
+      '?reporter=eq.' + encodeURIComponent(USER.name) +
+      '&publication=eq.' + encodeURIComponent(USER.pub) +
+      '&week_of=eq.' + encodeURIComponent(WEEK) +
+      '&story_num=eq.' + encodeURIComponent(num), {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+      }
+    });
+  } catch(e) { console.warn('Delete from DB failed:', e); }
+  delete DATA[num];
+  renderGrid();
+  updateProgress();
+}
+
 function clearSlot(num, e) {
   e.stopPropagation();
   if (!confirm('Clear all data in this story slot?')) return;
@@ -1564,6 +1606,7 @@ function updateProgress(opts) {
 
   _lastFiledCount = grandTotal;
   _progressInitialised = true;
+  renderBadges();
 }
 
 function renderGlanceDots(stories) {
@@ -1887,6 +1930,30 @@ if (saved) {
 
 
 
+
+// ── Render earned badges in the progress area ──
+function renderBadges() {
+  const row = document.getElementById('badges-row');
+  if (!row) return;
+  let html = '';
+  // Golden Gazette
+  if (typeof hasGoldenThisWeek === 'function' && hasGoldenThisWeek()) {
+    const g = getGolden();
+    html += '<span class="badge-chip golden"><span class="badge-ico">&#129309;</span>Golden Gazette' + (g.streak > 1 ? ' x' + g.streak : '') + '</span>';
+  }
+  // Above & Beyond
+  if (typeof hasAabThisWeek === 'function' && hasAabThisWeek()) {
+    const a = getAab();
+    html += '<span class="badge-chip aab"><span class="badge-ico">&#11088;</span>Above & Beyond' + (a.count > 1 ? ' x' + a.count : '') + '</span>';
+  }
+  row.innerHTML = html;
+  // Also update header icons
+  const ggHdr = document.getElementById('gg-hdr');
+  if (ggHdr) ggHdr.style.display = (typeof hasGoldenThisWeek === 'function' && hasGoldenThisWeek()) ? 'inline-block' : 'none';
+  const aabHdr = document.getElementById('aab-hdr');
+  if (aabHdr) aabHdr.style.display = (typeof hasAabThisWeek === 'function' && hasAabThisWeek()) ? 'inline-block' : 'none';
+}
+
 // ── Above & Beyond badge ──
 function aabKey(){ return 'gz_aab_' + (USER ? (USER.name + '|' + USER.pub) : 'anon'); }
 function getAab(){
@@ -1908,7 +1975,7 @@ function awardAboveBeyond(){
   try {
     const overlay = document.getElementById('celebrate-overlay');
     if(overlay){
-      const colours = ['#0000EE','#EEFF00','#00CC66','#FFD700','#FF6B6B','#7C3AED'];
+      const colours = ['#0000EE','#EEFF00','#00CC66','#FFD700','#FF6B6B','#3366FF'];
       for(let i=0;i<80;i++){
         const c=document.createElement('div'); c.className='confetti';
         c.style.left=Math.random()*100+'vw';
