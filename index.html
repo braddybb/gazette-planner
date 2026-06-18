@@ -462,9 +462,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 
 /* Assigned story indicator */
-.story-card.is-assigned .card-hdr{animation:assignPulse 2s ease-in-out infinite;box-shadow:inset 0 0 0 2px #7C3AED}
-@keyframes assignPulse{0%,100%{box-shadow:inset 0 0 0 2px #7C3AED}50%{box-shadow:inset 0 0 0 2px #7C3AED,0 0 12px rgba(124,58,237,.25)}}
+.story-card.is-assigned{animation:assignGlow 2.2s ease-in-out infinite;border:2px solid #7C3AED}
+.story-card.is-assigned .card-hdr{border-left:3px solid #7C3AED}
+@keyframes assignGlow{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.0)}50%{box-shadow:0 0 16px 4px rgba(124,58,237,.2)}}
 .assigned-label{font-size:11px;font-weight:600;color:#6D28D9;background:#EDE9FE;border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
+
+
+/* ── Extra stories section ── */
+.extras-section{max-width:1400px;margin:0 auto;padding:0 2rem 2rem}
+.extras-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.extras-title{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3,#888)}
+.extras-count{font-size:12px;color:var(--ink-3,#888);font-weight:500}
+.extras-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;align-items:start;margin-bottom:14px}
+
+/* Extra card distinct style — lighter, subtly different */
+.story-card.is-extra .card-hdr{background:linear-gradient(135deg,#3B3B3B,#555);border-radius:12px 12px 0 0}
+.story-card.is-extra .card-hdr .hdr-type{color:rgba(255,255,255,.7)}
+.story-card.is-extra .card-hdr .hdr-num{color:rgba(255,255,255,.5)}
+
+/* Add extra button */
+.add-extra-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;
+  border:2px dashed var(--border);border-radius:14px;background:transparent;color:var(--ink-3,#888);
+  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.add-extra-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt,#EEF0FF)}
+.add-extra-btn .plus{font-size:18px;font-weight:700}
+
+/* Above & Beyond badge + award */
+.aab-hdr{font-size:18px;line-height:1;filter:drop-shadow(0 0 4px rgba(0,200,100,.5));animation:aabPulse 2.4s ease-in-out infinite;display:none}
+@keyframes aabPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.aab-award{position:fixed;inset:0;background:rgba(17,17,17,.7);display:none;align-items:center;justify-content:center;z-index:400}
+.aab-award.show{display:flex}
+.aab-card{background:#fff;border-radius:20px;padding:2.5rem 2.75rem;text-align:center;max-width:420px;
+  box-shadow:0 30px 80px rgba(0,0,0,.4);animation:aabIn .5s cubic-bezier(.2,.7,.3,1.5)}
+@keyframes aabIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.aab-emoji{font-size:64px;line-height:1;margin-bottom:1rem}
+.aab-title{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:.5rem;color:var(--blue)}
+.aab-text{font-size:14px;color:var(--ink-2,#555);line-height:1.6;margin-bottom:1.5rem}
+.aab-close{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -580,6 +614,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <button class="cw-head-close" onclick="closeCrossword()">&times;</button>
     </div>
     <div class="cw-body" id="cw-body"><!-- filled by JS --></div>
+  </div>
+</div>
+
+<!-- ABOVE & BEYOND AWARD -->
+<div class="aab-award" id="aab-award">
+  <div class="aab-card">
+    <div class="aab-emoji">&#11088;</div>
+    <div class="aab-title">Above &amp; Beyond</div>
+    <div class="aab-text" id="aab-text">You filed more than 8 stories this week. That's above and beyond the call — this badge is yours.</div>
+    <button class="aab-close" onclick="closeAab()">Keep it up</button>
   </div>
 </div>
 
@@ -859,12 +903,73 @@ function toggleCalWhy(i) {
 function renderGrid() {
   const container = document.getElementById('stories-container');
   container.innerHTML = '';
+
+  // Base 8 story cards
   const grid = document.createElement('div');
   grid.className = 'stories-grid';
   STORIES.forEach((s,i) => {
     grid.appendChild(buildCard(s, i));
   });
   container.appendChild(grid);
+
+  // Extra stories (story_num > '08') — includes editor assignments + reporter-added
+  renderExtras(container);
+}
+
+function getExtras() {
+  const extras = [];
+  Object.keys(DATA).forEach(num => {
+    if (parseInt(num, 10) > 8 && DATA[num]) extras.push({ num, data: DATA[num] });
+  });
+  extras.sort((a,b) => parseInt(a.num) - parseInt(b.num));
+  return extras;
+}
+
+function nextExtraNum() {
+  const used = Object.keys(DATA).map(n => parseInt(n, 10)).filter(n => n > 8);
+  return String(Math.max(9, ...used.map(n => n + 1))).padStart(2, '0');
+}
+
+function renderExtras(container) {
+  const extras = getExtras();
+  // Always show the section (even if empty, for the + button)
+  let section = document.createElement('div');
+  section.className = 'extras-section';
+
+  if (extras.length > 0) {
+    const hdr = document.createElement('div');
+    hdr.className = 'extras-header';
+    const filedCount = extras.filter(e => e.data.filed).length;
+    hdr.innerHTML = '<span class="extras-title">Extra stories</span><span class="extras-count">' + filedCount + ' / ' + extras.length + ' filed</span>';
+    section.appendChild(hdr);
+
+    const grid = document.createElement('div');
+    grid.className = 'extras-grid';
+    extras.forEach(e => {
+      const sDef = { n: e.num, t: 'extra', lbl: e.data.assigned_by ? 'Editor assignment' : 'Extra story' };
+      grid.appendChild(buildCard(sDef, -1, true));
+    });
+    section.appendChild(grid);
+  }
+
+  // "+ Add a story" button
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-extra-btn';
+  addBtn.innerHTML = '<span class="plus">+</span> Add another story';
+  addBtn.onclick = addExtraStory;
+  section.appendChild(addBtn);
+
+  container.appendChild(section);
+}
+
+function addExtraStory() {
+  const num = nextExtraNum();
+  DATA[num] = blankStory(num);
+  scheduleSave(num);
+  renderGrid();
+  updateProgress();
+  // open the new card
+  setTimeout(() => toggleCard(num), 100);
 }
 
 // Varied, warm empty-state prompts
@@ -890,13 +995,13 @@ function storyHasContent(st) {
             (st.todo && st.todo.length) || (st.posted && st.posted.length) || st.filed);
 }
 
-function buildCard(s, i) {
+function buildCard(s, i, isExtra) {
   const st = getStory(s.n);
   const filed = !!st.filed;
   const hasContent = storyHasContent(st);
   const prev = st.headline || emptyPrompt(s.n);
   const wrap = document.createElement('div');
-  wrap.className = 'story-card' + (filed ? ' is-filed' : '');
+  wrap.className = 'story-card' + (filed ? ' is-filed' : '') + (isExtra ? ' is-extra' : '');
   wrap.id = 'card-' + s.n;
 
   // Header
@@ -921,6 +1026,15 @@ function buildCard(s, i) {
   const body = document.createElement('div');
   body.className = 'card-body';  // starts closed (no 'open' class)
   body.id = 'body-' + s.n;
+
+  // Assigned story indicator — pulsing purple glow
+  if (st.assigned_by) {
+    wrap.classList.add('is-assigned');
+    const albl = document.createElement('div');
+    albl.className = 'assigned-label';
+    albl.textContent = 'Assigned by ' + st.assigned_by;
+    body.appendChild(albl);
+  }
 
   // Editor note banner (if present)
   if (st.editor_note) {
@@ -1403,20 +1517,27 @@ const RING_CIRC = 175.93; // 2*pi*28
 function updateProgress(opts) {
   opts = opts || {};
   const stories = STORIES.map(s => getStory(s.n));
-  const total  = stories.filter(s => s.filed).length;
+  const baseTotal = stories.filter(s => s.filed).length;
   const std    = [0,1,2,3,4].filter(i => stories[i].filed).length;
   const imp    = stories[5].filed ? 1 : 0;
   const life   = [6,7].filter(i => stories[i].filed).length;
-  const pct    = Math.round(total / 8 * 100);
 
-  document.getElementById('prog-count').textContent = total;
+  // Count extras filed too
+  const extras = getExtras();
+  const extrasFiled = extras.filter(e => e.data.filed).length;
+  const grandTotal = baseTotal + extrasFiled;
+
+  const pct = Math.round(Math.min(baseTotal / 8, 1) * 100);
+
+  // Display: show grand total if there are extras, otherwise just base
+  document.getElementById('prog-count').textContent = grandTotal;
   document.getElementById('prog-pct').textContent   = pct + '%';
 
-  // Ring
+  // Ring: based on base 8 only
   const ring = document.getElementById('prog-ring-fill');
   if (ring) {
-    ring.style.strokeDashoffset = RING_CIRC * (1 - total / 8);
-    ring.classList.toggle('complete', total === 8);
+    ring.style.strokeDashoffset = RING_CIRC * (1 - Math.min(baseTotal / 8, 1));
+    ring.classList.toggle('complete', baseTotal >= 8);
   }
 
   document.getElementById('pill-std').textContent   = std + ' / 5 standard';
@@ -1428,15 +1549,20 @@ function updateProgress(opts) {
   renderGlanceDots(stories);
 
   // Personal best (always track, even silent)
-  const pbMsg = updatePB(total);
+  const pbMsg = updatePB(grandTotal);
 
-  // Celebration on reaching 100% (only when it's a fresh completion, not initial load)
-  if (total === 8 && _progressInitialised && _lastFiledCount < 8 && !opts.silent) {
+  // Celebration on reaching 8/8 base
+  if (baseTotal === 8 && _progressInitialised && _lastFiledCount < 8 && !opts.silent) {
     celebrateComplete(pbMsg);
     bumpStreak();
   }
 
-  _lastFiledCount = total;
+  // Above & Beyond: filed more than 8 total (first time crossing the threshold this session)
+  if (grandTotal > 8 && _progressInitialised && _lastFiledCount <= 8 && !opts.silent) {
+    awardAboveBeyond();
+  }
+
+  _lastFiledCount = grandTotal;
   _progressInitialised = true;
 }
 
@@ -1759,6 +1885,52 @@ if (saved) {
   } catch(e) {}
 }
 
+
+
+// ── Above & Beyond badge ──
+function aabKey(){ return 'gz_aab_' + (USER ? (USER.name + '|' + USER.pub) : 'anon'); }
+function getAab(){
+  try { return JSON.parse(localStorage.getItem(aabKey())) || { weeks:[], count:0 }; }
+  catch(e){ return { weeks:[], count:0 }; }
+}
+function hasAabThisWeek(){
+  const a = getAab();
+  return a.weeks.indexOf(cwWeekKey ? cwWeekKey() : WEEK) !== -1;
+}
+function awardAboveBeyond(){
+  const a = getAab();
+  const wk = (typeof cwWeekKey === 'function') ? cwWeekKey() : WEEK;
+  if (a.weeks.indexOf(wk) !== -1) return; // already awarded
+  a.weeks.push(wk);
+  a.count = (a.count || 0) + 1;
+  localStorage.setItem(aabKey(), JSON.stringify(a));
+  // Show award with confetti
+  try {
+    const overlay = document.getElementById('celebrate-overlay');
+    if(overlay){
+      const colours = ['#0000EE','#EEFF00','#00CC66','#FFD700','#FF6B6B','#7C3AED'];
+      for(let i=0;i<80;i++){
+        const c=document.createElement('div'); c.className='confetti';
+        c.style.left=Math.random()*100+'vw';
+        c.style.background=colours[Math.floor(Math.random()*colours.length)];
+        c.style.animation='confettiFall '+(1.8+Math.random()*1.4)+'s '+(Math.random()*0.5)+'s ease-in forwards';
+        overlay.appendChild(c);
+      }
+      overlay.classList.add('show');
+      setTimeout(()=>{ overlay.classList.remove('show'); overlay.innerHTML=''; }, 3200);
+    }
+    if(typeof playCompleteChime==='function'){ playCompleteChime(); }
+  }catch(e){}
+  // Show the modal
+  const txt = document.getElementById('aab-text');
+  if(txt){
+    txt.innerHTML = 'You filed more than 8 stories this week. That\'s above and beyond the call — this star is yours for the week.' +
+      (a.count > 1 ? ' That\'s <strong>' + a.count + ' times</strong> you\'ve gone above and beyond.' : '');
+  }
+  setTimeout(() => { document.getElementById('aab-award').classList.add('show'); }, 500);
+}
+function closeAab(){ document.getElementById('aab-award').classList.remove('show'); }
+document.getElementById('aab-award').addEventListener('click', e => { if(e.target.id==='aab-award') closeAab(); });
 
 // ══════════════════════════════════════════
 //  FRIDAY CROSSWORD  +  GOLDEN GAZETTE BADGE
