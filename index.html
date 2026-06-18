@@ -89,8 +89,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .streak-flame{font-size:18px;line-height:1}
 .streak-num{font-size:18px;font-weight:700;color:#C2410C;line-height:1.1}
 .streak-label{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9A6440}
-.prog-pills{display:flex;gap:8px;flex-wrap:wrap}
-.ppill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:0.5px solid}
+.prog-pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ppill{display:inline-flex;align-items:center;font-size:11px;font-weight:600;line-height:1;padding:5px 12px;border-radius:999px;border:0.5px solid;white-space:nowrap}
 .ppill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 .ppill-imp{background:#1a1a1a;color:#fff;border-color:#333}
 .ppill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
@@ -464,9 +464,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 
 /* Assigned story indicator */
-.story-card.is-assigned{animation:assignGlow 2.2s ease-in-out infinite;border:2px solid var(--blue)}
+.story-card.is-assigned{border:1.5px solid var(--blue)}
 .story-card.is-assigned .card-hdr{border-left:3px solid var(--blue)}
-@keyframes assignGlow{0%,100%{box-shadow:0 0 0 0 rgba(0,0,238,.0)}50%{box-shadow:0 0 18px 5px rgba(0,0,238,.18)}}
 .assigned-label{font-size:11px;font-weight:600;color:var(--blue-dk);background:var(--blue-lt);border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
 
 
@@ -478,9 +477,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .extras-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;align-items:start;margin-bottom:14px}
 
 /* Extra card distinct style — lighter, subtly different */
-.story-card.is-extra .card-hdr{background:linear-gradient(135deg,#3B3B3B,#555);border-radius:12px 12px 0 0}
+.card-hdr.extra{background:#3B3B3B}
+.card-hdr.extra.has-content{background:#1f1f1f}
+.story-card.is-extra .card-hdr{border-radius:14px 14px 0 0}
 .story-card.is-extra .card-hdr .hdr-type{color:rgba(255,255,255,.7)}
 .story-card.is-extra .card-hdr .hdr-num{color:rgba(255,255,255,.5)}
+.story-card.is-extra .card-hdr.has-content .hdr-num{color:#fff}
 
 /* Add extra button */
 .add-extra-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;
@@ -504,13 +506,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 
 /* Earned badges display */
-.badges-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
-.badge-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
-  padding:4px 12px;border-radius:999px;animation:badgeIn .4s cubic-bezier(.2,.7,.3,1.5)}
-@keyframes badgeIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
-.badge-chip.golden{background:#FFFBEB;border:1px solid #F0E0B0;color:#B8860B}
-.badge-chip.aab{background:#EEF0FF;border:1px solid #CCE;color:var(--blue-dk)}
-.badge-chip .badge-ico{font-size:14px}
+.badges-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;line-height:1;
+  padding:5px 12px;border-radius:999px}
+.badge-chip.golden{background:#FFFBEB;border:0.5px solid #F0E0B0;color:#B8860B}
+.badge-chip.aab{background:#EEF0FF;border:0.5px solid #CCE;color:var(--blue-dk)}
+.badge-chip .badge-ico{font-size:13px;line-height:1}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
