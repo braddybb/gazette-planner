@@ -1154,7 +1154,16 @@ function getMondayOfDate(d) {
   const day = dt.getDay();
   const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
   dt.setDate(diff);
-  return dt.toISOString().slice(0, 10);
+  return toLocalDateStr(dt);
+}
+
+// Format a Date as YYYY-MM-DD using local time (avoids the UTC day-shift
+// that toISOString() introduces for timezones ahead of UTC, e.g. Australia).
+function toLocalDateStr(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return yyyy + '-' + mm + '-' + dd;
 }
 
 // Get the last N Mondays before (and including) the current week
@@ -1164,7 +1173,7 @@ function getLastNWeeks(n) {
   for (let i = 0; i < n; i++) {
     const d = new Date(base);
     d.setDate(d.getDate() - (i * 7));
-    weeks.push(d.toISOString().slice(0, 10));
+    weeks.push(toLocalDateStr(d));
   }
   return weeks.reverse(); // oldest first
 }
