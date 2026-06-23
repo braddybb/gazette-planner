@@ -107,6 +107,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .ppill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 .ppill-imp{background:#1a1a1a;color:#fff;border-color:#333}
 .ppill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
+.ppill-vidfirst{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
+.ppill-vidflip{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
 
 /* ── WEEK PICKER BANNER ── */
 .week-banner{background:var(--blue-lt);border-bottom:1px solid #AABBEE;padding:.75rem 2rem;display:flex;align-items:center;gap:1rem}
@@ -138,15 +140,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .card-hdr.std{background:#F4F5FB}
 .card-hdr.imp{background:#F3F3F3}
 .card-hdr.life{background:#FBFBEF}
+.card-hdr.vidfirst{background:#FFF3EF}
+.card-hdr.vidflip{background:#F4F0FF}
 .card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:var(--ink)}
 .card-hdr.life.has-content{background:var(--acid)}
+.card-hdr.vidfirst.has-content{background:#D9491E}
+.card-hdr.vidflip.has-content{background:#6D3FD0}
 
 .hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px;transition:color .35s ease}
 /* empty num colours (muted) */
 .hdr-num.std{color:#B9C2E8}
 .hdr-num.imp{color:#C4C4C4}
 .hdr-num.life{color:#C9CB9E}
+.hdr-num.vidfirst{color:#F0BBA0}
+.hdr-num.vidflip{color:#CBB8F0}
 /* filled num colours */
 .card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.imp{color:#fff}
 .card-hdr.has-content .hdr-num.life{color:var(--acid-dk)}
@@ -157,6 +165,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-type.std{color:#A7B0D8}
 .hdr-type.imp{color:#AAA}
 .hdr-type.life{color:#B0B27F}
+.hdr-type.vidfirst{color:#D98860}
+.hdr-type.vidflip{color:#9C84D8}
 .card-hdr.has-content .hdr-type.std{color:#AABBFF}
 .card-hdr.has-content .hdr-type.imp{color:#777}
 .card-hdr.has-content .hdr-type.life{color:var(--acid-dk)}
@@ -166,6 +176,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-preview.std{color:#9AA5D0}
 .hdr-preview.imp{color:#999}
 .hdr-preview.life{color:#A9AB78}
+.hdr-preview.vidfirst{color:#D08560}
+.hdr-preview.vidflip{color:#9580C8}
 .card-hdr.has-content .hdr-preview.std{color:#CCDDFF}
 .card-hdr.has-content .hdr-preview.imp{color:#666}
 .card-hdr.has-content .hdr-preview.life{color:#8B6500}
@@ -175,10 +187,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-pill.std{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.imp{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
+.filed-pill.vidfirst{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.vidflip{background:rgba(255,255,255,.25);color:#fff}
 .filed-pill.show{display:block}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
-.hdr-chev.std,.hdr-chev.imp{color:rgba(255,255,255,.6)}
+.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip{color:rgba(255,255,255,.6)}
 .hdr-chev.life{color:var(--acid-dk)}
 .hdr-chev.open{transform:rotate(180deg)}
 
@@ -210,6 +224,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .clear-slot-btn.del:hover{background:#FFF5F5}
 .send-next-btn{font-size:11px;color:var(--blue-dk);background:var(--blue-lt);border:0.5px solid #AABBEE;border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;font-weight:600}
 .send-next-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* Suggest contacts (Source Tracker integration) */
+.suggest-contacts-wrap{margin-top:-4px;margin-bottom:4px}
+.suggest-contacts-btn{font-size:12px;font-weight:600;color:var(--blue-dk);background:var(--blue-lt);
+  border:0.5px solid #AABBEE;border-radius:7px;padding:6px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.suggest-contacts-btn:hover{background:var(--blue);color:#fff}
+.suggest-contacts-btn:disabled{opacity:.5;cursor:default}
+.suggest-results{margin-top:8px}
+.suggest-results:empty{margin-top:0}
+.suggest-card{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--border);
+  border-radius:9px;padding:10px 12px;margin-bottom:6px;animation:rise .25s ease}
+.suggest-card-info{flex:1;min-width:0}
+.suggest-card-name{font-size:13px;font-weight:700;color:var(--ink)}
+.suggest-card-meta{font-size:11.5px;color:var(--grey-md);margin-top:1px}
+.suggest-card-match{font-size:11px;color:var(--blue-dk);background:var(--blue-lt);border-radius:999px;
+  padding:2px 8px;margin-top:5px;display:inline-block}
+.suggest-card-tier{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:999px;flex-shrink:0;white-space:nowrap}
+.suggest-card-tier.network{background:var(--blue-lt);color:var(--blue-dk)}
+.suggest-card-tier.private{background:#EDEDED;color:var(--grey-dk)}
+.suggest-empty{font-size:12.5px;color:var(--grey-md);padding:6px 2px}
+.suggest-loading{font-size:12.5px;color:var(--grey-md);padding:6px 2px;display:flex;align-items:center;gap:7px}
+.suggest-spin{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .filed-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
 .filed-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#111;cursor:pointer}
 .filed-label input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer}
@@ -582,7 +621,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
     <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
-    <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than 8 stories" style="display:none">&#11088;</span>
+    <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
       <span class="cw-label" id="cw-label">Crossword</span>
@@ -618,6 +657,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       </div>
     </div>
     <div class="prog-pills">
+      <span class="ppill ppill-vidfirst" id="pill-vidfirst" style="display:none">0 / 2 video-first</span>
+      <span class="ppill ppill-vidflip" id="pill-vidflip" style="display:none">0 / 2 video flip</span>
       <span class="ppill ppill-std" id="pill-std">0 / 5 standard</span>
       <span class="ppill ppill-imp" id="pill-imp">0 / 1 impact</span>
       <span class="ppill ppill-life" id="pill-life">0 / 2 lifestyle</span>
@@ -654,7 +695,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   <div class="aab-card">
     <div class="aab-emoji">&#11088;</div>
     <div class="aab-title">Above &amp; Beyond</div>
-    <div class="aab-text" id="aab-text">You filed more than 8 stories this week. That's above and beyond the call — this badge is yours.</div>
+    <div class="aab-text" id="aab-text">You filed more than your weekly expectation this week. That's above and beyond the call — this badge is yours.</div>
     <button class="aab-close" onclick="closeAab()">Keep it up</button>
   </div>
 </div>
@@ -672,6 +713,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 <script>
 
 const SUPA_URL = 'https://asgyshkafnrqknnmkbfo.supabase.co';
+
+// Posts a message to Slack via the slack.js Netlify Function. Failures are
+// deliberately quiet — a Slack hiccup should never interrupt the Planner.
+async function notifySlack(text) {
+  try {
+    await fetch('/.netlify/functions/slack', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+  } catch (e) {
+    console.warn('Slack notification failed (non-critical):', e);
+  }
+}
+
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
 const TABLE = 'planner_stories';
 
@@ -688,15 +744,31 @@ const LS_KEY = 'gz_planner_user';
 
 function getStoryDefs(pub) {
   const isNat = pub && pub.toLowerCase().includes('national');
+  if (isNat) {
+    return [
+      {n:'01',t:'std',lbl:'Story'},
+      {n:'02',t:'std',lbl:'Story'},
+      {n:'03',t:'std',lbl:'Story'},
+      {n:'04',t:'std',lbl:'Story'},
+      {n:'05',t:'imp',lbl:'Impact'},
+      {n:'06',t:'imp',lbl:'Impact'},
+      {n:'07',t:'life',lbl:'YouTube / Podcast'},
+      {n:'08',t:'life',lbl:'YouTube / Podcast'},
+    ];
+  }
+  // Local mastheads: 10 distinct, separately-trackable slots — itemised so
+  // nothing (especially the video flips) can quietly slip through.
   return [
-    {n:'01',t:'std',lbl:'Story'},
-    {n:'02',t:'std',lbl:'Story'},
-    {n:'03',t:'std',lbl:'Story'},
-    {n:'04',t:'std',lbl:'Story'},
-    {n:'05',t: isNat ? 'imp' : 'std', lbl: isNat ? 'Impact' : 'Story'},
-    {n:'06',t:'imp',lbl:'Impact'},
-    {n:'07',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
-    {n:'08',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
+    {n:'01',t:'vidfirst',lbl:'Video-first'},
+    {n:'02',t:'vidfirst',lbl:'Video-first'},
+    {n:'03',t:'vidflip', lbl:'Video flip'},
+    {n:'04',t:'vidflip', lbl:'Video flip'},
+    {n:'05',t:'std',lbl:'Story'},
+    {n:'06',t:'std',lbl:'Story'},
+    {n:'07',t:'std',lbl:'Story'},
+    {n:'08',t:'std',lbl:'Story'},
+    {n:'09',t:'imp',lbl:'Impact'},
+    {n:'10',t:'life',lbl:'Lifestyle / Culture'},
   ];
 }
 let STORIES = getStoryDefs(null);
@@ -969,17 +1041,19 @@ function renderGrid() {
 }
 
 function getExtras() {
+  const baseCount = STORIES.length; // 8 for National Account, 10 for local mastheads
   const extras = [];
   Object.keys(DATA).forEach(num => {
-    if (parseInt(num, 10) > 8 && DATA[num]) extras.push({ num, data: DATA[num] });
+    if (parseInt(num, 10) > baseCount && DATA[num]) extras.push({ num, data: DATA[num] });
   });
   extras.sort((a,b) => parseInt(a.num) - parseInt(b.num));
   return extras;
 }
 
 function nextExtraNum() {
-  const used = Object.keys(DATA).map(n => parseInt(n, 10)).filter(n => n > 8);
-  return String(Math.max(9, ...used.map(n => n + 1))).padStart(2, '0');
+  const baseCount = STORIES.length;
+  const used = Object.keys(DATA).map(n => parseInt(n, 10)).filter(n => n > baseCount);
+  return String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0');
 }
 
 function renderExtras(container) {
@@ -1121,6 +1195,14 @@ function buildCard(s, i, isExtra) {
     '<div class="cf"><div class="cl">Notes / sources</div><textarea placeholder="Key sources, contacts..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea></div>';
   body.appendChild(anDiv);
 
+  // Suggest contacts — pulls keyword/suburb matches from the Source Tracker
+  const sgDiv = document.createElement('div');
+  sgDiv.className = 'suggest-contacts-wrap';
+  sgDiv.innerHTML =
+    '<button class="suggest-contacts-btn" onclick="suggestContacts(\'' + s.n + '\')">&#128100; Suggest contacts</button>' +
+    '<div class="suggest-results" id="suggest-' + s.n + '"></div>';
+  body.appendChild(sgDiv);
+
   // Format + Word count + File by (shown as "Record day" for National Account)
   const isNat = USER && USER.pub && USER.pub.toLowerCase().includes('national');
   const fileByLabel = isNat ? 'Record day' : 'File by';
@@ -1174,7 +1256,7 @@ function buildCard(s, i, isExtra) {
   filedTime.className = 'filed-time';
   filedTime.id = 'filedtime-' + s.n;
   filedTime.textContent = filed ? timeAgo(getFiledTimes()[s.n]) : '';
-  const isExtraCard = parseInt(s.n, 10) > 8;
+  const isExtraCard = parseInt(s.n, 10) > STORIES.length;
   const clearBtn = document.createElement('button');
   clearBtn.className = 'clear-slot-btn' + (isExtraCard ? ' del' : '');
   clearBtn.textContent = isExtraCard ? 'Delete' : 'Clear slot';
@@ -1480,9 +1562,10 @@ async function sendToNextWeek(num, e) {
   const dd = String(cur.getDate()).padStart(2, '0');
   const nextWeek = `${yyyy}-${mm}-${dd}`;
 
-  // Figure out the destination slot: same number if it's a base slot (1-8)
-  // and free; if occupied, or if it's an extra, append as a new extra in
-  // next week. We check what's already filed for next week first.
+  // Figure out the destination slot: same number if it's a base slot and
+  // free; if occupied, or if it's an extra, append as a new extra in next
+  // week. We check what's already filed for next week first.
+  const baseCount = STORIES.length; // 8 for National Account, 10 for local mastheads
   let destNum = num;
   try {
     const existing = await supaFetch('GET',
@@ -1490,10 +1573,10 @@ async function sendToNextWeek(num, e) {
     ) || [];
     const usedNums = existing.map(r => r.story_num);
     const destTaken = existing.find(r => r.story_num === num && r.headline);
-    if (parseInt(num, 10) > 8 || destTaken) {
+    if (parseInt(num, 10) > baseCount || destTaken) {
       // find next free extra slot in the destination week
-      const usedHigh = usedNums.map(n => parseInt(n, 10)).filter(n => n > 8);
-      destNum = String(Math.max(9, ...usedHigh.map(n => n + 1), 9)).padStart(2, '0');
+      const usedHigh = usedNums.map(n => parseInt(n, 10)).filter(n => n > baseCount);
+      destNum = String(Math.max(baseCount + 1, ...usedHigh.map(n => n + 1), baseCount + 1)).padStart(2, '0');
     }
   } catch (err) {
     console.warn('Could not check destination week, using same slot:', err);
@@ -1521,7 +1604,7 @@ async function sendToNextWeek(num, e) {
   try {
     await upsertRow(row);
     // Clear/remove the current card now that it has moved on
-    if (parseInt(num, 10) > 8) {
+    if (parseInt(num, 10) > baseCount) {
       await deleteExtraSilent(num);
     } else {
       DATA[num] = blankStory(num);
@@ -1734,36 +1817,55 @@ const RING_CIRC = 175.93; // 2*pi*28
 function updateProgress(opts) {
   opts = opts || {};
   const stories = STORIES.map(s => getStory(s.n));
+  const baseCount = STORIES.length; // 8 for National Account, 10 for local mastheads
   const baseTotal = stories.filter(s => s.filed).length;
 
   // Counts + denominators derived from STORIES' actual types — not fixed
-  // indices — so a publication like National Account (which has a
-  // different std/impact split) reports correctly.
-  const stdIdx  = STORIES.reduce((a,s,i) => s.t === 'std'  ? a.concat(i) : a, []);
-  const impIdx  = STORIES.reduce((a,s,i) => s.t === 'imp'  ? a.concat(i) : a, []);
-  const lifeIdx = STORIES.reduce((a,s,i) => s.t === 'life' ? a.concat(i) : a, []);
-  const std  = stdIdx.filter(i => stories[i].filed).length;
-  const imp  = impIdx.filter(i => stories[i].filed).length;
-  const life = lifeIdx.filter(i => stories[i].filed).length;
+  // indices or a fixed total — so each publication's own shape (including
+  // the local 10-card video-first/video-flip structure) reports correctly.
+  const typeIdx = t => STORIES.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
+  const vfIdx   = typeIdx('vidfirst');
+  const flipIdx = typeIdx('vidflip');
+  const stdIdx  = typeIdx('std');
+  const impIdx  = typeIdx('imp');
+  const lifeIdx = typeIdx('life');
+  const vf    = vfIdx.filter(i => stories[i].filed).length;
+  const flip  = flipIdx.filter(i => stories[i].filed).length;
+  const std   = stdIdx.filter(i => stories[i].filed).length;
+  const imp   = impIdx.filter(i => stories[i].filed).length;
+  const life  = lifeIdx.filter(i => stories[i].filed).length;
 
   // Count extras filed too
   const extras = getExtras();
   const extrasFiled = extras.filter(e => e.data.filed).length;
   const grandTotal = baseTotal + extrasFiled;
 
-  const pct = Math.round(Math.min(baseTotal / 8, 1) * 100);
+  const pct = Math.round(Math.min(baseTotal / baseCount, 1) * 100);
 
   // Display: show grand total if there are extras, otherwise just base
   document.getElementById('prog-count').textContent = grandTotal;
   document.getElementById('prog-pct').textContent   = pct + '%';
+  const progLabel = document.querySelector('.prog-label');
+  if (progLabel) progLabel.textContent = 'of ' + baseCount + ' filed this week';
 
-  // Ring: based on base 8 only
+  // Ring: based on the reporter's own base total
   const ring = document.getElementById('prog-ring-fill');
   if (ring) {
-    ring.style.strokeDashoffset = RING_CIRC * (1 - Math.min(baseTotal / 8, 1));
-    ring.classList.toggle('complete', baseTotal >= 8);
+    ring.style.strokeDashoffset = RING_CIRC * (1 - Math.min(baseTotal / baseCount, 1));
+    ring.classList.toggle('complete', baseTotal >= baseCount);
   }
 
+  // Video-first / video-flip pills only show for publications that have them
+  const pillVf = document.getElementById('pill-vidfirst');
+  const pillFlip = document.getElementById('pill-vidflip');
+  if (pillVf) {
+    pillVf.style.display = vfIdx.length ? 'inline-flex' : 'none';
+    pillVf.textContent = vf + ' / ' + vfIdx.length + ' video-first';
+  }
+  if (pillFlip) {
+    pillFlip.style.display = flipIdx.length ? 'inline-flex' : 'none';
+    pillFlip.textContent = flip + ' / ' + flipIdx.length + ' video flip';
+  }
   document.getElementById('pill-std').textContent   = std + ' / ' + stdIdx.length + ' standard';
   document.getElementById('pill-imp').textContent   = imp + ' / ' + impIdx.length + ' impact';
   const lifeLabel = (USER && USER.pub && USER.pub.toLowerCase().includes('national')) ? 'youtube / podcast' : 'lifestyle';
@@ -1775,14 +1877,14 @@ function updateProgress(opts) {
   // Personal best (always track, even silent)
   const pbMsg = updatePB(grandTotal);
 
-  // Celebration on reaching 8/8 base
-  if (baseTotal === 8 && _progressInitialised && _lastFiledCount < 8 && !opts.silent) {
+  // Celebration on reaching the full base count
+  if (baseTotal === baseCount && _progressInitialised && _lastFiledCount < baseCount && !opts.silent) {
     celebrateComplete(pbMsg);
     bumpStreak();
   }
 
-  // Above & Beyond: filed more than 8 total (first time crossing the threshold this session)
-  if (grandTotal > 8 && _progressInitialised && _lastFiledCount <= 8 && !opts.silent) {
+  // Above & Beyond: filed more than the base total (first time crossing the threshold this session)
+  if (grandTotal > baseCount && _progressInitialised && _lastFiledCount <= baseCount && !opts.silent) {
     awardAboveBeyond();
   }
 
@@ -1814,12 +1916,13 @@ function getPB() {
 }
 function updatePB(filedCount) {
   const pb = getPB();
+  const baseCount = STORIES.length;
   let changed = false, msg = null;
   if (filedCount > pb.mostFiled) {
     pb.mostFiled = filedCount; changed = true;
   }
-  // earliest day to hit 8/8
-  if (filedCount === 8) {
+  // earliest day to hit a full week
+  if (filedCount === baseCount) {
     const dayIdx = new Date().getDay(); // 0 Sun .. 6 Sat
     const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dayIdx];
     if (pb.earliestDay === null || dayIdx < pb.earliestDay || pb.earliestDay === 0) {
@@ -1844,14 +1947,15 @@ function maybeShowReflection() {
   if (day < 4) return;
   if (localStorage.getItem(reflectionKey())) return; // shown already this week
   const stories = STORIES.map(s => getStory(s.n));
+  const baseCount = STORIES.length;
   const filed = stories.filter(s => s.filed).length;
   if (filed === 0) return; // nothing to reflect on
   const pb = getPB();
   let line;
-  if (filed === 8) {
-    line = "You filed all 8 this week. That's a complete week \u2014 genuinely strong.";
+  if (filed === baseCount) {
+    line = "You filed all " + baseCount + " this week. That's a complete week \u2014 genuinely strong.";
   } else {
-    line = "You filed " + filed + " of 8 this week.";
+    line = "You filed " + filed + " of " + baseCount + " this week.";
     // add an encouraging comparison if it ties or beats personal best
     if (filed >= pb.mostFiled && pb.mostFiled > 0) line += " That matches your best run.";
   }
@@ -1942,10 +2046,10 @@ function playCompleteChime() {
 
 const CELEBRATE_MESSAGES = [
   { emoji:'\uD83C\uDF89', title:'Week complete!', sub:'Every story filed. Big effort \u2014 nicely done.' },
-  { emoji:'\u2705', title:'That\'s a wrap', sub:'All eight in. You\'ve earned the weekend.' },
+  { emoji:'\u2705', title:'That\'s a wrap', sub:'Everything\'s in. You\'ve earned the weekend.' },
   { emoji:'\uD83D\uDD25', title:'Full house', sub:'Everything filed. This is what a strong week looks like.' },
   { emoji:'\u2B50', title:'All done', sub:'Every slot filed. Genuinely great work this week.' },
-  { emoji:'\uD83D\uDE80', title:'Cleared the board', sub:'Eight for eight. Momentum is a beautiful thing.' },
+  { emoji:'\uD83D\uDE80', title:'Cleared the board', sub:'Every story in. Momentum is a beautiful thing.' },
 ];
 function celebrateComplete(pbLine) {
   const overlay = document.getElementById('celebrate-overlay');
@@ -2153,6 +2257,7 @@ function awardAboveBeyond(){
   a.weeks.push(wk);
   a.count = (a.count || 0) + 1;
   localStorage.setItem(aabKey(), JSON.stringify(a));
+  if (USER) notifySlack(':star2: *' + USER.name + '* just went above and beyond \u2014 filed more than their weekly expectation!');
   // Show award with confetti
   try {
     const overlay = document.getElementById('celebrate-overlay');
@@ -2173,7 +2278,8 @@ function awardAboveBeyond(){
   // Show the modal
   const txt = document.getElementById('aab-text');
   if(txt){
-    txt.innerHTML = 'You filed more than 8 stories this week. That\'s above and beyond the call — this star is yours for the week.' +
+    const baseCount = STORIES.length;
+    txt.innerHTML = 'You filed more than ' + baseCount + ' stories this week. That\'s above and beyond the call — this star is yours for the week.' +
       (a.count > 1 ? ' That\'s <strong>' + a.count + ' times</strong> you\'ve gone above and beyond.' : '');
   }
   setTimeout(() => { document.getElementById('aab-award').classList.add('show'); }, 500);
@@ -2215,6 +2321,7 @@ function awardGolden(){
   g.streak = (g.streak || 0) + 1;
   g.lastWeek = wk;
   localStorage.setItem(ggKey(), JSON.stringify(g));
+  if (USER) notifySlack(':handshake: *' + USER.name + '* just solved this week\'s Friday crossword and earned the Golden Gazette!');
   return true;
 }
 
@@ -2250,10 +2357,24 @@ function openCrossword(){
     renderCwClues();
     const f = CW_PUZZLE.cells.find(c=>c.num===1);
     if(f) cwFocus(f.r,f.c);
+    announceCrosswordUnlockOnce();
   }
   document.getElementById('cw-overlay').classList.add('show');
 }
 function closeCrossword(){ document.getElementById('cw-overlay').classList.remove('show'); }
+
+// Best-effort single Slack ping per Friday — the first reporter to open
+// the crossword that day triggers it. Not a perfect single-fire guarantee
+// across the whole team, but harmless if it fires more than once.
+function announceCrosswordUnlockOnce(){
+  const today = new Date().toISOString().slice(0,10);
+  const key = 'gz_cw_announced_' + today;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, '1');
+  if (typeof notifySlack === 'function') {
+    notifySlack(':crossword: This week\'s Friday crossword just unlocked in the Planner \u2014 first one to finish earns the Golden Gazette \uD83E\uDD1D');
+  }
+}
 
 function renderLocked(){
   // days until Friday
@@ -2444,6 +2565,82 @@ function closeAward(){ document.getElementById('gg-award').classList.remove('sho
 document.getElementById('cw-overlay').addEventListener('click', e=>{ if(e.target.id==='cw-overlay') closeCrossword(); });
 document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.id==='gg-award') closeAward(); });
 
+
+
+// ══════════════════════════════════════════
+//  SOURCE TRACKER INTEGRATION — "Suggest contacts"
+// ══════════════════════════════════════════
+const CONTACTS_TABLE = 'contacts';
+
+// Pull a rough set of keywords out of the story's own text fields —
+// headline, angle, notes — to match against contacts' topics/suburb.
+function extractStoryKeywords(num) {
+  const st = DATA[num] || {};
+  const text = [st.headline, st.angle, st.notes].filter(Boolean).join(' ').toLowerCase();
+  const stopwords = new Set(['the','a','an','and','or','of','to','in','on','for','with','is','are',
+    'was','were','at','by','from','this','that','it','as','be','has','have','will','what','about',
+    'into','over','after','before','their','its']);
+  const words = text.replace(/[^\w\s-]/g, ' ').split(/\s+/).map(w => w.trim()).filter(w => w.length > 2 && !stopwords.has(w));
+  return Array.from(new Set(words));
+}
+
+async function suggestContacts(num) {
+  const resultsEl = document.getElementById('suggest-' + num);
+  const btn = document.querySelector('#card-' + num + ' .suggest-contacts-btn');
+  if (!resultsEl) return;
+
+  const keywords = extractStoryKeywords(num);
+  if (!keywords.length) {
+    resultsEl.innerHTML = '<div class="suggest-empty">Add a headline, angle or notes first \u2014 Suggest contacts works from what you\'ve written so far.</div>';
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  resultsEl.innerHTML = '<div class="suggest-loading"><span class="suggest-spin"></span> Checking your Source Tracker...</div>';
+
+  try {
+    const mine = await supaFetch('GET',
+      `${CONTACTS_TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&select=*`
+    ) || [];
+    const shared = await supaFetch('GET',
+      `${CONTACTS_TABLE}?tier=eq.network&reporter=neq.${encodeURIComponent(USER.name)}&select=*`
+    ) || [];
+    const seen = {}; const all = [];
+    mine.concat(shared).forEach(c => { if (!seen[c.id]) { seen[c.id] = 1; all.push(c); } });
+
+    const scored = all.map(c => {
+      const haystack = [(c.topics||''), (c.suburb||''), (c.role||''), (c.organisation||'')].join(' ').toLowerCase();
+      const matched = keywords.filter(k => haystack.includes(k));
+      return { contact: c, score: matched.length, matched };
+    }).filter(x => x.score > 0);
+
+    scored.sort((a, b) => b.score - a.score);
+    const top = scored.slice(0, 4);
+
+    if (!top.length) {
+      resultsEl.innerHTML = '<div class="suggest-empty">No matches in your Source Tracker yet for this story. Add a contact once you find one worth keeping.</div>';
+    } else {
+      resultsEl.innerHTML = top.map(({contact, matched}) => {
+        const mine2 = contact.reporter === USER.name && contact.publication === USER.pub;
+        const detail = [contact.role, contact.organisation, contact.suburb].filter(Boolean).join(' \u00b7 ');
+        const sharedBy = !mine2 ? ' \u00b7 shared by ' + esc(contact.reporter) : '';
+        return '<div class="suggest-card">' +
+          '<div class="suggest-card-info">' +
+            '<div class="suggest-card-name">' + esc(contact.name) + '</div>' +
+            (detail ? '<div class="suggest-card-meta">' + esc(detail) + sharedBy + '</div>' : '') +
+            '<span class="suggest-card-match">matches: ' + matched.slice(0,3).map(esc).join(', ') + '</span>' +
+          '</div>' +
+          '<span class="suggest-card-tier ' + (mine2 && contact.tier === 'private' ? 'private' : 'network') + '">' + (mine2 ? esc(contact.tier) : 'network') + '</span>' +
+        '</div>';
+      }).join('');
+    }
+  } catch (err) {
+    resultsEl.innerHTML = '<div class="suggest-empty">Couldn\'t reach the Source Tracker. Try again in a moment.</div>';
+    console.error('suggestContacts failed:', err);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
 </script>
 </body>
