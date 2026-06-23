@@ -109,6 +109,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .ppill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
 .ppill-vidfirst{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
 .ppill-vidflip{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
+.ppill-l2n{background:#DFF5F2;color:#0D6E63;border-color:#A8E0D6}
+.ppill-original{background:#FDE4ED;color:#B0265A;border-color:#F5B8CE}
+.ppill-newsletter{background:#FFF3D6;color:#9A6400;border-color:#F0D898}
+.ppill-poll{background:#E6F0DD;color:#4C7A30;border-color:#C0DCA8}
 
 /* ── WEEK PICKER BANNER ── */
 .week-banner{background:var(--blue-lt);border-bottom:1px solid #AABBEE;padding:.75rem 2rem;display:flex;align-items:center;gap:1rem}
@@ -142,11 +146,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .card-hdr.life{background:#FBFBEF}
 .card-hdr.vidfirst{background:#FFF3EF}
 .card-hdr.vidflip{background:#F4F0FF}
+.card-hdr.l2n{background:#EAFBF8}
+.card-hdr.original{background:#FEF0F5}
+.card-hdr.newsletter{background:#FFF9EC}
+.card-hdr.poll{background:#F0F8EA}
 .card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:var(--ink)}
 .card-hdr.life.has-content{background:var(--acid)}
 .card-hdr.vidfirst.has-content{background:#D9491E}
 .card-hdr.vidflip.has-content{background:#6D3FD0}
+.card-hdr.l2n.has-content{background:#0D8C7D}
+.card-hdr.original.has-content{background:#C23D6C}
+.card-hdr.newsletter.has-content{background:#C99000}
+.card-hdr.poll.has-content{background:#5C9440}
 
 .hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px;transition:color .35s ease}
 /* empty num colours (muted) */
@@ -155,6 +167,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-num.life{color:#C9CB9E}
 .hdr-num.vidfirst{color:#F0BBA0}
 .hdr-num.vidflip{color:#CBB8F0}
+.hdr-num.l2n{color:#9CDDD2}
+.hdr-num.original{color:#F0A8C4}
+.hdr-num.newsletter{color:#E8C878}
+.hdr-num.poll{color:#A8CC90}
 /* filled num colours */
 .card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.imp{color:#fff}
 .card-hdr.has-content .hdr-num.life{color:var(--acid-dk)}
@@ -167,6 +183,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-type.life{color:#B0B27F}
 .hdr-type.vidfirst{color:#D98860}
 .hdr-type.vidflip{color:#9C84D8}
+.hdr-type.l2n{color:#3FA89A}
+.hdr-type.original{color:#D8638C}
+.hdr-type.newsletter{color:#C4A03C}
+.hdr-type.poll{color:#7CAC60}
 .card-hdr.has-content .hdr-type.std{color:#AABBFF}
 .card-hdr.has-content .hdr-type.imp{color:#777}
 .card-hdr.has-content .hdr-type.life{color:var(--acid-dk)}
@@ -178,6 +198,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-preview.life{color:#A9AB78}
 .hdr-preview.vidfirst{color:#D08560}
 .hdr-preview.vidflip{color:#9580C8}
+.hdr-preview.l2n{color:#48A89A}
+.hdr-preview.original{color:#C46888}
+.hdr-preview.newsletter{color:#B89438}
+.hdr-preview.poll{color:#76A058}
 .card-hdr.has-content .hdr-preview.std{color:#CCDDFF}
 .card-hdr.has-content .hdr-preview.imp{color:#666}
 .card-hdr.has-content .hdr-preview.life{color:#8B6500}
@@ -189,10 +213,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .filed-pill.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
 .filed-pill.vidfirst{background:rgba(255,255,255,.25);color:#fff}
 .filed-pill.vidflip{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.l2n{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.original{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.newsletter{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.poll{background:rgba(255,255,255,.25);color:#fff}
 .filed-pill.show{display:block}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
-.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip{color:rgba(255,255,255,.6)}
+.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll{color:rgba(255,255,255,.6)}
 .hdr-chev.life{color:var(--acid-dk)}
 .hdr-chev.open{transform:rotate(180deg)}
 
@@ -238,9 +266,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .suggest-card-info{flex:1;min-width:0}
 .suggest-card-name{font-size:13px;font-weight:700;color:var(--ink)}
 .suggest-card-meta{font-size:11.5px;color:var(--grey-md);margin-top:1px}
-.suggest-card-contact{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
-.suggest-card-link{font-size:11.5px;color:var(--blue-dk);text-decoration:none;white-space:nowrap}
-.suggest-card-link:hover{text-decoration:underline}
 .suggest-card-match{font-size:11px;color:var(--blue-dk);background:var(--blue-lt);border-radius:999px;
   padding:2px 8px;margin-top:5px;display:inline-block}
 .suggest-card-tier{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
@@ -521,6 +546,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 
 /* Assigned story indicator */
+.story-card.is-assigned{border:1.5px solid var(--blue)}
+.story-card.is-assigned .card-hdr{border-left:3px solid var(--blue)}
 .assigned-label{font-size:11px;font-weight:600;color:var(--blue-dk);background:var(--blue-lt);border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
 
 
@@ -660,6 +687,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <div class="prog-pills">
       <span class="ppill ppill-vidfirst" id="pill-vidfirst" style="display:none">0 / 2 video-first</span>
       <span class="ppill ppill-vidflip" id="pill-vidflip" style="display:none">0 / 2 video flip</span>
+      <span class="ppill ppill-l2n" id="pill-l2n" style="display:none">0 / 1 local to national</span>
+      <span class="ppill ppill-original" id="pill-original" style="display:none">0 / 1 original</span>
+      <span class="ppill ppill-newsletter" id="pill-newsletter" style="display:none">0 / 3 newsletter</span>
+      <span class="ppill ppill-poll" id="pill-poll" style="display:none">0 / 3 audience poll</span>
       <span class="ppill ppill-std" id="pill-std">0 / 5 standard</span>
       <span class="ppill ppill-imp" id="pill-imp">0 / 1 impact</span>
       <span class="ppill ppill-life" id="pill-life">0 / 2 lifestyle</span>
@@ -746,15 +777,21 @@ const LS_KEY = 'gz_planner_user';
 function getStoryDefs(pub) {
   const isNat = pub && pub.toLowerCase().includes('national');
   if (isNat) {
+    // National Account: 12 distinct slots reflecting the full weekly remit
+    // across verticals, video, newsletters and audience polls.
     return [
-      {n:'01',t:'std',lbl:'Story'},
-      {n:'02',t:'std',lbl:'Story'},
-      {n:'03',t:'std',lbl:'Story'},
-      {n:'04',t:'std',lbl:'Story'},
-      {n:'05',t:'imp',lbl:'Impact'},
-      {n:'06',t:'imp',lbl:'Impact'},
-      {n:'07',t:'life',lbl:'YouTube / Podcast'},
-      {n:'08',t:'life',lbl:'YouTube / Podcast'},
+      {n:'01',t:'l2n',lbl:'Local to National'},
+      {n:'02',t:'original',lbl:'Original'},
+      {n:'03',t:'imp',lbl:'Impact'},
+      {n:'04',t:'imp',lbl:'Impact'},
+      {n:'05',t:'life',lbl:'YouTube / Podcast'},
+      {n:'06',t:'life',lbl:'YouTube / Podcast'},
+      {n:'07',t:'newsletter',lbl:'Newsletter'},
+      {n:'08',t:'newsletter',lbl:'Newsletter'},
+      {n:'09',t:'newsletter',lbl:'Newsletter'},
+      {n:'10',t:'poll',lbl:'Audience Poll'},
+      {n:'11',t:'poll',lbl:'Audience Poll'},
+      {n:'12',t:'poll',lbl:'Audience Poll'},
     ];
   }
   // Local mastheads: 10 distinct, separately-trackable slots — itemised so
@@ -1171,22 +1208,52 @@ function buildCard(s, i, isExtra) {
     body.appendChild(banner);
   }
 
-  // Headline
+  // Headline — relabelled for poll/newsletter cards
+  const isPoll = s.t === 'poll';
+  const isNewsletter = s.t === 'newsletter';
+  const hlLabel = isPoll ? 'Poll question' : (isNewsletter ? 'Subject line' : 'Headline idea');
+  const hlPlaceholder = isPoll ? 'What are you asking the audience?' : (isNewsletter ? 'The newsletter subject line...' : 'The headline or story idea...');
   const hlDiv = document.createElement('div');
   hlDiv.className = 'cf';
-  hlDiv.innerHTML = '<div class="cl">Headline idea</div>';
+  hlDiv.innerHTML = '<div class="cl">' + hlLabel + '</div>';
   const hlInput = document.createElement('input');
   hlInput.type = 'text';
-  hlInput.placeholder = 'The headline or story idea...';
+  hlInput.placeholder = hlPlaceholder;
   hlInput.value = st.headline || '';
   hlInput.oninput = function() { fieldUpdate(s.n, 'headline', this.value); checkHeadlineNudge(s.n, this.value); };
   hlDiv.appendChild(hlInput);
-  // Headline nudge (hidden by default, shown if too vague)
-  const hlNudge = document.createElement('div');
-  hlNudge.className = 'hl-nudge';
-  hlNudge.id = 'hl-nudge-' + s.n;
-  hlDiv.appendChild(hlNudge);
+  // Headline nudge (hidden by default, shown if too vague) — not relevant for polls
+  if (!isPoll) {
+    const hlNudge = document.createElement('div');
+    hlNudge.className = 'hl-nudge';
+    hlNudge.id = 'hl-nudge-' + s.n;
+    hlDiv.appendChild(hlNudge);
+  }
   body.appendChild(hlDiv);
+
+  // Poll cards: just the question (above) + notes, then straight to Filed.
+  if (isPoll) {
+    const notesDiv = document.createElement('div');
+    notesDiv.className = 'cf';
+    notesDiv.innerHTML = '<div class="cl">Notes</div><textarea placeholder="Platform, context, what you\'re hoping to learn..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea>';
+    body.appendChild(notesDiv);
+  }
+  // Newsletter cards: subject line (above) + notes + send day. No format,
+  // word count, to-do, or distribution checklist — those don't apply.
+  else if (isNewsletter) {
+    const notesDiv = document.createElement('div');
+    notesDiv.className = 'cf';
+    notesDiv.innerHTML = '<div class="cl">Notes</div><textarea placeholder="What\'s in this edition..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea>';
+    body.appendChild(notesDiv);
+    const sendDiv = document.createElement('div');
+    sendDiv.className = 'cf';
+    sendDiv.innerHTML = '<div class="cl">Send day</div><div class="cxgroup">' +
+      DAYS.map(d => '<label><input type="radio" name="day' + s.n + '" value="' + d + '" ' + (st.file_day === d ? 'checked' : '') + ' onchange="fieldUpdate(\'' + s.n + '\',\'file_day\',\'' + d + '\')"> ' + d + '</label>').join('') +
+      '</div>';
+    body.appendChild(sendDiv);
+  }
+  // Every other card type keeps the full set of fields.
+  else {
 
   // Angle + Notes
   const anDiv = document.createElement('div');
@@ -1237,6 +1304,8 @@ function buildCard(s, i, isExtra) {
     postItemsForCard.map(p => '<label><input type="checkbox" value="' + p + '" ' + ((st.posted||[]).includes(p) ? 'checked' : '') + ' onchange="arrUpdate(\'' + s.n + '\',\'posted\',\'' + p + '\',this.checked)"> ' + p + '</label>').join('') +
     '</div>';
   body.appendChild(ptDiv);
+
+  } // end of "every other card type" branch
 
   // Filed row
   const filedRow = document.createElement('div');
@@ -1450,8 +1519,16 @@ const DIST_REQUIRED = {
 function setFiled(num, checked) {
   if (!DATA[num]) DATA[num] = blankStory(num);
 
-  // ── Distribution gate: only when trying to FILE (not unfile) ──
-  if (checked) {
+  // Figure out this card's type — poll and newsletter cards are exempt
+  // from the distribution gate entirely; they're not "stories" in the
+  // sense that gate was built for.
+  const cardDef = STORIES.find(s => s.n === num) || (getExtras().find(e => e.num === num) ? {t: (DATA[num].assigned_by ? 'imp' : 'std')} : null);
+  const cardType = cardDef ? cardDef.t : null;
+  const exemptFromDist = cardType === 'poll' || cardType === 'newsletter';
+
+  // ── Distribution gate: only when trying to FILE (not unfile), and only
+  // for card types the gate actually applies to ──
+  if (checked && !exemptFromDist) {
     const st = DATA[num];
     const fmt = st.format;
 
@@ -1823,18 +1900,27 @@ function updateProgress(opts) {
 
   // Counts + denominators derived from STORIES' actual types — not fixed
   // indices or a fixed total — so each publication's own shape (including
-  // the local 10-card video-first/video-flip structure) reports correctly.
+  // the local 10-card video-first/video-flip structure, and National
+  // Account's 12-card structure) reports correctly.
   const typeIdx = t => STORIES.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
   const vfIdx   = typeIdx('vidfirst');
   const flipIdx = typeIdx('vidflip');
   const stdIdx  = typeIdx('std');
   const impIdx  = typeIdx('imp');
   const lifeIdx = typeIdx('life');
+  const l2nIdx  = typeIdx('l2n');
+  const origIdx = typeIdx('original');
+  const nlIdx   = typeIdx('newsletter');
+  const pollIdx = typeIdx('poll');
   const vf    = vfIdx.filter(i => stories[i].filed).length;
   const flip  = flipIdx.filter(i => stories[i].filed).length;
   const std   = stdIdx.filter(i => stories[i].filed).length;
   const imp   = impIdx.filter(i => stories[i].filed).length;
   const life  = lifeIdx.filter(i => stories[i].filed).length;
+  const l2n   = l2nIdx.filter(i => stories[i].filed).length;
+  const orig  = origIdx.filter(i => stories[i].filed).length;
+  const nl    = nlIdx.filter(i => stories[i].filed).length;
+  const poll  = pollIdx.filter(i => stories[i].filed).length;
 
   // Count extras filed too
   const extras = getExtras();
@@ -1867,10 +1953,43 @@ function updateProgress(opts) {
     pillFlip.style.display = flipIdx.length ? 'inline-flex' : 'none';
     pillFlip.textContent = flip + ' / ' + flipIdx.length + ' video flip';
   }
-  document.getElementById('pill-std').textContent   = std + ' / ' + stdIdx.length + ' standard';
-  document.getElementById('pill-imp').textContent   = imp + ' / ' + impIdx.length + ' impact';
+  // National Account's pills — only show when those types exist for this pub
+  const pillL2n = document.getElementById('pill-l2n');
+  const pillOrig = document.getElementById('pill-original');
+  const pillNl = document.getElementById('pill-newsletter');
+  const pillPoll = document.getElementById('pill-poll');
+  if (pillL2n) {
+    pillL2n.style.display = l2nIdx.length ? 'inline-flex' : 'none';
+    pillL2n.textContent = l2n + ' / ' + l2nIdx.length + ' local to national';
+  }
+  if (pillOrig) {
+    pillOrig.style.display = origIdx.length ? 'inline-flex' : 'none';
+    pillOrig.textContent = orig + ' / ' + origIdx.length + ' original';
+  }
+  if (pillNl) {
+    pillNl.style.display = nlIdx.length ? 'inline-flex' : 'none';
+    pillNl.textContent = nl + ' / ' + nlIdx.length + ' newsletter';
+  }
+  if (pillPoll) {
+    pillPoll.style.display = pollIdx.length ? 'inline-flex' : 'none';
+    pillPoll.textContent = poll + ' / ' + pollIdx.length + ' audience poll';
+  }
+  const pillStd = document.getElementById('pill-std');
+  if (pillStd) {
+    pillStd.style.display = stdIdx.length ? 'inline-flex' : 'none';
+    pillStd.textContent = std + ' / ' + stdIdx.length + ' standard';
+  }
+  const pillImp = document.getElementById('pill-imp');
+  if (pillImp) {
+    pillImp.style.display = impIdx.length ? 'inline-flex' : 'none';
+    pillImp.textContent = imp + ' / ' + impIdx.length + ' impact';
+  }
   const lifeLabel = (USER && USER.pub && USER.pub.toLowerCase().includes('national')) ? 'youtube / podcast' : 'lifestyle';
-  document.getElementById('pill-life').textContent  = life + ' / ' + lifeIdx.length + ' ' + lifeLabel;
+  const pillLife = document.getElementById('pill-life');
+  if (pillLife) {
+    pillLife.style.display = lifeIdx.length ? 'inline-flex' : 'none';
+    pillLife.textContent = life + ' / ' + lifeIdx.length + ' ' + lifeLabel;
+  }
 
   // Week-at-a-glance dots
   renderGlanceDots(stories);
@@ -2625,15 +2744,10 @@ async function suggestContacts(num) {
         const mine2 = contact.reporter === USER.name && contact.publication === USER.pub;
         const detail = [contact.role, contact.organisation, contact.suburb].filter(Boolean).join(' \u00b7 ');
         const sharedBy = !mine2 ? ' \u00b7 shared by ' + esc(contact.reporter) : '';
-        const contactBits = [];
-        if (contact.phone) contactBits.push('<a class="suggest-card-link" href="tel:' + esc(contact.phone) + '">&#128222; ' + esc(contact.phone) + '</a>');
-        if (contact.email) contactBits.push('<a class="suggest-card-link" href="mailto:' + esc(contact.email) + '">&#9993; ' + esc(contact.email) + '</a>');
-        const contactRow = contactBits.length ? '<div class="suggest-card-contact">' + contactBits.join('') + '</div>' : '';
         return '<div class="suggest-card">' +
           '<div class="suggest-card-info">' +
             '<div class="suggest-card-name">' + esc(contact.name) + '</div>' +
             (detail ? '<div class="suggest-card-meta">' + esc(detail) + sharedBy + '</div>' : '') +
-            contactRow +
             '<span class="suggest-card-match">matches: ' + matched.slice(0,3).map(esc).join(', ') + '</span>' +
           '</div>' +
           '<span class="suggest-card-tier ' + (mine2 && contact.tier === 'private' ? 'private' : 'network') + '">' + (mine2 ? esc(contact.tier) : 'network') + '</span>' +
