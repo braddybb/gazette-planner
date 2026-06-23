@@ -1135,8 +1135,13 @@ async function saveAssignment() {
   }
 }
 
-document.getElementById('assign-overlay').addEventListener('click', e => {
-  if (e.target.id === 'assign-overlay') closeAssign();
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('assign-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', e => {
+      if (e.target.id === 'assign-overlay') closeAssign();
+    });
+  }
 });
 
 // ══════════════════════════════════════════
