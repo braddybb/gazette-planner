@@ -94,6 +94,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rpill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 .rpill-imp{background:#1a1a1a;color:#fff;border-color:#333}
 .rpill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
+.rpill-vidfirst{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
+.rpill-vidflip{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
 .rep-stories{padding:0}
 .story-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:0.5px solid var(--border)}
 .story-row:last-child{border-bottom:none}
@@ -102,6 +104,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dot-std{background:var(--blue)}
 .dot-imp{background:var(--ink)}
 .dot-life{background:var(--acid-dk)}
+.dot-vidfirst{background:#D9491E}
+.dot-vidflip{background:#6D3FD0}
 .story-headline{font-size:13px;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-headline.empty{color:var(--grey-md);font-style:italic}
 .story-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -337,15 +341,30 @@ const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
 
 function getStoryDefs(pub) {
   const isNat = pub && pub.toLowerCase().includes('national');
+  if (isNat) {
+    return [
+      {n:'01',t:'std',lbl:'Story'},
+      {n:'02',t:'std',lbl:'Story'},
+      {n:'03',t:'std',lbl:'Story'},
+      {n:'04',t:'std',lbl:'Story'},
+      {n:'05',t:'imp',lbl:'Impact'},
+      {n:'06',t:'imp',lbl:'Impact'},
+      {n:'07',t:'life',lbl:'YouTube / Podcast'},
+      {n:'08',t:'life',lbl:'YouTube / Podcast'},
+    ];
+  }
+  // Local mastheads: 10 distinct, separately-trackable slots
   return [
-    {n:'01',t:'std',lbl:'Story'},
-    {n:'02',t:'std',lbl:'Story'},
-    {n:'03',t:'std',lbl:'Story'},
-    {n:'04',t:'std',lbl:'Story'},
+    {n:'01',t:'vidfirst',lbl:'Video-first'},
+    {n:'02',t:'vidfirst',lbl:'Video-first'},
+    {n:'03',t:'vidflip', lbl:'Video flip'},
+    {n:'04',t:'vidflip', lbl:'Video flip'},
     {n:'05',t:'std',lbl:'Story'},
-    {n:'06',t:'imp',lbl:'Impact'},
-    {n:'07',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
-    {n:'08',t:'life',lbl: isNat ? 'YouTube / Podcast' : 'Lifestyle / Culture'},
+    {n:'06',t:'std',lbl:'Story'},
+    {n:'07',t:'std',lbl:'Story'},
+    {n:'08',t:'std',lbl:'Story'},
+    {n:'09',t:'imp',lbl:'Impact'},
+    {n:'10',t:'life',lbl:'Lifestyle / Culture'},
   ];
 }
 const STORY_DEFS = getStoryDefs(null);
@@ -593,10 +612,11 @@ function toggleEcalWhy(i) {
 function renderNetworkBar() {
   const bar = document.getElementById('network-bar');
   let totalFiled = 0;
-  let totalStories = REPORTERS.length * 8;
+  let totalStories = 0;
   REPORTERS.forEach(r => {
     const data = getReporterData(r.name, r.pub);
     totalFiled += getFiledCount(data);
+    totalStories += getStoryDefs(r.pub).length; // 8 for National Account, 10 for local mastheads
   });
   const pct = Math.round(totalFiled / totalStories * 100);
   function fmtWk(ds) {
@@ -647,7 +667,7 @@ function renderGrid() {
     const header = document.createElement('div');
     header.className = 'region-header';
     const filedTotal = inRegion.reduce((sum, r) => sum + getFiledCount(getReporterData(r.name, r.pub)), 0);
-    const possibleTotal = inRegion.length * 8;
+    const possibleTotal = inRegion.reduce((sum, r) => sum + getStoryDefs(r.pub).length, 0);
     header.innerHTML = '<span class="region-name">' + esc(region) + '</span>' +
       '<span class="region-count">' + filedTotal + ' / ' + possibleTotal + ' filed</span>';
     section.appendChild(header);
@@ -662,17 +682,24 @@ function renderGrid() {
 
 function buildRepCard(r) {
   const data = getReporterData(r.name, r.pub);
+  const repDefs = getStoryDefs(r.pub);
+  const baseCount = repDefs.length; // 8 for National Account, 10 for local mastheads
   const filed = getFiledCount(data);
-  const pct   = Math.round(filed / 8 * 100);
-  const std   = [0,1,2,3,4].filter(i => data[STORY_DEFS[i].n] && data[STORY_DEFS[i].n].filed).length;
-  const imp   = data['06'] && data['06'].filed ? 1 : 0;
-  const life  = [6,7].filter(i => data[STORY_DEFS[i].n] && data[STORY_DEFS[i].n].filed).length;
+  const pct   = Math.round(filed / baseCount * 100);
+
+  const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
+  const isFiledAt = i => !!(data[repDefs[i].n] && data[repDefs[i].n].filed);
+  const vfIdx = typeIdx('vidfirst'), flipIdx = typeIdx('vidflip'), stdIdx = typeIdx('std'), impIdx = typeIdx('imp'), lifeIdx = typeIdx('life');
+  const vf   = vfIdx.filter(isFiledAt).length;
+  const flip = flipIdx.filter(isFiledAt).length;
+  const std  = stdIdx.filter(isFiledAt).length;
+  const imp  = impIdx.filter(isFiledAt).length;
+  const life = lifeIdx.filter(isFiledAt).length;
 
   const card = document.createElement('div');
   card.className = 'rep-card';
   card.onclick = () => openDrill(r);
 
-  const repDefs = getStoryDefs(r.pub);
   const storyRows = repDefs.map(s => {
     const st = data[s.n];
     const headline = st && st.headline ? st.headline : null;
@@ -690,6 +717,15 @@ function buildRepCard(r) {
       </div>`;
   }).join('');
 
+  const lifeLabel = r.pub.toLowerCase().includes('national') ? 'youtube/podcast' : 'lifestyle';
+  const pillsHtml = [
+    vfIdx.length   ? `<span class="rpill rpill-vidfirst">${vf}/${vfIdx.length} video-first</span>` : '',
+    flipIdx.length ? `<span class="rpill rpill-vidflip">${flip}/${flipIdx.length} video flip</span>` : '',
+    stdIdx.length  ? `<span class="rpill rpill-std">${std}/${stdIdx.length} standard</span>` : '',
+    impIdx.length  ? `<span class="rpill rpill-imp">${imp}/${impIdx.length} impact</span>` : '',
+    lifeIdx.length ? `<span class="rpill rpill-life">${life}/${lifeIdx.length} ${lifeLabel}</span>` : '',
+  ].join('');
+
   card.innerHTML = `
     <div class="rep-header">
       <div>
@@ -697,17 +733,13 @@ function buildRepCard(r) {
         <div class="rep-pub">${r.pub}</div>
       </div>
       <div>
-        <div class="rep-filed-big">${filed}/8</div>
+        <div class="rep-filed-big">${filed}/${baseCount}</div>
         <div class="rep-filed-sub">stories filed</div>
       </div>
     </div>
     <div class="rep-progress">
       <div class="rep-track"><div class="rep-fill" style="width:${pct}%"></div></div>
-      <div class="rep-pills">
-        <span class="rpill rpill-std">${std}/5 standard</span>
-        <span class="rpill rpill-imp">${imp}/1 impact</span>
-        <span class="rpill rpill-life">${life}/2 ${r.pub.toLowerCase().includes('national') ? 'youtube/podcast' : 'lifestyle'}</span>
-      </div>
+      <div class="rep-pills">${pillsHtml}</div>
     </div>
     <div class="rep-stories">${storyRows}</div>
   `;
@@ -778,6 +810,24 @@ async function clearNote(reporter, pub, week, storyNum, btnEl) {
   }
 }
 
+// ══════════════════════════════════════════
+//  SLACK NOTIFICATIONS
+// ══════════════════════════════════════════
+// Posts a message to Slack via the slack.js Netlify Function, which holds
+// the actual webhook URL server-side. Failures here are deliberately quiet
+// — a Slack hiccup should never block or alarm anyone using the Planner.
+async function notifySlack(text) {
+  try {
+    await fetch('/.netlify/functions/slack', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+  } catch (e) {
+    console.warn('Slack notification failed (non-critical):', e);
+  }
+}
+
 async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
   if (!noteText.trim()) return;
   try {
@@ -807,6 +857,9 @@ async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
     }
     // Step 2: upsert via PATCH-then-POST (reliable)
     await editorUpsert(row);
+    // Quietly let the team know — doesn't block or alter the UI either way
+    const storyLabel = (row.headline ? '"' + row.headline + '"' : 'story ' + storyNum);
+    notifySlack(':memo: Editor left a note for *' + reporter + '* on ' + storyLabel + ':\n>' + noteText.trim());
     // Show confirmation
     const noteForm = btnEl.closest('.note-form');
     const sent = noteForm ? noteForm.querySelector('.note-sent') : null;
@@ -871,8 +924,8 @@ function openDrill(r) {
   defs.forEach(s => {
     container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
   });
-  // Also render extras (story_num > 08)
-  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > 8).sort();
+  // Also render extras (story_num beyond this reporter's base slot count)
+  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > defs.length).sort();
   if (extraNums.length) {
     const extraHdr = document.createElement('div');
     extraHdr.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:16px;margin-bottom:8px';
@@ -1008,10 +1061,12 @@ function openAssign(r) {
   document.getElementById('am-angle').value = '';
   document.getElementById('am-notes').value = '';
   document.getElementById('am-format').value = '';
-  // Auto-assign slot: next extra number (09+)
+  // Auto-assign slot: next extra number, beyond this reporter's own base count
+  // (8 for National Account, 10 for local mastheads)
   const data = getReporterData(r.name, r.pub);
-  const used = Object.keys(data).map(n => parseInt(n, 10)).filter(n => n > 8);
-  const nextNum = String(Math.max(9, ...used.map(n => n + 1))).padStart(2, '0');
+  const baseCount = getStoryDefs(r.pub).length;
+  const used = Object.keys(data).map(n => parseInt(n, 10)).filter(n => n > baseCount);
+  const nextNum = String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0');
   document.getElementById('am-slot').innerHTML = '<option value="' + nextNum + '">Extra slot ' + nextNum + ' (new card)</option>';
   document.getElementById('assign-overlay').classList.add('show');
   setTimeout(() => document.getElementById('am-headline').focus(), 50);
@@ -1050,6 +1105,7 @@ async function saveAssignment() {
 
   try {
     await editorUpsert(row);
+    notifySlack(':clipboard: A story was assigned to *' + r.name + '*: "' + headline + '"');
     closeAssign();
     // Refresh the drilldown to show the new assignment
     openDrill(r);
@@ -1132,7 +1188,7 @@ function renderProgressSection(data) {
     const key = r.name + '|' + r.pub;
     const rData = byReporter[key] || {};
     const counts = weeks.map(w => rData[w] || 0);
-    const maxBar = 8;
+    const maxBar = getStoryDefs(r.pub).length; // 8 for National Account, 10 for local mastheads
     const avg = counts.length ? (counts.reduce((a,b)=>a+b,0) / counts.length) : 0;
     const recent = counts.slice(-3);
     const earlier = counts.slice(0, -3);
@@ -1150,13 +1206,13 @@ function renderProgressSection(data) {
     counts.forEach((c, i) => {
       const h = c === 0 ? 4 : Math.round((c / maxBar) * 40);
       const cls = i === counts.length - 1 ? 'current' : (c === 0 ? 'zero' : '');
-      html += '<div class="pc-bar ' + cls + '" style="height:' + h + 'px" title="' + weeks[i] + ': ' + c + '/8 filed"></div>';
+      html += '<div class="pc-bar ' + cls + '" style="height:' + h + 'px" title="' + weeks[i] + ': ' + c + '/' + maxBar + ' filed"></div>';
     });
     html += '</div>';
     // Stats
     html += '<div class="pc-stats">';
     html += '<div class="pc-stat"><span class="pc-stat-num">' + avg.toFixed(1) + '</span>avg/week</div>';
-    html += '<div class="pc-stat"><span class="pc-stat-num">' + counts[counts.length-1] + '/8</span>this week</div>';
+    html += '<div class="pc-stat"><span class="pc-stat-num">' + counts[counts.length-1] + '/' + maxBar + '</span>this week</div>';
     html += '<div class="pc-stat"><span class="pc-trend ' + trend + '">' + trendLabel + '</span></div>';
     html += '</div>';
     html += '</div>';
