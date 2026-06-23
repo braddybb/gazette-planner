@@ -54,9 +54,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .week-selector label{font-size:12px;color:#888}
 .week-selector input{background:#1a1a1a;border:0.5px solid #333;border-radius:6px;padding:4px 10px;font-size:13px;color:#ccc;font-family:inherit;outline:none;width:160px}
 .week-selector input:focus{border-color:#555}
-.week-arrow{background:none;border:0.5px solid #333;color:#aaa;border-radius:6px;width:24px;height:24px;font-size:15px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.week-arrow:hover{border-color:#888;color:#fff;background:rgba(255,255,255,.06)}
-.week-arrow:active{transform:scale(.9)}
 .refresh-btn{font-size:12px;color:#555;background:none;border:0.5px solid #333;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
 .refresh-btn:hover{border-color:#555;color:#888}
 .signout-btn{font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
@@ -99,6 +96,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rpill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
 .rpill-vidfirst{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
 .rpill-vidflip{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
+.rpill-l2n{background:#DFF5F2;color:#0D6E63;border-color:#A8E0D6}
+.rpill-original{background:#FDE4ED;color:#B0265A;border-color:#F5B8CE}
+.rpill-newsletter{background:#FFF3D6;color:#9A6400;border-color:#F0D898}
+.rpill-poll{background:#E6F0DD;color:#4C7A30;border-color:#C0DCA8}
 .rep-stories{padding:0}
 .story-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:0.5px solid var(--border)}
 .story-row:last-child{border-bottom:none}
@@ -109,6 +110,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dot-life{background:var(--acid-dk)}
 .dot-vidfirst{background:#D9491E}
 .dot-vidflip{background:#6D3FD0}
+.dot-l2n{background:#0D8C7D}
+.dot-original{background:#C23D6C}
+.dot-newsletter{background:#C99000}
+.dot-poll{background:#5C9440}
 .story-headline{font-size:13px;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-headline.empty{color:var(--grey-md);font-style:italic}
 .story-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -278,10 +283,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <span class="header-title">Editor Dashboard</span>
     <div class="header-spacer"></div>
     <div class="week-selector">
-      <button class="week-arrow" id="week-prev" onclick="shiftEditorWeek(-1)" title="Previous week">&#8249;</button>
       <label>Week of</label>
       <input type="date" id="week-inp" onchange="loadWeek()" style="font-family:inherit;color:#ccc;background:#1a1a1a;border:0.5px solid #333;border-radius:6px;padding:4px 8px;font-size:13px">
-      <button class="week-arrow" id="week-next" onclick="shiftEditorWeek(1)" title="Next week">&#8250;</button>
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
@@ -347,15 +350,21 @@ const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
 function getStoryDefs(pub) {
   const isNat = pub && pub.toLowerCase().includes('national');
   if (isNat) {
+    // National Account: 12 distinct slots reflecting the full weekly remit
+    // across verticals, video, newsletters and audience polls.
     return [
-      {n:'01',t:'std',lbl:'Story'},
-      {n:'02',t:'std',lbl:'Story'},
-      {n:'03',t:'std',lbl:'Story'},
-      {n:'04',t:'std',lbl:'Story'},
-      {n:'05',t:'imp',lbl:'Impact'},
-      {n:'06',t:'imp',lbl:'Impact'},
-      {n:'07',t:'life',lbl:'YouTube / Podcast'},
-      {n:'08',t:'life',lbl:'YouTube / Podcast'},
+      {n:'01',t:'l2n',lbl:'Local to National'},
+      {n:'02',t:'original',lbl:'Original'},
+      {n:'03',t:'imp',lbl:'Impact'},
+      {n:'04',t:'imp',lbl:'Impact'},
+      {n:'05',t:'life',lbl:'YouTube / Podcast'},
+      {n:'06',t:'life',lbl:'YouTube / Podcast'},
+      {n:'07',t:'newsletter',lbl:'Newsletter'},
+      {n:'08',t:'newsletter',lbl:'Newsletter'},
+      {n:'09',t:'newsletter',lbl:'Newsletter'},
+      {n:'10',t:'poll',lbl:'Audience Poll'},
+      {n:'11',t:'poll',lbl:'Audience Poll'},
+      {n:'12',t:'poll',lbl:'Audience Poll'},
     ];
   }
   // Local mastheads: 10 distinct, separately-trackable slots
@@ -402,19 +411,6 @@ function getMondayOf(dateStr) {
   const mm = String(d.getMonth()+1).padStart(2,'0');
   const dd = String(d.getDate()).padStart(2,'0');
   return yyyy + '-' + mm + '-' + dd;
-}
-
-// Arrow navigation: step one week back or forward from the currently loaded week.
-function shiftEditorWeek(direction) {
-  const cur = new Date(WEEK + 'T00:00:00');
-  cur.setDate(cur.getDate() + (direction * 7));
-  const yyyy = cur.getFullYear();
-  const mm = String(cur.getMonth() + 1).padStart(2, '0');
-  const dd = String(cur.getDate()).padStart(2, '0');
-  const next = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('week-inp').value = next;
-  localStorage.setItem('gz_editor_week', next);
-  loadWeek();
 }
 
 function checkLogin() {
@@ -708,11 +704,16 @@ function buildRepCard(r) {
   const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
   const isFiledAt = i => !!(data[repDefs[i].n] && data[repDefs[i].n].filed);
   const vfIdx = typeIdx('vidfirst'), flipIdx = typeIdx('vidflip'), stdIdx = typeIdx('std'), impIdx = typeIdx('imp'), lifeIdx = typeIdx('life');
+  const l2nIdx = typeIdx('l2n'), origIdx = typeIdx('original'), nlIdx = typeIdx('newsletter'), pollIdx = typeIdx('poll');
   const vf   = vfIdx.filter(isFiledAt).length;
   const flip = flipIdx.filter(isFiledAt).length;
   const std  = stdIdx.filter(isFiledAt).length;
   const imp  = impIdx.filter(isFiledAt).length;
   const life = lifeIdx.filter(isFiledAt).length;
+  const l2n  = l2nIdx.filter(isFiledAt).length;
+  const orig = origIdx.filter(isFiledAt).length;
+  const nl   = nlIdx.filter(isFiledAt).length;
+  const poll = pollIdx.filter(isFiledAt).length;
 
   const card = document.createElement('div');
   card.className = 'rep-card';
@@ -739,9 +740,13 @@ function buildRepCard(r) {
   const pillsHtml = [
     vfIdx.length   ? `<span class="rpill rpill-vidfirst">${vf}/${vfIdx.length} video-first</span>` : '',
     flipIdx.length ? `<span class="rpill rpill-vidflip">${flip}/${flipIdx.length} video flip</span>` : '',
+    l2nIdx.length  ? `<span class="rpill rpill-l2n">${l2n}/${l2nIdx.length} local to national</span>` : '',
+    origIdx.length ? `<span class="rpill rpill-original">${orig}/${origIdx.length} original</span>` : '',
     stdIdx.length  ? `<span class="rpill rpill-std">${std}/${stdIdx.length} standard</span>` : '',
     impIdx.length  ? `<span class="rpill rpill-imp">${imp}/${impIdx.length} impact</span>` : '',
     lifeIdx.length ? `<span class="rpill rpill-life">${life}/${lifeIdx.length} ${lifeLabel}</span>` : '',
+    nlIdx.length   ? `<span class="rpill rpill-newsletter">${nl}/${nlIdx.length} newsletter</span>` : '',
+    pollIdx.length ? `<span class="rpill rpill-poll">${poll}/${pollIdx.length} audience poll</span>` : '',
   ].join('');
 
   card.innerHTML = `
@@ -1135,13 +1140,8 @@ async function saveAssignment() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.getElementById('assign-overlay');
-  if (overlay) {
-    overlay.addEventListener('click', e => {
-      if (e.target.id === 'assign-overlay') closeAssign();
-    });
-  }
+document.getElementById('assign-overlay').addEventListener('click', e => {
+  if (e.target.id === 'assign-overlay') closeAssign();
 });
 
 // ══════════════════════════════════════════
@@ -1154,16 +1154,7 @@ function getMondayOfDate(d) {
   const day = dt.getDay();
   const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
   dt.setDate(diff);
-  return toLocalDateStr(dt);
-}
-
-// Format a Date as YYYY-MM-DD using local time (avoids the UTC day-shift
-// that toISOString() introduces for timezones ahead of UTC, e.g. Australia).
-function toLocalDateStr(d) {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return yyyy + '-' + mm + '-' + dd;
+  return dt.toISOString().slice(0, 10);
 }
 
 // Get the last N Mondays before (and including) the current week
@@ -1173,7 +1164,7 @@ function getLastNWeeks(n) {
   for (let i = 0; i < n; i++) {
     const d = new Date(base);
     d.setDate(d.getDate() - (i * 7));
-    weeks.push(toLocalDateStr(d));
+    weeks.push(d.toISOString().slice(0, 10));
   }
   return weeks.reverse(); // oldest first
 }
