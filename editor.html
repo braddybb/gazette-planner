@@ -54,6 +54,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .week-selector label{font-size:12px;color:#888}
 .week-selector input{background:#1a1a1a;border:0.5px solid #333;border-radius:6px;padding:4px 10px;font-size:13px;color:#ccc;font-family:inherit;outline:none;width:160px}
 .week-selector input:focus{border-color:#555}
+.week-arrow{background:none;border:0.5px solid #333;color:#aaa;border-radius:6px;width:24px;height:24px;font-size:15px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.week-arrow:hover{border-color:#888;color:#fff;background:rgba(255,255,255,.06)}
+.week-arrow:active{transform:scale(.9)}
 .refresh-btn{font-size:12px;color:#555;background:none;border:0.5px solid #333;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
 .refresh-btn:hover{border-color:#555;color:#888}
 .signout-btn{font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
@@ -275,8 +278,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <span class="header-title">Editor Dashboard</span>
     <div class="header-spacer"></div>
     <div class="week-selector">
+      <button class="week-arrow" id="week-prev" onclick="shiftEditorWeek(-1)" title="Previous week">&#8249;</button>
       <label>Week of</label>
       <input type="date" id="week-inp" onchange="loadWeek()" style="font-family:inherit;color:#ccc;background:#1a1a1a;border:0.5px solid #333;border-radius:6px;padding:4px 8px;font-size:13px">
+      <button class="week-arrow" id="week-next" onclick="shiftEditorWeek(1)" title="Next week">&#8250;</button>
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
@@ -397,6 +402,19 @@ function getMondayOf(dateStr) {
   const mm = String(d.getMonth()+1).padStart(2,'0');
   const dd = String(d.getDate()).padStart(2,'0');
   return yyyy + '-' + mm + '-' + dd;
+}
+
+// Arrow navigation: step one week back or forward from the currently loaded week.
+function shiftEditorWeek(direction) {
+  const cur = new Date(WEEK + 'T00:00:00');
+  cur.setDate(cur.getDate() + (direction * 7));
+  const yyyy = cur.getFullYear();
+  const mm = String(cur.getMonth() + 1).padStart(2, '0');
+  const dd = String(cur.getDate()).padStart(2, '0');
+  const next = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('week-inp').value = next;
+  localStorage.setItem('gz_editor_week', next);
+  loadWeek();
 }
 
 function checkLogin() {
