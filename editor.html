@@ -359,7 +359,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <div class="wr-header">
       <div>
         <div class="wr-title">Weekly Review</div>
-        <div class="wr-sub" id="wr-period">Trailing 8 weeks</div>
+        <div class="wr-sub" id="wr-period">Trailing 4 weeks</div>
       </div>
       <div class="wr-actions">
         <button class="wr-export-btn" id="wr-copy-btn" onclick="copyWeeklyReview()">Copy as text</button>
@@ -1452,13 +1452,14 @@ async function initProgress() {
 //  WEEKLY REVIEW
 // ══════════════════════════════════════════
 //
-// Pulls the trailing 8 weeks of every reporter's story data, computes
-// plain-arithmetic stats (filed rate trend, streaks, type mix), then
-// uses two Claude API calls (via the Netlify Function proxy, so the
-// real API key never reaches the browser) to: (1) read each reporter's
-// headlines/angles/notes for recurring themes and sourcing patterns,
-// and (2) turn the combined stats + themes into the actual narrative
-// review text. The model never sees a "score" to react to — only raw
+// Pulls the trailing 4 weeks of every reporter's story data — the most
+// recent 7 days as "this week", and the 3 weeks before that as recent
+// context — computes plain-arithmetic stats (this week vs. prior context,
+// streaks, type mix), then uses several Claude API calls (via the Netlify
+// Function proxy, so the real API key never reaches the browser) to: (1)
+// read each reporter's headlines/angles/notes for recurring themes and
+// sourcing patterns, and (2) turn the combined stats + themes into the
+// actual narrative review text. The model never sees a "score" to react to — only raw
 // numbers and text — so the framing stays descriptive, not punitive.
 
 let WR_DATA = null; // cached once generated, until the user navigates away
@@ -1484,13 +1485,13 @@ async function generateWeeklyReview() {
   const body = document.getElementById('wr-body');
   document.getElementById('wr-copy-btn').disabled = true;
   document.getElementById('wr-pdf-btn').disabled = true;
-  body.innerHTML = `<div class="wr-loading"><div class="wr-spin"></div>Gathering the last 8 weeks of story data...</div>`;
+  body.innerHTML = `<div class="wr-loading"><div class="wr-spin"></div>Gathering the last 4 weeks of story data...</div>`;
 
   try {
-    const weeks = getLastNWeeks(8);
+    const weeks = getLastNWeeks(4);
     const oldest = weeks[0];
     document.getElementById('wr-period').textContent =
-      'Trailing 8 weeks — ' + oldest + ' to ' + WEEK;
+      'Trailing 4 weeks — ' + oldest + ' to ' + WEEK;
 
     // 1. Pull every story row in the period, across every reporter.
     const rows = await supaFetch(
@@ -1545,7 +1546,7 @@ async function generateWeeklyReview() {
     body.innerHTML = `<div class="wr-loading"><div class="wr-spin"></div>Writing the review...</div>`;
 
     // 4. Ask Claude to synthesise the actual narrative review.
-    const narrative = await synthesiseReview(statsWithThemes, oldest, WEEK);
+    const narrative = await synthesiseReview(statsWithThemes, oldest, WEEK, weeks.length);
 
     WR_DATA = { stats: statsWithThemes, narrative, period: { oldest, latest: WEEK } };
     renderWeeklyReview(WR_DATA);
@@ -1571,17 +1572,21 @@ function computeReporterStats(reporterData, weeks) {
   const totalSlots = slotsPerWeek * weeks.length;
   const overallRate = totalSlots ? totalFiled / totalSlots : 0;
 
-  // Trend: compare the first half of the period to the second half.
-  const mid = Math.floor(weeks.length / 2);
-  const firstHalf = weeklyFiled.slice(0, mid).reduce((a, b) => a + b, 0);
-  const secondHalf = weeklyFiled.slice(mid).reduce((a, b) => a + b, 0);
-  const firstHalfWeeks = mid || 1;
-  const secondHalfWeeks = weeks.length - mid || 1;
-  const firstHalfAvg = firstHalf / firstHalfWeeks;
-  const secondHalfAvg = secondHalf / secondHalfWeeks;
+  // This week vs the prior weeks in the window. With a 4-week window,
+  // "weeks" is [3-weeks-ago, 2-weeks-ago, last-week, this-week] — the last
+  // entry is the most recent 7 days, and everything before it is "recent
+  // context" rather than a flat first-half/second-half split. This lets
+  // the review speak specifically to "how does this week compare" rather
+  // than a vaguer trend across the whole period.
+  const thisWeekFiled = weeklyFiled[weeklyFiled.length - 1] || 0;
+  const thisWeekTotal = slotsPerWeek;
+  const priorWeeksFiled = weeklyFiled.slice(0, -1).reduce((a, b) => a + b, 0);
+  const priorWeeksCount = Math.max(weeks.length - 1, 1);
+  const priorWeeksAvg = priorWeeksFiled / priorWeeksCount;
+
   let trend = 'steady';
-  if (secondHalfAvg > firstHalfAvg * 1.25 && secondHalfAvg - firstHalfAvg >= 0.5) trend = 'up';
-  else if (secondHalfAvg < firstHalfAvg * 0.75 && firstHalfAvg - secondHalfAvg >= 0.5) trend = 'down';
+  if (thisWeekFiled > priorWeeksAvg * 1.25 && thisWeekFiled - priorWeeksAvg >= 0.5) trend = 'up';
+  else if (thisWeekFiled < priorWeeksAvg * 0.75 && priorWeeksAvg - thisWeekFiled >= 0.5) trend = 'down';
 
   // Longest gap of zero-filed weeks, and whether they've used the
   // planner at all recently (any row updated in the period = "active").
@@ -1635,6 +1640,10 @@ function computeReporterStats(reporterData, weeks) {
     totalSlots,
     overallRate,
     trend,
+    thisWeekFiled,
+    thisWeekTotal,
+    priorWeeksFiled,
+    priorWeeksAvg,
     longestGap,
     trailingGap,
     hasAnyActivity,
@@ -1737,7 +1746,7 @@ async function extractThemes(stat, gariSessions) {
     ? relevantSessions.map(s => `[${s.timestamp}] GARI feedback on "${(s.input || '').slice(0, 150)}...": ${(s.output || '').slice(0, 600)}`).join('\n\n')
     : '(no GARI coaching sessions logged this period)';
 
-  const prompt = `You're reading a local news reporter's story log AND their GARI editorial coaching history from the past 8 weeks, to help an editor understand patterns — not to grade them.
+  const prompt = `You're reading a local news reporter's story log AND their GARI editorial coaching history from the past 4 weeks, to help an editor understand patterns — not to grade them.
 
 Reporter: ${stat.name} (${stat.pub})
 
@@ -1767,16 +1776,18 @@ Respond with plain bullet points only, no preamble, no markdown headers.`;
   }
 }
 
-async function synthesiseReview(statsWithThemes, oldest, latest) {
+async function synthesiseReview(statsWithThemes, oldest, latest, windowWeeks) {
   const summaryFor = s => {
     const typeLines = Object.entries(s.typeCounts)
-      .map(([t, v]) => `${v.label}: ${v.filed}/${v.total * 8}`)
+      .map(([t, v]) => `${v.label}: ${v.filed}/${v.total * windowWeeks}`)
       .join(', ');
     const gariCount = (s.gariSessions || []).length;
     return `${s.name} (${s.pub})
-- Filed ${s.totalFiled}/${s.totalSlots} slots over the period (${Math.round(s.overallRate * 100)}%)
-- Trend: ${s.trend} (comparing first half of period to second half)
-- Longest stretch with zero filed in a week: ${s.longestGap} week(s); currently ${s.trailingGap} week(s) into a gap
+- This week: filed ${s.thisWeekFiled}/${s.thisWeekTotal} slots
+- Prior ${windowWeeks - 1} week(s) before that: averaged ${s.priorWeeksAvg.toFixed(1)} filed per week (${s.priorWeeksFiled} total)
+- Whole ${windowWeeks}-week period: filed ${s.totalFiled}/${s.totalSlots} slots (${Math.round(s.overallRate * 100)}%)
+- This week compared to recent context: ${s.trend}
+- Longest stretch with zero filed in a week, within this period: ${s.longestGap} week(s); currently ${s.trailingGap} week(s) into a gap
 - Has used the planner at all this period: ${s.hasAnyActivity ? 'yes' : 'no'}
 - GARI coaching sessions logged this period: ${gariCount}
 - By story type: ${typeLines}
@@ -1790,25 +1801,26 @@ async function synthesiseReview(statsWithThemes, oldest, latest) {
 - Treat thematic concentration (one story dominating multiple weeks) as a prompt to ask about, not automatically a failure of diversity.
 - A reporter with zero GARI coaching sessions is not necessarily a problem — they may simply not need much coaching, or prefer working directly with an editor. Only mention GARI usage when it's genuinely informative (e.g. a recurring editorial issue GARI has flagged more than once, or a clear improvement GARI has noted) — don't treat session count itself as a performance metric.
 - If GARI feedback and Planner activity tell different stories (e.g. someone filing steadily but GARI repeatedly flagging the same editorial gap), that combination is worth surfacing specifically, since it's the kind of pattern that's easy to miss looking at either source alone.
+- A single week is a small sample — don't overstate what one strong or weak week means on its own. Use the prior weeks as context for how much weight this week's number deserves, not as a separate, disconnected fact.
 - Be specific with numbers where they matter, but don't over-quantify every sentence — this should read like a colleague's summary, not a spreadsheet.`;
 
   // Generate each reporter's note as its own (smaller, faster) Claude call,
   // run in parallel — mirroring the per-reporter theme extraction pattern.
-  // This replaces one large 7-reporter synthesis call that was prone to
+  // This replaces one large multi-reporter synthesis call that was prone to
   // hitting Netlify's inactivity timeout (HTTP 504) under normal load.
   const notePromises = statsWithThemes.map(async s => {
-    const prompt = `You're writing one short note for a newsroom editorial team's weekly review, about a single reporter on the Gazette Network, covering the period ${oldest} to ${latest} (trailing 8 weeks).
+    const prompt = `You're writing one short note for a newsroom editorial team's weekly review, about a single reporter on the Gazette Network, covering the period ${oldest} to ${latest} (trailing ${windowWeeks} weeks).
 
 ${summaryFor(s)}
 
 ${toneRules}
 
-Write a 2-4 sentence note covering: how their filing rate has trended, anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
+Write a 2-4 sentence note. It should lead with how THIS WEEK went, read in the context of the prior ${windowWeeks - 1} week(s) — not as an isolated fact, but as "this week, compared to how things have been going." Then cover anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
 
 Respond in this exact JSON structure and nothing else, no markdown fences:
 { "tag": "up|down|steady|quiet", "note": "..." }
 
-The "tag" field: use "up" for a clear positive trend, "down" for a clear concerning trend worth a check-in, "quiet" if they haven't used the planner / filed almost nothing all period, and "steady" otherwise (including consistently strong AND consistently average — read the note for nuance, the tag is just a quick visual flag).`;
+The "tag" field: use "up" if this week is a clear positive step up from recent context, "down" if this week is a clear concerning drop worth a check-in, "quiet" if they haven't used the planner / filed almost nothing this period, and "steady" otherwise (including consistently strong AND consistently average — read the note for nuance, the tag is just a quick visual flag).`;
 
     try {
       const result = await callClaudeProxy('', prompt, 400);
@@ -1824,13 +1836,13 @@ The "tag" field: use "up" for a clear positive trend, "down" for a clear concern
   });
 
   const allSummaries = statsWithThemes.map(summaryFor).join('\n\n');
-  const overviewPrompt = `You're writing the opening summary of a weekly review for a newsroom's editorial team, covering ${statsWithThemes.length} reporters across the Gazette Network for the period ${oldest} to ${latest} (trailing 8 weeks).
+  const overviewPrompt = `You're writing the opening summary of a weekly review for a newsroom's editorial team, covering ${statsWithThemes.length} reporters across the Gazette Network for the period ${oldest} to ${latest} (trailing ${windowWeeks} weeks).
 
-Here is the raw data for each reporter, combining their Planner story log with their GARI editorial coaching history:
+Here is the raw data for each reporter, combining their Planner story log with their GARI editorial coaching history. Each reporter's numbers are broken out as "this week" vs the prior ${windowWeeks - 1} week(s), so you can speak to how this past week compares to recent context, not just a flat average across the whole period:
 
 ${allSummaries}
 
-Write a short network-wide summary (3-5 sentences) — overall patterns, anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
+Write a short network-wide summary (3-5 sentences). Lead with how this past week looked across the network compared to the prior weeks' context, then cover any other overall patterns — anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
 
 ${toneRules}
 
