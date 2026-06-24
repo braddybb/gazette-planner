@@ -94,21 +94,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rep-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s ease}
 .rep-pills{display:flex;gap:6px;flex-wrap:wrap}
 .rpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;border:0.5px solid}
-.rpill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
-.rpill-imp{background:#1a1a1a;color:#fff;border-color:#333}
-.rpill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
-.rpill-vidfirst{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
-.rpill-vidflip{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
+.rpill-std{background:#E4E4E4;color:#1C1C1C;border-color:#CCC}
+.rpill-imp{background:#D9492E;color:#fff;border-color:#B8391F}
+.rpill-life{background:#EBEBEB;color:#444;border-color:#D4D4D4}
+.rpill-vidfirst{background:#E4E4E4;color:#1C1C1C;border-color:#CCC}
+.rpill-vidflip{background:#EBEBEB;color:#444;border-color:#D4D4D4}
+.rpill-l2n{background:#E4E4E4;color:#1C1C1C;border-color:#CCC}
+.rpill-original{background:#E0E0E0;color:#333;border-color:#C4C4C4}
+.rpill-newsletter{background:#EEEEEE;color:#555;border-color:#DADADA}
+.rpill-poll{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 .rep-stories{padding:0}
 .story-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:0.5px solid var(--border)}
 .story-row:last-child{border-bottom:none}
 .story-num{font-size:11px;font-weight:600;width:24px;color:var(--grey-md)}
 .story-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-std{background:var(--blue)}
-.dot-imp{background:var(--ink)}
-.dot-life{background:var(--acid-dk)}
-.dot-vidfirst{background:#D9491E}
-.dot-vidflip{background:#6D3FD0}
+.dot-std{background:#1C1C1C}
+.dot-imp{background:#D9492E}
+.dot-life{background:#5C5C5C}
+.dot-vidfirst{background:#1C1C1C}
+.dot-vidflip{background:#3A3A3A}
+.dot-l2n{background:#1C1C1C}
+.dot-original{background:#3A3A3A}
+.dot-newsletter{background:#787878}
+.dot-poll{background:var(--blue)}
 .story-headline{font-size:13px;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-headline.empty{color:var(--grey-md);font-style:italic}
 .story-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -126,24 +134,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-stories{display:flex;flex-direction:column;gap:10px}
 .drill-card{background:#fff;border:0.5px solid var(--border);border-radius:10px;overflow:hidden}
 .drill-card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px}
-.drill-card-hdr.std{background:var(--blue)}
-.drill-card-hdr.imp{background:var(--ink)}
-.drill-card-hdr.life{background:var(--acid)}
+.drill-card-hdr.std,.drill-card-hdr.l2n,.drill-card-hdr.vidfirst{background:#1C1C1C}
+.drill-card-hdr.imp{background:#D9492E}
+.drill-card-hdr.life,.drill-card-hdr.vidflip,.drill-card-hdr.original{background:#3A3A3A}
+.drill-card-hdr.newsletter{background:#787878}
+.drill-card-hdr.poll{background:var(--blue)}
 .drill-num{font-size:24px;font-weight:600;min-width:34px}
-.drill-num.std,.drill-num.imp{color:#fff}
-.drill-num.life{color:var(--acid-dk)}
+.drill-num.std,.drill-num.imp,.drill-num.l2n,.drill-num.vidfirst,.drill-num.life,.drill-num.vidflip,.drill-num.original,.drill-num.newsletter,.drill-num.poll{color:#fff}
 .drill-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
-.drill-type.std{color:#AABBFF}
-.drill-type.imp{color:#777}
-.drill-type.life{color:var(--acid-dk)}
+.drill-type.std,.drill-type.l2n,.drill-type.vidfirst{color:#999}
+.drill-type.imp{color:#FFCCBB}
+.drill-type.life,.drill-type.vidflip,.drill-type.original,.drill-type.newsletter{color:#DDD}
+.drill-type.poll{color:#AABBFF}
 .drill-headline-hdr{font-size:13px;font-weight:500}
-.drill-headline-hdr.std,.drill-headline-hdr.imp{color:#fff}
-.drill-headline-hdr.life{color:var(--acid-dk)}
+.drill-headline-hdr.std,.drill-headline-hdr.imp,.drill-headline-hdr.l2n,.drill-headline-hdr.vidfirst,.drill-headline-hdr.life,.drill-headline-hdr.vidflip,.drill-headline-hdr.original,.drill-headline-hdr.newsletter,.drill-headline-hdr.poll{color:#fff}
 .drill-headline-hdr.empty{opacity:.4;font-style:italic;font-weight:400}
 .drill-filed-badge{margin-left:auto;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
-.drill-filed-badge.std{background:rgba(255,255,255,.2);color:#fff}
-.drill-filed-badge.imp{background:rgba(255,255,255,.15);color:#aaa}
-.drill-filed-badge.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
+.drill-filed-badge.std,.drill-filed-badge.l2n,.drill-filed-badge.vidfirst{background:rgba(255,255,255,.15);color:#aaa}
+.drill-filed-badge.imp{background:rgba(255,255,255,.25);color:#fff}
+.drill-filed-badge.life,.drill-filed-badge.vidflip,.drill-filed-badge.original,.drill-filed-badge.newsletter{background:rgba(255,255,255,.15);color:#aaa}
+.drill-filed-badge.poll{background:rgba(255,255,255,.2);color:#fff}
 .note-form{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
 .note-form textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical;min-height:64px;outline:none}
 .note-form textarea:focus{border-color:var(--blue)}
@@ -753,11 +763,16 @@ function buildRepCard(r) {
   const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
   const isFiledAt = i => !!(data[repDefs[i].n] && data[repDefs[i].n].filed);
   const vfIdx = typeIdx('vidfirst'), flipIdx = typeIdx('vidflip'), stdIdx = typeIdx('std'), impIdx = typeIdx('imp'), lifeIdx = typeIdx('life');
+  const l2nIdx = typeIdx('l2n'), origIdx = typeIdx('original'), nlIdx = typeIdx('newsletter'), pollIdx = typeIdx('poll');
   const vf   = vfIdx.filter(isFiledAt).length;
   const flip = flipIdx.filter(isFiledAt).length;
   const std  = stdIdx.filter(isFiledAt).length;
   const imp  = impIdx.filter(isFiledAt).length;
   const life = lifeIdx.filter(isFiledAt).length;
+  const l2n  = l2nIdx.filter(isFiledAt).length;
+  const orig = origIdx.filter(isFiledAt).length;
+  const nl   = nlIdx.filter(isFiledAt).length;
+  const poll = pollIdx.filter(isFiledAt).length;
 
   const card = document.createElement('div');
   card.className = 'rep-card';
@@ -782,11 +797,15 @@ function buildRepCard(r) {
 
   const lifeLabel = r.pub.toLowerCase().includes('national') ? 'youtube/podcast' : 'lifestyle';
   const pillsHtml = [
+    l2nIdx.length  ? `<span class="rpill rpill-l2n">${l2n}/${l2nIdx.length} local to nat'l</span>` : '',
+    origIdx.length ? `<span class="rpill rpill-original">${orig}/${origIdx.length} original</span>` : '',
     vfIdx.length   ? `<span class="rpill rpill-vidfirst">${vf}/${vfIdx.length} video-first</span>` : '',
     flipIdx.length ? `<span class="rpill rpill-vidflip">${flip}/${flipIdx.length} video flip</span>` : '',
     stdIdx.length  ? `<span class="rpill rpill-std">${std}/${stdIdx.length} standard</span>` : '',
     impIdx.length  ? `<span class="rpill rpill-imp">${imp}/${impIdx.length} impact</span>` : '',
     lifeIdx.length ? `<span class="rpill rpill-life">${life}/${lifeIdx.length} ${lifeLabel}</span>` : '',
+    nlIdx.length   ? `<span class="rpill rpill-newsletter">${nl}/${nlIdx.length} newsletter</span>` : '',
+    pollIdx.length ? `<span class="rpill rpill-poll">${poll}/${pollIdx.length} audience poll</span>` : '',
   ].join('');
 
   card.innerHTML = `
