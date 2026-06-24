@@ -257,16 +257,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <div class="login-title">Editor Dashboard</div>
     <div class="login-sub">Log in to see all reporters' weekly filing status across the network.</div>
     <div class="login-field">
-      <label class="login-label">Editor password</label>
+      <label class="login-label">Email</label>
+      <input type="email" id="inp-email" placeholder="you@gazettenetwork.com.au" onkeydown="if(event.key==='Enter')checkLogin()">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Password</label>
       <input type="password" id="inp-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkLogin()">
     </div>
     <div class="login-field">
       <label class="login-label">Week of</label>
       <input type="date" id="inp-week" onkeydown="if(event.key==='Enter')checkLogin()" style="font-family:inherit">
     </div>
-    <div class="login-err" id="login-err">Incorrect password.</div>
-    <button class="login-btn" onclick="checkLogin()">View dashboard</button>
-    <div class="login-hint">Contact Brad for the password.</div>
+    <div class="login-err" id="login-err">Incorrect email or password.</div>
+    <button class="login-btn" id="login-btn" onclick="checkLogin()">View dashboard</button>
+    <div class="login-hint">Contact Brad if you can't log in.</div>
   </div>
 </div>
 
@@ -329,7 +333,10 @@ function esc(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-const EDITOR_PASS = 'gazette2026';
+// Global Supabase client — created once, used for every auth + data call.
+// Once a user signs in, this client automatically attaches their session
+// token to every request, which is what makes RLS policies actually work.
+const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
 const REPORTERS = [
   {name:'Douglas Connor',   pub:'Mid North Coaster',          region:'New South Wales'},
@@ -381,10 +388,15 @@ let WEEK = '';
 let ALL_DATA = {};
 
 async function supaFetch(path) {
+  // Use the logged-in editor's session token (not the static anon key) as
+  // the bearer token, so RLS policies on the database can identify who's
+  // actually making this request.
+  const { data: { session } } = await supa.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
   const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
     headers: {
       'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Authorization': `Bearer ${token}`,
     }
   });
   const text = await res.text();
@@ -417,16 +429,51 @@ function shiftEditorWeek(direction) {
   loadWeek();
 }
 
-function checkLogin() {
-  const pass = document.getElementById('inp-password').value;
-  const week = document.getElementById('inp-week').value.trim();
-  const err  = document.getElementById('login-err');
-  if (pass !== EDITOR_PASS) { err.style.display='block'; return; }
-  if (!week) { err.style.display='block'; err.textContent='Please enter the week.'; return; }
-  err.style.display='none';
+async function checkLogin() {
+  const email = document.getElementById('inp-email').value.trim();
+  const pass  = document.getElementById('inp-password').value;
+  const week  = document.getElementById('inp-week').value.trim();
+  const err   = document.getElementById('login-err');
+  const btn   = document.getElementById('login-btn');
+  err.style.display = 'none';
+
+  if (!email || !pass) {
+    err.textContent = 'Please enter your email and password.';
+    err.style.display = 'block';
+    return;
+  }
+  if (!week) {
+    err.textContent = 'Please enter the week.';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  const { data, error } = await supa.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'View dashboard';
+
+  if (error) {
+    err.textContent = 'Incorrect email or password.';
+    err.style.display = 'block';
+    return;
+  }
+
+  // Confirm this account actually has an editor profile — a reporter
+  // account that somehow ends up here should not see the editor view.
+  const { data: profile, error: profErr } = await supa
+    .from('profiles')
+    .select('role, name')
+    .eq('id', data.user.id)
+    .single();
+
+  if (profErr || !profile || profile.role !== 'editor') {
+    err.textContent = 'This account does not have editor access.';
+    err.style.display = 'block';
+    await supa.auth.signOut();
+    return;
+  }
+
   WEEK = getMondayOf(week);
-  // Persist full session
-  localStorage.setItem('gz_editor_session', JSON.stringify({ pass, week: WEEK }));
   localStorage.setItem('gz_editor_week', WEEK);
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
@@ -434,8 +481,8 @@ function checkLogin() {
   loadWeek();
 }
 
-function editorSignOut() {
-  localStorage.removeItem('gz_editor_session');
+async function editorSignOut() {
+  await supa.auth.signOut();
   localStorage.removeItem('gz_editor_week');
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -527,14 +574,12 @@ async function refreshDataQuietly() {
   }
 }
 
-let editorSupabase = null;
 let editorChannel = null;
 
 function initEditorRealtime() {
   try {
-    if (!editorSupabase) editorSupabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-    if (editorChannel) editorSupabase.removeChannel(editorChannel);
-    editorChannel = editorSupabase
+    if (editorChannel) supa.removeChannel(editorChannel);
+    editorChannel = supa
       .channel('editor-dashboard')
       .on('postgres_changes', {
         event: '*',
@@ -765,6 +810,8 @@ function buildRepCard(r) {
 }
 
 async function editorUpsert(row) {
+  const { data: { session } } = await supa.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
   const filter = 'reporter=eq.' + encodeURIComponent(row.reporter) +
     '&publication=eq.' + encodeURIComponent(row.publication) +
     '&week_of=eq.' + encodeURIComponent(row.week_of) +
@@ -772,7 +819,7 @@ async function editorUpsert(row) {
   const patchRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE + '?' + filter, {
     method: 'PATCH',
     headers: {
-      'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+      'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json', 'Prefer': 'return=representation',
     },
     body: JSON.stringify(row),
@@ -784,7 +831,7 @@ async function editorUpsert(row) {
     const postRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
       method: 'POST',
       headers: {
-        'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+        'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json', 'Prefer': 'return=minimal',
       },
       body: JSON.stringify(row),
@@ -1051,23 +1098,35 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
   return div;
 }
 
-// Restore session on refresh
-const editorSession = localStorage.getItem('gz_editor_session');
-if (editorSession) {
-  try {
-    const sess = JSON.parse(editorSession);
-    if (sess.pass === EDITOR_PASS && sess.week) {
-      WEEK = sess.week;
+// Restore session on refresh — Supabase Auth persists its own session in
+// localStorage automatically, so we just need to check whether one exists
+// and still belongs to a valid editor.
+(async function restoreEditorSession() {
+  const { data: { session } } = await supa.auth.getSession();
+  const savedWeek = localStorage.getItem('gz_editor_week');
+
+  if (session) {
+    const { data: profile, error: profErr } = await supa
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profErr && profile && profile.role === 'editor' && savedWeek) {
+      WEEK = savedWeek;
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       document.getElementById('week-inp').value = WEEK;
       loadWeek();
+      return;
     }
-  } catch(e) {}
-} else {
-  const savedWeek = localStorage.getItem('gz_editor_week');
+    // Session exists but isn't a valid editor — sign out to avoid a
+    // confusing half-logged-in state.
+    await supa.auth.signOut();
+  }
+
   if (savedWeek) document.getElementById('inp-week').value = savedWeek;
-}
+})();
 
 // ══════════════════════════════════════════
 //  EDITOR STORY ASSIGNMENT
