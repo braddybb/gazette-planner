@@ -59,6 +59,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .week-arrow:active{transform:scale(.9)}
 .refresh-btn{font-size:12px;color:#555;background:none;border:0.5px solid #333;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
 .refresh-btn:hover{border-color:#555;color:#888}
+.weekly-review-btn{font-size:12px;color:#fff;background:var(--blue);border:0.5px solid var(--blue);border-radius:6px;padding:4px 12px;cursor:pointer;font-family:inherit}
+.weekly-review-btn:hover{opacity:.88}
 .signout-btn{font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
 .signout-btn:hover{color:#888}
 
@@ -129,6 +131,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1.5rem;font-weight:500}
 .back-btn:hover{text-decoration:underline}
 .drill-header{margin-bottom:1.5rem}
+
+#weekly-review{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+.wr-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
+.wr-title{font-size:22px;font-weight:700;color:var(--ink)}
+.wr-sub{font-size:13px;color:var(--grey-md);margin-top:2px}
+.wr-actions{display:flex;gap:8px}
+.wr-export-btn{font-size:12px;color:var(--blue-dk);background:var(--blue-lt);border:0.5px solid #AABBEE;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit}
+.wr-export-btn:hover{opacity:.85}
+.wr-export-btn:disabled{opacity:.5;cursor:default}
+.wr-loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:3rem 0;color:var(--grey-md);font-size:14px}
+.wr-spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:wrspin 0.8s linear infinite}
+@keyframes wrspin{to{transform:rotate(360deg)}}
+.wr-section{background:#fff;border:0.5px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.wr-section-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--grey-md);margin-bottom:10px}
+.wr-network-summary{font-size:14px;line-height:1.6;color:var(--ink)}
+.wr-reporter-card{border-bottom:0.5px solid var(--border);padding:14px 0}
+.wr-reporter-card:last-child{border-bottom:none}
+.wr-reporter-name{font-size:15px;font-weight:700;color:var(--ink)}
+.wr-reporter-pub{font-size:12px;color:var(--grey-md);margin-bottom:6px}
+.wr-reporter-note{font-size:13.5px;line-height:1.55;color:var(--ink)}
+.wr-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-right:6px;margin-bottom:6px}
+.wr-tag-up{background:#E0F0E0;color:#2C6B2C}
+.wr-tag-down{background:#FBEEEA;color:#B8552F}
+.wr-tag-steady{background:var(--grey-lt);color:var(--grey-dk)}
+.wr-tag-quiet{background:#EEEEEE;color:#888}
+.wr-err{background:#FBEEEA;border:0.5px solid #F0C0A8;border-radius:10px;padding:1rem;color:#B8391F;font-size:13px}
 .drill-name{font-size:24px;font-weight:600;color:var(--ink)}
 .drill-pub{font-size:14px;color:var(--grey-md);margin-top:2px}
 .drill-stories{display:flex;flex-direction:column;gap:10px}
@@ -304,6 +332,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <button class="week-arrow" id="week-next" onclick="shiftEditorWeek(1)" title="Next week">&#8250;</button>
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
+    <button class="weekly-review-btn" onclick="openWeeklyReview()">Weekly Review</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
   </div>
 
@@ -322,6 +351,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <div class="drill-pub" id="drill-pub"></div>
     </div>
     <div class="drill-stories" id="drill-stories"></div>
+  </div>
+
+  <div id="weekly-review">
+    <button class="back-btn" onclick="closeWeeklyReview()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">Weekly Review</div>
+        <div class="wr-sub" id="wr-period">Trailing 8 weeks</div>
+      </div>
+      <div class="wr-actions">
+        <button class="wr-export-btn" id="wr-copy-btn" onclick="copyWeeklyReview()">Copy as text</button>
+        <button class="wr-export-btn" id="wr-pdf-btn" onclick="downloadWeeklyReviewPdf()">Download PDF</button>
+      </div>
+    </div>
+    <div id="wr-body"></div>
   </div>
 </div>
 
@@ -370,15 +414,21 @@ const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
 function getStoryDefs(pub) {
   const isNat = pub && pub.toLowerCase().includes('national');
   if (isNat) {
+    // National Account: 12 distinct slots reflecting the full weekly remit
+    // across verticals, video, newsletters and audience polls.
     return [
-      {n:'01',t:'std',lbl:'Story'},
-      {n:'02',t:'std',lbl:'Story'},
-      {n:'03',t:'std',lbl:'Story'},
-      {n:'04',t:'std',lbl:'Story'},
-      {n:'05',t:'imp',lbl:'Impact'},
-      {n:'06',t:'imp',lbl:'Impact'},
-      {n:'07',t:'life',lbl:'YouTube / Podcast'},
-      {n:'08',t:'life',lbl:'YouTube / Podcast'},
+      {n:'01',t:'l2n',lbl:'Local to National'},
+      {n:'02',t:'original',lbl:'Original'},
+      {n:'03',t:'imp',lbl:'Impact'},
+      {n:'04',t:'imp',lbl:'Impact'},
+      {n:'05',t:'life',lbl:'YouTube / Podcast'},
+      {n:'06',t:'life',lbl:'YouTube / Podcast'},
+      {n:'07',t:'newsletter',lbl:'Newsletter'},
+      {n:'08',t:'newsletter',lbl:'Newsletter'},
+      {n:'09',t:'newsletter',lbl:'Newsletter'},
+      {n:'10',t:'poll',lbl:'Audience Poll'},
+      {n:'11',t:'poll',lbl:'Audience Poll'},
+      {n:'12',t:'poll',lbl:'Audience Poll'},
     ];
   }
   // Local mastheads: 10 distinct, separately-trackable slots
@@ -1395,6 +1445,386 @@ async function initProgress() {
     </div>
   </div>
 </div>
+
+<script>
+// ══════════════════════════════════════════
+//  WEEKLY REVIEW
+// ══════════════════════════════════════════
+//
+// Pulls the trailing 8 weeks of every reporter's story data, computes
+// plain-arithmetic stats (filed rate trend, streaks, type mix), then
+// uses two Claude API calls (via the Netlify Function proxy, so the
+// real API key never reaches the browser) to: (1) read each reporter's
+// headlines/angles/notes for recurring themes and sourcing patterns,
+// and (2) turn the combined stats + themes into the actual narrative
+// review text. The model never sees a "score" to react to — only raw
+// numbers and text — so the framing stays descriptive, not punitive.
+
+let WR_DATA = null; // cached once generated, until the user navigates away
+
+async function openWeeklyReview() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('drilldown').style.display = 'none';
+  document.getElementById('weekly-review').style.display = 'block';
+
+  if (WR_DATA) {
+    renderWeeklyReview(WR_DATA);
+    return;
+  }
+  await generateWeeklyReview();
+}
+
+function closeWeeklyReview() {
+  document.getElementById('weekly-review').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+
+async function generateWeeklyReview() {
+  const body = document.getElementById('wr-body');
+  document.getElementById('wr-copy-btn').disabled = true;
+  document.getElementById('wr-pdf-btn').disabled = true;
+  body.innerHTML = `<div class="wr-loading"><div class="wr-spin"></div>Gathering the last 8 weeks of story data...</div>`;
+
+  try {
+    const weeks = getLastNWeeks(8);
+    const oldest = weeks[0];
+    document.getElementById('wr-period').textContent =
+      'Trailing 8 weeks — ' + oldest + ' to ' + WEEK;
+
+    // 1. Pull every story row in the period, across every reporter.
+    const rows = await supaFetch(
+      TABLE + '?week_of=gte.' + encodeURIComponent(oldest) +
+      '&select=reporter,publication,week_of,story_num,headline,angle,notes,filed,assigned_by,updated_at' +
+      '&order=reporter.asc,week_of.asc'
+    );
+
+    if (!rows || rows.length === 0) {
+      body.innerHTML = `<div class="wr-err">No story data found for this period. Try a different week, or check back once reporters have filed a few weeks of stories.</div>`;
+      return;
+    }
+
+    // Group rows by reporter.
+    const byReporter = {};
+    REPORTERS.forEach(r => { byReporter[r.name] = { ...r, rows: [] }; });
+    rows.forEach(row => {
+      if (byReporter[row.reporter]) byReporter[row.reporter].rows.push(row);
+    });
+
+    // 2. Compute plain stats per reporter.
+    const reporterStats = REPORTERS.map(r => computeReporterStats(byReporter[r.name], weeks));
+
+    body.innerHTML = `<div class="wr-loading"><div class="wr-spin"></div>Reading headlines and angles for themes...</div>`;
+
+    // 3. Ask Claude to extract themes per reporter (only for reporters
+    // with enough text to make this worthwhile).
+    const themePromises = reporterStats.map(async stat => {
+      if (stat.totalFiled < 2) return { ...stat, themes: null };
+      const themes = await extractThemes(stat);
+      return { ...stat, themes };
+    });
+    const statsWithThemes = await Promise.all(themePromises);
+
+    body.innerHTML = `<div class="wr-loading"><div class="wr-spin"></div>Writing the review...</div>`;
+
+    // 4. Ask Claude to synthesise the actual narrative review.
+    const narrative = await synthesiseReview(statsWithThemes, oldest, WEEK);
+
+    WR_DATA = { stats: statsWithThemes, narrative, period: { oldest, latest: WEEK } };
+    renderWeeklyReview(WR_DATA);
+  } catch (err) {
+    console.error('Weekly review failed:', err);
+    body.innerHTML = `<div class="wr-err">Something went wrong generating the review: ${esc(err.message || String(err))}. Try again, or check the Netlify Function logs if this keeps happening.</div>`;
+  }
+}
+
+// Plain arithmetic — no API needed for this part.
+function computeReporterStats(reporterData, weeks) {
+  const r = reporterData || { name: '?', pub: '?', rows: [] };
+  const defs = getStoryDefs(r.pub);
+  const slotsPerWeek = defs.length;
+
+  // Filed count per week, in chronological order.
+  const weeklyFiled = weeks.map(w =>
+    r.rows.filter(row => row.week_of === w && row.filed).length
+  );
+  const weeklyTotal = weeks.map(() => slotsPerWeek);
+
+  const totalFiled = weeklyFiled.reduce((a, b) => a + b, 0);
+  const totalSlots = slotsPerWeek * weeks.length;
+  const overallRate = totalSlots ? totalFiled / totalSlots : 0;
+
+  // Trend: compare the first half of the period to the second half.
+  const mid = Math.floor(weeks.length / 2);
+  const firstHalf = weeklyFiled.slice(0, mid).reduce((a, b) => a + b, 0);
+  const secondHalf = weeklyFiled.slice(mid).reduce((a, b) => a + b, 0);
+  const firstHalfWeeks = mid || 1;
+  const secondHalfWeeks = weeks.length - mid || 1;
+  const firstHalfAvg = firstHalf / firstHalfWeeks;
+  const secondHalfAvg = secondHalf / secondHalfWeeks;
+  let trend = 'steady';
+  if (secondHalfAvg > firstHalfAvg * 1.25 && secondHalfAvg - firstHalfAvg >= 0.5) trend = 'up';
+  else if (secondHalfAvg < firstHalfAvg * 0.75 && firstHalfAvg - secondHalfAvg >= 0.5) trend = 'down';
+
+  // Longest gap of zero-filed weeks, and whether they've used the
+  // planner at all recently (any row updated in the period = "active").
+  let longestGap = 0, currentGap = 0;
+  weeklyFiled.forEach(count => {
+    if (count === 0) { currentGap++; longestGap = Math.max(longestGap, currentGap); }
+    else currentGap = 0;
+  });
+  const trailingGap = currentGap; // gap right up to the most recent week
+
+  const hasAnyActivity = r.rows.length > 0;
+  const mostRecentUpdate = r.rows.reduce((latest, row) => {
+    if (!row.updated_at) return latest;
+    return (!latest || row.updated_at > latest) ? row.updated_at : latest;
+  }, null);
+
+  // Type mix — filed count per story type, vs how many slots of that
+  // type exist, so a "0/2 impact" reads differently from "0/8 standard".
+  const typeCounts = {};
+  defs.forEach(d => {
+    if (!typeCounts[d.t]) typeCounts[d.t] = { label: d.lbl, filed: 0, total: 0 };
+    typeCounts[d.t].total++;
+  });
+  r.rows.forEach(row => {
+    const def = defs.find(d => d.n === row.story_num);
+    if (def && row.filed && typeCounts[def.t]) typeCounts[def.t].filed++;
+  });
+
+  // Assigned vs self-initiated filing rate.
+  const assignedRows = r.rows.filter(row => row.assigned_by);
+  const selfRows = r.rows.filter(row => !row.assigned_by);
+  const assignedFiled = assignedRows.filter(row => row.filed).length;
+  const selfFiled = selfRows.filter(row => row.filed).length;
+
+  // Text for theme extraction — only filed/substantive rows.
+  const textSamples = r.rows
+    .filter(row => row.headline || row.angle || row.notes)
+    .map(row => ({
+      week: row.week_of,
+      headline: row.headline || '',
+      angle: row.angle || '',
+      notes: row.notes || '',
+    }));
+
+  return {
+    name: r.name,
+    pub: r.pub,
+    weeklyFiled,
+    weeklyTotal,
+    totalFiled,
+    totalSlots,
+    overallRate,
+    trend,
+    longestGap,
+    trailingGap,
+    hasAnyActivity,
+    mostRecentUpdate,
+    typeCounts,
+    assignedTotal: assignedRows.length,
+    assignedFiled,
+    selfTotal: selfRows.length,
+    selfFiled,
+    textSamples,
+  };
+}
+
+// Calls the Netlify Function proxy, which forwards to Claude with the
+// real API key attached server-side.
+async function callClaudeProxy(systemPrompt, userPrompt, maxTokens) {
+  const res = await fetch('/.netlify/functions/claude-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      max_tokens: maxTokens || 2000,
+      messages: [
+        { role: 'user', content: systemPrompt + '\n\n' + userPrompt }
+      ],
+    }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+  const text = (data.content || []).map(b => b.text || '').join('');
+  return text;
+}
+
+async function extractThemes(stat) {
+  if (!stat.textSamples.length) return null;
+
+  const sampleText = stat.textSamples
+    .map(s => `Week ${s.week}: "${s.headline}" — angle: ${s.angle || 'n/a'} — notes: ${s.notes || 'n/a'}`)
+    .join('\n');
+
+  const prompt = `You're reading a local news reporter's story log from the past 8 weeks to help an editor understand patterns in their coverage — not to grade them.
+
+Reporter: ${stat.name} (${stat.pub})
+
+Story log:
+${sampleText}
+
+Identify, in 2-4 short bullet points max:
+- Recurring themes or beats this reporter has been covering (e.g. "consistently covering local council planning disputes")
+- Any single story or topic that's dominated multiple weeks (this could be a legitimate ongoing investigation, not necessarily a problem — phrase it as an observation)
+- Any named sources, organisations, or people who appear repeatedly across stories (could indicate a strong beat contact OR over-reliance on one source — note it neutrally either way)
+
+Keep it factual and short. Do not speculate about the reporter's motivation, effort, or quality of work — only describe what topics/sources actually recur in the text. If nothing notable stands out, say so briefly.
+
+Respond with plain bullet points only, no preamble, no markdown headers.`;
+
+  try {
+    const result = await callClaudeProxy('', prompt, 500);
+    return result.trim();
+  } catch (e) {
+    console.warn('Theme extraction failed for', stat.name, e);
+    return null;
+  }
+}
+
+async function synthesiseReview(statsWithThemes, oldest, latest) {
+  const summaryLines = statsWithThemes.map(s => {
+    const typeLines = Object.entries(s.typeCounts)
+      .map(([t, v]) => `${v.label}: ${v.filed}/${v.total * 8}`)
+      .join(', ');
+    return `
+${s.name} (${s.pub})
+- Filed ${s.totalFiled}/${s.totalSlots} slots over the period (${Math.round(s.overallRate * 100)}%)
+- Trend: ${s.trend} (comparing first half of period to second half)
+- Longest stretch with zero filed in a week: ${s.longestGap} week(s); currently ${s.trailingGap} week(s) into a gap
+- Has used the planner at all this period: ${s.hasAnyActivity ? 'yes' : 'no'}
+- By story type: ${typeLines}
+- Assigned stories filed: ${s.assignedFiled}/${s.assignedTotal}; self-initiated filed: ${s.selfFiled}/${s.selfTotal}
+- Themes in their coverage: ${s.themes || 'not enough data to assess'}`;
+  }).join('\n');
+
+  const prompt = `You're writing a short weekly review for a newsroom's editorial team, covering ${statsWithThemes.length} reporters across the Gazette Network for the period ${oldest} to ${latest} (trailing 8 weeks).
+
+Here is the raw data for each reporter:
+${summaryLines}
+
+Write a weekly review for the editorial team to read together. Structure it as:
+
+1. A short network-wide summary (3-5 sentences) — overall patterns, anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
+
+2. For EACH reporter, a short note (2-4 sentences) covering: how their filing rate has trended, anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
+
+Important tone rules:
+- Never diagnose motivation ("seems disengaged", "isn't trying") — describe only the pattern and suggest a conversation.
+- If someone hasn't used the planner at all, say so plainly and distinctly from "filed 0 stories" — not using the tool and filing nothing while using it are different problems.
+- Treat thematic concentration (one story dominating multiple weeks) as a prompt to ask about, not automatically a failure of diversity.
+- Be specific with numbers where they matter, but don't over-quantify every sentence — this should read like a colleague's summary, not a spreadsheet.
+
+Respond in this exact JSON structure and nothing else, no markdown fences:
+{
+  "network_summary": "...",
+  "reporters": [
+    { "name": "...", "tag": "up|down|steady|quiet", "note": "..." }
+  ]
+}
+
+The "tag" field: use "up" for a clear positive trend, "down" for a clear concerning trend worth a check-in, "quiet" if they haven't used the planner / filed almost nothing all period, and "steady" otherwise (including consistently strong AND consistently average — read the note for nuance, the tag is just a quick visual flag).`;
+
+  const result = await callClaudeProxy('', prompt, 3000);
+  const cleaned = result.replace(/```json|```/g, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.error('Failed to parse review JSON:', cleaned);
+    throw new Error('The review came back in an unexpected format. Try generating it again.');
+  }
+}
+
+function renderWeeklyReview(wrData) {
+  document.getElementById('wr-copy-btn').disabled = false;
+  document.getElementById('wr-pdf-btn').disabled = false;
+
+  const tagClass = { up: 'wr-tag-up', down: 'wr-tag-down', steady: 'wr-tag-steady', quiet: 'wr-tag-quiet' };
+  const tagLabel = { up: 'Trending up', down: 'Worth a check-in', steady: 'Steady', quiet: 'Not using planner' };
+
+  const reporterCards = (wrData.narrative.reporters || []).map(rep => {
+    const cls = tagClass[rep.tag] || 'wr-tag-steady';
+    const lbl = tagLabel[rep.tag] || 'Steady';
+    return `
+      <div class="wr-reporter-card">
+        <div class="wr-reporter-name">${esc(rep.name)}</div>
+        <span class="wr-tag ${cls}">${esc(lbl)}</span>
+        <div class="wr-reporter-note">${esc(rep.note)}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('wr-body').innerHTML = `
+    <div class="wr-section">
+      <div class="wr-section-title">Network summary</div>
+      <div class="wr-network-summary">${esc(wrData.narrative.network_summary)}</div>
+    </div>
+    <div class="wr-section">
+      <div class="wr-section-title">By reporter</div>
+      ${reporterCards}
+    </div>
+  `;
+}
+
+function weeklyReviewToText(wrData) {
+  let out = `GAZETTE NETWORK — WEEKLY REVIEW\n`;
+  out += `Period: ${wrData.period.oldest} to ${wrData.period.latest}\n\n`;
+  out += `NETWORK SUMMARY\n${wrData.narrative.network_summary}\n\n`;
+  out += `BY REPORTER\n\n`;
+  (wrData.narrative.reporters || []).forEach(rep => {
+    out += `${rep.name} — ${rep.tag}\n${rep.note}\n\n`;
+  });
+  return out;
+}
+
+async function copyWeeklyReview() {
+  if (!WR_DATA) return;
+  const text = weeklyReviewToText(WR_DATA);
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('wr-copy-btn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  } catch (e) {
+    alert('Could not copy automatically. Here is the text:\n\n' + text);
+  }
+}
+
+function downloadWeeklyReviewPdf() {
+  if (!WR_DATA) return;
+  // Render a clean, printable version in a new window and trigger the
+  // browser's native print-to-PDF — avoids pulling in a PDF library for
+  // what's fundamentally a print stylesheet problem.
+  const reporterHtml = (WR_DATA.narrative.reporters || []).map(rep => `
+    <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #ddd">
+      <div style="font-weight:700;font-size:14px">${esc(rep.name)} <span style="font-size:11px;font-weight:400;color:#888">(${esc(rep.tag)})</span></div>
+      <div style="font-size:13px;line-height:1.5;margin-top:4px">${esc(rep.note)}</div>
+    </div>
+  `).join('');
+
+  const html = `
+    <html><head><title>Weekly Review — ${esc(WR_DATA.period.latest)}</title>
+    <style>
+      body{font-family:-apple-system,sans-serif;color:#111;max-width:700px;margin:2rem auto;padding:0 1rem}
+      h1{font-size:20px;margin-bottom:2px}
+      .sub{color:#888;font-size:13px;margin-bottom:24px}
+      h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#888;margin-top:28px}
+      .summary{font-size:14px;line-height:1.6}
+    </style></head><body>
+      <h1>Gazette Network — Weekly Review</h1>
+      <div class="sub">Period: ${esc(WR_DATA.period.oldest)} to ${esc(WR_DATA.period.latest)}</div>
+      <h2>Network summary</h2>
+      <div class="summary">${esc(WR_DATA.narrative.network_summary)}</div>
+      <h2>By reporter</h2>
+      ${reporterHtml}
+    </body></html>
+  `;
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 300);
+}
+
+</script>
 
 </body>
 </html>
