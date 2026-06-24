@@ -610,30 +610,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   <div class="setup-card">
     <div class="setup-logo">Gazette News</div>
     <div class="setup-title">Weekly Story Planner</div>
-    <div class="setup-sub">Enter your details to get started. Your stories save automatically and sync across devices.</div>
+    <div class="setup-sub">Log in to see your stories. They save automatically and sync across devices.</div>
     <div class="setup-field">
-      <label class="setup-label">Your name</label>
-      <input type="text" id="inp-name" placeholder="e.g. Zara Cuthbertson" autocomplete="name">
+      <label class="setup-label">Email</label>
+      <input type="email" id="inp-email" placeholder="you@gazettenetwork.com.au" autocomplete="email">
     </div>
     <div class="setup-field">
-      <label class="setup-label">Publication</label>
-      <select id="inp-pub">
-        <option value="">Select your publication...</option>
-        <option>Mid North Coaster</option>
-        <option>Eastern Melburnian</option>
-        <option>West Vic Brolga — Wannon</option>
-        <option>West Vic Brolga — Ballarat</option>
-        <option>Gippsland Monitor</option>
-        <option>North Shore Lorikeet</option>
-        <option>National Account</option>
-      </select>
+      <label class="setup-label">Password</label>
+      <input type="password" id="inp-pass" placeholder="Enter password" autocomplete="current-password">
     </div>
     <div class="setup-field">
       <label class="setup-label">Week of</label>
       <input type="date" id="inp-week" style="font-family:inherit">
     </div>
     <div class="setup-err" id="setup-err">Please fill in all fields.</div>
-    <button class="setup-btn" onclick="startApp()">Open my planner</button>
+    <button class="setup-btn" id="setup-btn" onclick="startApp()">Open my planner</button>
   </div>
 </div>
 
@@ -768,6 +759,11 @@ async function notifySlack(text) {
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
 const TABLE = 'planner_stories';
 
+// Global Supabase client — created once, used for every auth + data call.
+// Once a reporter signs in, this client automatically attaches their
+// session token to every request, which is what makes RLS policies work.
+const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
 // ── Editorial calendar: Victoria reporting moments ──
 const PUB_TO_BRAND = {
   'West Vic Brolga — Wannon': 'WVB',
@@ -827,11 +823,15 @@ let DATA = {};
 let saveTimer = null;
 
 async function supaFetch(method, path, body) {
+  // Use the logged-in reporter's session token (not the static anon key)
+  // as the bearer token, so RLS policies can identify who's calling.
+  const { data: { session } } = await supa.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
   const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
     method,
     headers: {
       'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
       'Prefer': method === 'POST' ? 'return=representation' : 'return=representation',
     },
@@ -868,16 +868,49 @@ function formatWeek(dateStr) {
   } catch(e) { return dateStr; }
 }
 
-function startApp() {
-  const name = document.getElementById('inp-name').value.trim();
-  const pub  = document.getElementById('inp-pub').value;
-  const week = document.getElementById('inp-week').value.trim();
-  const err  = document.getElementById('setup-err');
-  if (!name || !pub || !week) { err.style.display='block'; return; }
+async function startApp() {
+  const email = document.getElementById('inp-email').value.trim();
+  const pass  = document.getElementById('inp-pass').value;
+  const week  = document.getElementById('inp-week').value.trim();
+  const err   = document.getElementById('setup-err');
+  const btn   = document.getElementById('setup-btn');
   err.style.display = 'none';
-  USER = { name, pub };
+
+  if (!email || !pass || !week) {
+    err.textContent = 'Please fill in all fields.';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  const { data, error } = await supa.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Open my planner';
+
+  if (error) {
+    err.textContent = 'Incorrect email or password.';
+    err.style.display = 'block';
+    return;
+  }
+
+  // Identity (name, publication) comes from the reporter's own profile —
+  // never trust a typed name/publication, since that's exactly the gap
+  // this change is meant to close.
+  const { data: profile, error: profErr } = await supa
+    .from('profiles')
+    .select('role, name, reporter_name, publication')
+    .eq('id', data.user.id)
+    .single();
+
+  if (profErr || !profile || profile.role !== 'reporter' || !profile.publication) {
+    err.textContent = 'This account is not set up as a reporter. Contact Brad.';
+    err.style.display = 'block';
+    await supa.auth.signOut();
+    return;
+  }
+
+  USER = { name: profile.reporter_name || profile.name, pub: profile.publication };
   WEEK = getMondayOf(week);
-  localStorage.setItem(LS_KEY, JSON.stringify({ name, pub, week: WEEK }));
+  localStorage.setItem(LS_KEY, JSON.stringify({ week: WEEK }));
   showApp();
 }
 
@@ -906,7 +939,8 @@ window.addEventListener('popstate', function(e) {
   }
 });
 
-function signOut() {
+async function signOut() {
+  await supa.auth.signOut();
   localStorage.removeItem(LS_KEY);
   USER = null; WEEK = ''; DATA = {};
   document.getElementById('app').style.display = 'none';
@@ -1707,6 +1741,8 @@ async function sendToNextWeek(num, e) {
 // sendToNextWeek already confirmed with the user once).
 async function deleteExtraSilent(num) {
   try {
+    const { data: { session } } = await supa.auth.getSession();
+    const token = session ? session.access_token : SUPA_KEY;
     await fetch(SUPA_URL + '/rest/v1/' + TABLE +
       '?reporter=eq.' + encodeURIComponent(USER.name) +
       '&publication=eq.' + encodeURIComponent(USER.pub) +
@@ -1715,7 +1751,7 @@ async function deleteExtraSilent(num) {
       method: 'DELETE',
       headers: {
         'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Authorization': 'Bearer ' + token,
       }
     });
   } catch (e) { console.warn('Delete from DB failed:', e); }
@@ -1764,6 +1800,8 @@ async function deleteExtra(num, e) {
   if (!confirm('Delete "' + name + '"? This removes it completely.')) return;
   // Delete from Supabase if it has a real ID (not just local)
   try {
+    const { data: { session } } = await supa.auth.getSession();
+    const token = session ? session.access_token : SUPA_KEY;
     await fetch(SUPA_URL + '/rest/v1/' + TABLE +
       '?reporter=eq.' + encodeURIComponent(USER.name) +
       '&publication=eq.' + encodeURIComponent(USER.pub) +
@@ -1772,7 +1810,7 @@ async function deleteExtra(num, e) {
       method: 'DELETE',
       headers: {
         'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Authorization': 'Bearer ' + token,
       }
     });
   } catch(e) { console.warn('Delete from DB failed:', e); }
@@ -2203,6 +2241,8 @@ function celebrateComplete(pbLine) {
 }
 
 async function upsertRow(row) {
+  const { data: { session } } = await supa.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
   // Use PATCH with return=representation so we can see if a row was actually updated
   const filter = 'reporter=eq.' + encodeURIComponent(row.reporter) +
     '&publication=eq.' + encodeURIComponent(row.publication) +
@@ -2213,7 +2253,7 @@ async function upsertRow(row) {
     method: 'PATCH',
     headers: {
       'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation',
     },
@@ -2236,7 +2276,7 @@ async function upsertRow(row) {
       method: 'POST',
       headers: {
         'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal',
       },
@@ -2324,20 +2364,35 @@ function showToast() {
   setTimeout(() => t.classList.remove('show'), 1800);
 }
 
-const saved = localStorage.getItem(LS_KEY);
-if (saved) {
-  try {
-    const u = JSON.parse(saved);
-    if (u.name && u.pub && u.week) {
-      USER = { name: u.name, pub: u.pub };
-      WEEK = u.week;
-      document.getElementById('inp-name').value = u.name;
-      document.getElementById('inp-pub').value  = u.pub;
-      document.getElementById('inp-week').value  = u.week;
+(async function restoreReporterSession() {
+  const { data: { session } } = await supa.auth.getSession();
+  const saved = localStorage.getItem(LS_KEY);
+  let savedWeek = null;
+  if (saved) {
+    try { savedWeek = JSON.parse(saved).week; } catch(e) {}
+  }
+
+  if (session) {
+    const { data: profile, error: profErr } = await supa
+      .from('profiles')
+      .select('role, name, reporter_name, publication')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profErr && profile && profile.role === 'reporter' && profile.publication && savedWeek) {
+      USER = { name: profile.reporter_name || profile.name, pub: profile.publication };
+      WEEK = savedWeek;
+      document.getElementById('inp-week').value = savedWeek;
       showApp();
+      return;
     }
-  } catch(e) {}
-}
+    // Session exists but isn't a valid reporter — sign out to avoid a
+    // confusing half-logged-in state.
+    await supa.auth.signOut();
+  }
+
+  if (savedWeek) document.getElementById('inp-week').value = savedWeek;
+})();
 
 
 
