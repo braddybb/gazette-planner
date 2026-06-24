@@ -1661,7 +1661,21 @@ async function callClaudeProxy(systemPrompt, userPrompt, maxTokens) {
       ],
     }),
   });
-  const data = await res.json();
+  const raw = await res.text();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    // The function didn't return JSON at all — almost always means the
+    // Netlify Function itself isn't deploying/routing correctly (a 404
+    // or 500 HTML page came back instead of a real response), rather
+    // than anything wrong with the prompt or the Anthropic API call.
+    throw new Error(
+      'claude-proxy returned a non-JSON response (HTTP ' + res.status + '). ' +
+      'This usually means the Netlify Function isn\'t deployed correctly. ' +
+      'First 200 chars of response: ' + raw.slice(0, 200)
+    );
+  }
   if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
   const text = (data.content || []).map(b => b.text || '').join('');
   return text;
