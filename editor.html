@@ -1768,13 +1768,12 @@ Respond with plain bullet points only, no preamble, no markdown headers.`;
 }
 
 async function synthesiseReview(statsWithThemes, oldest, latest) {
-  const summaryLines = statsWithThemes.map(s => {
+  const summaryFor = s => {
     const typeLines = Object.entries(s.typeCounts)
       .map(([t, v]) => `${v.label}: ${v.filed}/${v.total * 8}`)
       .join(', ');
     const gariCount = (s.gariSessions || []).length;
-    return `
-${s.name} (${s.pub})
+    return `${s.name} (${s.pub})
 - Filed ${s.totalFiled}/${s.totalSlots} slots over the period (${Math.round(s.overallRate * 100)}%)
 - Trend: ${s.trend} (comparing first half of period to second half)
 - Longest stretch with zero filed in a week: ${s.longestGap} week(s); currently ${s.trailingGap} week(s) into a gap
@@ -1783,45 +1782,76 @@ ${s.name} (${s.pub})
 - By story type: ${typeLines}
 - Assigned stories filed: ${s.assignedFiled}/${s.assignedTotal}; self-initiated filed: ${s.selfFiled}/${s.selfTotal}
 - Themes in their coverage and editorial patterns (from Planner entries and GARI feedback): ${s.themes || 'not enough data to assess'}`;
-  }).join('\n');
+  };
 
-  const prompt = `You're writing a short weekly review for a newsroom's editorial team, covering ${statsWithThemes.length} reporters across the Gazette Network for the period ${oldest} to ${latest} (trailing 8 weeks).
-
-Here is the raw data for each reporter, combining their Planner story log with their GARI editorial coaching history:
-${summaryLines}
-
-Write a weekly review for the editorial team to read together. Structure it as:
-
-1. A short network-wide summary (3-5 sentences) — overall patterns, anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
-
-2. For EACH reporter, a short note (2-4 sentences) covering: how their filing rate has trended, anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
-
-Important tone rules:
+  const toneRules = `Important tone rules:
 - Never diagnose motivation ("seems disengaged", "isn't trying") — describe only the pattern and suggest a conversation.
 - If someone hasn't used the planner at all, say so plainly and distinctly from "filed 0 stories" — not using the tool and filing nothing while using it are different problems.
 - Treat thematic concentration (one story dominating multiple weeks) as a prompt to ask about, not automatically a failure of diversity.
 - A reporter with zero GARI coaching sessions is not necessarily a problem — they may simply not need much coaching, or prefer working directly with an editor. Only mention GARI usage when it's genuinely informative (e.g. a recurring editorial issue GARI has flagged more than once, or a clear improvement GARI has noted) — don't treat session count itself as a performance metric.
 - If GARI feedback and Planner activity tell different stories (e.g. someone filing steadily but GARI repeatedly flagging the same editorial gap), that combination is worth surfacing specifically, since it's the kind of pattern that's easy to miss looking at either source alone.
-- Be specific with numbers where they matter, but don't over-quantify every sentence — this should read like a colleague's summary, not a spreadsheet.
+- Be specific with numbers where they matter, but don't over-quantify every sentence — this should read like a colleague's summary, not a spreadsheet.`;
+
+  // Generate each reporter's note as its own (smaller, faster) Claude call,
+  // run in parallel — mirroring the per-reporter theme extraction pattern.
+  // This replaces one large 7-reporter synthesis call that was prone to
+  // hitting Netlify's inactivity timeout (HTTP 504) under normal load.
+  const notePromises = statsWithThemes.map(async s => {
+    const prompt = `You're writing one short note for a newsroom editorial team's weekly review, about a single reporter on the Gazette Network, covering the period ${oldest} to ${latest} (trailing 8 weeks).
+
+${summaryFor(s)}
+
+${toneRules}
+
+Write a 2-4 sentence note covering: how their filing rate has trended, anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
 
 Respond in this exact JSON structure and nothing else, no markdown fences:
-{
-  "network_summary": "...",
-  "reporters": [
-    { "name": "...", "tag": "up|down|steady|quiet", "note": "..." }
-  ]
-}
+{ "tag": "up|down|steady|quiet", "note": "..." }
 
 The "tag" field: use "up" for a clear positive trend, "down" for a clear concerning trend worth a check-in, "quiet" if they haven't used the planner / filed almost nothing all period, and "steady" otherwise (including consistently strong AND consistently average — read the note for nuance, the tag is just a quick visual flag).`;
 
-  const result = await callClaudeProxy('', prompt, 3000);
-  const cleaned = result.replace(/```json|```/g, '').trim();
+    try {
+      const result = await callClaudeProxy('', prompt, 400);
+      const cleaned = result.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      return { name: s.name, tag: parsed.tag || 'steady', note: parsed.note || '' };
+    } catch (e) {
+      console.error('Failed to generate note for', s.name, e);
+      // Don't let one reporter's failure take down the whole review —
+      // fall back to a plain note so the rest of the report still renders.
+      return { name: s.name, tag: 'steady', note: 'Could not generate a summary for this reporter — see the raw stats above.' };
+    }
+  });
+
+  const allSummaries = statsWithThemes.map(summaryFor).join('\n\n');
+  const overviewPrompt = `You're writing the opening summary of a weekly review for a newsroom's editorial team, covering ${statsWithThemes.length} reporters across the Gazette Network for the period ${oldest} to ${latest} (trailing 8 weeks).
+
+Here is the raw data for each reporter, combining their Planner story log with their GARI editorial coaching history:
+
+${allSummaries}
+
+Write a short network-wide summary (3-5 sentences) — overall patterns, anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
+
+${toneRules}
+
+Respond in this exact JSON structure and nothing else, no markdown fences:
+{ "network_summary": "..." }`;
+
+  const [reporterNotes, overviewResult] = await Promise.all([
+    Promise.all(notePromises),
+    callClaudeProxy('', overviewPrompt, 600),
+  ]);
+
+  let network_summary = '';
   try {
-    return JSON.parse(cleaned);
+    const cleanedOverview = overviewResult.replace(/```json|```/g, '').trim();
+    network_summary = JSON.parse(cleanedOverview).network_summary || '';
   } catch (e) {
-    console.error('Failed to parse review JSON:', cleaned);
-    throw new Error('The review came back in an unexpected format. Try generating it again.');
+    console.error('Failed to parse network summary JSON:', overviewResult);
+    network_summary = 'Could not generate a network-wide summary — see individual reporter notes below.';
   }
+
+  return { network_summary, reporters: reporterNotes };
 }
 
 function renderWeeklyReview(wrData) {
