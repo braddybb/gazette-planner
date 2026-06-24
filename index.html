@@ -109,10 +109,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .ppill-life{background:var(--cream);color:var(--cream-dk);border-color:#DDD0A0}
 .ppill-vidfirst{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
 .ppill-vidflip{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
-.ppill-l2n{background:#E8E9FF;color:#0000BB;border-color:#AAAEFF}
-.ppill-original{background:#E8E8E8;color:#1A1A1A;border-color:#CCCCCC}
-.ppill-newsletter{background:#FEF6D8;color:#8A6A00;border-color:#FCD612}
-.ppill-poll{background:#EAEAEA;color:#333333;border-color:#D0D0D0}
+.ppill-l2n{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
+.ppill-original{background:#E8E0FF;color:#5B3FB0;border-color:#C8B8F0}
+.ppill-newsletter{background:#FFE8E0;color:#B8431F;border-color:#F0C0A8}
+.ppill-poll{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 
 /* ── WEEK PICKER BANNER ── */
 .week-banner{background:var(--blue-lt);border-bottom:1px solid #AABBEE;padding:.75rem 2rem;display:flex;align-items:center;gap:1rem}
@@ -140,25 +140,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .card-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;
   transition:background .35s ease, color .35s ease}
 
-/* EMPTY state — muted, quiet. Card "lights up" once it has content (.has-content) */
+/* EMPTY state — muted, quiet. Card "lights up" once it has content (.has-content)
+   Local masthead colours are the source of truth. National Account's newer
+   types reuse the same five treatments rather than inventing new ones:
+   l2n + poll -> blue (like std), original -> lilac (like vidflip),
+   newsletter -> peach (like vidfirst), imp + life already shared natively. */
 .card-hdr.std{background:#F4F5FB}
 .card-hdr.imp{background:#F3F3F3}
 .card-hdr.life{background:#FBFBEF}
 .card-hdr.vidfirst{background:#FFF3EF}
 .card-hdr.vidflip{background:#F4F0FF}
-.card-hdr.l2n{background:#EEEFFF}
-.card-hdr.original{background:#EFEFEF}
-.card-hdr.newsletter{background:#FEFAE8}
-.card-hdr.poll{background:#F2F2F2}
+.card-hdr.l2n{background:#F4F5FB}
+.card-hdr.original{background:#F4F0FF}
+.card-hdr.poll{background:#F4F5FB}
+.card-hdr.newsletter{background:#FFF3EF}
 .card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:var(--ink)}
-.card-hdr.life.has-content{background:#FDDF44}
+.card-hdr.life.has-content{background:var(--acid)}
 .card-hdr.vidfirst.has-content{background:#D9491E}
 .card-hdr.vidflip.has-content{background:#6D3FD0}
-.card-hdr.l2n.has-content{background:#0000EE}
-.card-hdr.original.has-content{background:#1A1A1A}
-.card-hdr.newsletter.has-content{background:#FCD612}
-.card-hdr.poll.has-content{background:#333333}
+.card-hdr.l2n.has-content{background:var(--blue)}
+.card-hdr.original.has-content{background:#6D3FD0}
+.card-hdr.newsletter.has-content{background:#D9491E}
+.card-hdr.poll.has-content{background:var(--blue)}
 
 .hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px;transition:color .35s ease}
 /* empty num colours (muted) */
@@ -167,13 +171,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-num.life{color:#C9CB9E}
 .hdr-num.vidfirst{color:#F0BBA0}
 .hdr-num.vidflip{color:#CBB8F0}
-.hdr-num.l2n{color:#B0B3FF}
-.hdr-num.original{color:#C4C4C4}
-.hdr-num.newsletter{color:#F5E29A}
-.hdr-num.poll{color:#C4C4C4}
+.hdr-num.l2n{color:#B9C2E8}
+.hdr-num.original{color:#CBB8F0}
+.hdr-num.poll{color:#B9C2E8}
+.hdr-num.newsletter{color:#F0BBA0}
 /* filled num colours */
-.card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.imp,.card-hdr.has-content .hdr-num.l2n,.card-hdr.has-content .hdr-num.original,.card-hdr.has-content .hdr-num.poll{color:#fff}
-.card-hdr.has-content .hdr-num.life,.card-hdr.has-content .hdr-num.newsletter{color:#8A6A00}
+.card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.imp,.card-hdr.has-content .hdr-num.l2n,.card-hdr.has-content .hdr-num.poll{color:#fff}
+.card-hdr.has-content .hdr-num.life{color:var(--acid-dk)}
 
 .hdr-info{flex:1;min-width:0}
 .hdr-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;transition:color .35s ease}
@@ -183,14 +187,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-type.life{color:#B0B27F}
 .hdr-type.vidfirst{color:#D98860}
 .hdr-type.vidflip{color:#9C84D8}
-.hdr-type.l2n{color:#9A9EF0}
-.hdr-type.original{color:#AAA}
-.hdr-type.newsletter{color:#C4A300}
-.hdr-type.poll{color:#999}
-.card-hdr.has-content .hdr-type.std,.card-hdr.has-content .hdr-type.l2n{color:#AABBFF}
+.hdr-type.l2n{color:#A7B0D8}
+.hdr-type.original{color:#9C84D8}
+.hdr-type.newsletter{color:#D98860}
+.hdr-type.poll{color:#A7B0D8}
+.card-hdr.has-content .hdr-type.std,.card-hdr.has-content .hdr-type.l2n,.card-hdr.has-content .hdr-type.poll{color:#AABBFF}
 .card-hdr.has-content .hdr-type.imp{color:#777}
-.card-hdr.has-content .hdr-type.original,.card-hdr.has-content .hdr-type.poll{color:#999}
-.card-hdr.has-content .hdr-type.life,.card-hdr.has-content .hdr-type.newsletter{color:#8A6A00}
+.card-hdr.has-content .hdr-type.life{color:var(--acid-dk)}
 
 .hdr-preview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;transition:color .35s ease}
 /* empty preview colours */
@@ -199,31 +202,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-preview.life{color:#A9AB78}
 .hdr-preview.vidfirst{color:#D08560}
 .hdr-preview.vidflip{color:#9580C8}
-.hdr-preview.l2n{color:#9094E0}
-.hdr-preview.original{color:#999}
-.hdr-preview.newsletter{color:#B89A1A}
-.hdr-preview.poll{color:#999}
-.card-hdr.has-content .hdr-preview.std,.card-hdr.has-content .hdr-preview.l2n{color:#CCDDFF}
+.hdr-preview.l2n{color:#9AA5D0}
+.hdr-preview.original{color:#9580C8}
+.hdr-preview.newsletter{color:#D08560}
+.hdr-preview.poll{color:#9AA5D0}
+.card-hdr.has-content .hdr-preview.std,.card-hdr.has-content .hdr-preview.l2n,.card-hdr.has-content .hdr-preview.poll{color:#CCDDFF}
 .card-hdr.has-content .hdr-preview.imp{color:#666}
-.card-hdr.has-content .hdr-preview.original,.card-hdr.has-content .hdr-preview.poll{color:#999}
-.card-hdr.has-content .hdr-preview.life,.card-hdr.has-content .hdr-preview.newsletter{color:#8B6500}
+.card-hdr.has-content .hdr-preview.life{color:#8B6500}
 
 .hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .filed-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:none}
 .filed-pill.std{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.imp{background:rgba(255,255,255,.15);color:#aaa}
-.filed-pill.life{background:rgba(0,0,0,.1);color:#8A6A00}
+.filed-pill.life{background:rgba(0,0,0,.1);color:var(--acid-dk)}
 .filed-pill.vidfirst{background:rgba(255,255,255,.25);color:#fff}
 .filed-pill.vidflip{background:rgba(255,255,255,.25);color:#fff}
-.filed-pill.l2n{background:rgba(255,255,255,.25);color:#fff}
-.filed-pill.original{background:rgba(255,255,255,.15);color:#aaa}
-.filed-pill.newsletter{background:rgba(0,0,0,.1);color:#8A6A00}
-.filed-pill.poll{background:rgba(255,255,255,.15);color:#aaa}
+.filed-pill.l2n{background:rgba(255,255,255,.2);color:#fff}
+.filed-pill.original{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.newsletter{background:rgba(255,255,255,.25);color:#fff}
+.filed-pill.poll{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.show{display:block}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
-.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.poll{color:rgba(255,255,255,.6)}
-.hdr-chev.life,.hdr-chev.newsletter{color:#8A6A00}
+.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll{color:rgba(255,255,255,.6)}
+.hdr-chev.life{color:var(--acid-dk)}
 .hdr-chev.open{transform:rotate(180deg)}
 
 .card-body{display:none;padding:1rem}
