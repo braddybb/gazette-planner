@@ -104,11 +104,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .streak-label{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9A6440}
 .prog-pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ppill{display:inline-flex;align-items:center;font-size:11px;font-weight:600;line-height:1;padding:5px 12px;border-radius:999px;border:0.5px solid;white-space:nowrap}
-.ppill-std{background:#E4E4E4;color:#1C1C1C;border-color:#CCC}
+.ppill-std{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 .ppill-imp{background:#D9492E;color:#fff;border-color:#B8391F}
-.ppill-life{background:#EBEBEB;color:#444;border-color:#D4D4D4}
+.ppill-life{background:#FBEEEA;color:#B8552F;border-color:#F0C0A8}
 .ppill-vidfirst{background:#E4E4E4;color:#1C1C1C;border-color:#CCC}
-.ppill-vidflip{background:#EBEBEB;color:#444;border-color:#D4D4D4}
+.ppill-vidflip{background:#EEEFFF;color:#3A3FB0;border-color:#C0C4F5}
 .ppill-l2n{background:#E4E4E4;color:#1C1C1C;border-color:#CCC}
 .ppill-original{background:#E0E0E0;color:#333;border-color:#C4C4C4}
 .ppill-newsletter{background:#EEEEEE;color:#555;border-color:#DADADA}
@@ -141,24 +141,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   transition:background .35s ease, color .35s ease}
 
 /* EMPTY state — muted, quiet. Card "lights up" once it has content (.has-content)
-   "Ink and accent" palette: near-monochrome black/white/grey base, blue
-   kept as the link colour (Poll, Story), and terracotta reserved as the
-   single warm accent on Impact only — so when it appears, it actually
-   signals something, rather than competing with five other hues. */
-.card-hdr.std{background:#EFEFEF}
+   "Ink and accent" palette: near-monochrome black/white/grey base for the
+   admin-feeling slots, blue reserved for Story/Poll (with a lighter blue
+   for Video flip), terracotta for Impact (with a lighter terracotta for
+   YouTube/Podcast and Lifestyle/Culture) — so colour still carries
+   meaning instead of becoming decoration. */
+.card-hdr.std{background:#F4F5FB}
 .card-hdr.imp{background:#FBEEEA}
-.card-hdr.life{background:#F2F2F2}
+.card-hdr.life{background:#FBEEEA}
 .card-hdr.vidfirst{background:#EFEFEF}
-.card-hdr.vidflip{background:#F2F2F2}
+.card-hdr.vidflip{background:#EEEFFF}
 .card-hdr.l2n{background:#EFEFEF}
 .card-hdr.original{background:#EDEDED}
 .card-hdr.poll{background:#F4F5FB}
 .card-hdr.newsletter{background:#F4F4F4}
-.card-hdr.std.has-content{background:#1C1C1C}
+.card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:#D9492E}
-.card-hdr.life.has-content{background:#5C5C5C}
+.card-hdr.life.has-content{background:#E8896E}
 .card-hdr.vidfirst.has-content{background:#1C1C1C}
-.card-hdr.vidflip.has-content{background:#3A3A3A}
+.card-hdr.vidflip.has-content{background:#5555FF}
 .card-hdr.l2n.has-content{background:#1C1C1C}
 .card-hdr.original.has-content{background:#3A3A3A}
 .card-hdr.newsletter.has-content{background:#787878}
@@ -166,11 +167,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 .hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px;transition:color .35s ease}
 /* empty num colours (muted) */
-.hdr-num.std{color:#BBB}
+.hdr-num.std{color:#B9C2E8}
 .hdr-num.imp{color:#E8B8A8}
-.hdr-num.life{color:#C4C4C4}
+.hdr-num.life{color:#E8B8A8}
 .hdr-num.vidfirst{color:#BBB}
-.hdr-num.vidflip{color:#C4C4C4}
+.hdr-num.vidflip{color:#C2C4F5}
 .hdr-num.l2n{color:#BBB}
 .hdr-num.original{color:#C4C4C4}
 .hdr-num.poll{color:#B9C2E8}
@@ -183,11 +184,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hdr-info{flex:1;min-width:0}
 .hdr-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;transition:color .35s ease}
 /* empty type colours */
-.hdr-type.std{color:#999}
+.hdr-type.std{color:#A7B0D8}
 .hdr-type.imp{color:#D08C78}
-.hdr-type.life{color:#AAA}
+.hdr-type.life{color:#D08C78}
 .hdr-type.vidfirst{color:#999}
-.hdr-type.vidflip{color:#AAA}
+.hdr-type.vidflip{color:#A8ACE8}
 .hdr-type.l2n{color:#999}
 .hdr-type.original{color:#AAA}
 .hdr-type.newsletter{color:#AAA}
@@ -199,11 +200,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 .hdr-preview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;transition:color .35s ease}
 /* empty preview colours */
-.hdr-preview.std{color:#AAA}
+.hdr-preview.std{color:#9AA5D0}
 .hdr-preview.imp{color:#D8A090}
-.hdr-preview.life{color:#999}
+.hdr-preview.life{color:#D8A090}
 .hdr-preview.vidfirst{color:#AAA}
-.hdr-preview.vidflip{color:#999}
+.hdr-preview.vidflip{color:#9CA0E0}
 .hdr-preview.l2n{color:#AAA}
 .hdr-preview.original{color:#999}
 .hdr-preview.newsletter{color:#999}
