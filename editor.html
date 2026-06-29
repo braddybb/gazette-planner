@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -146,11 +147,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .wr-section{background:#fff;border:0.5px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem}
 .wr-section-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--grey-md);margin-bottom:10px}
 .wr-network-summary{font-size:14px;line-height:1.6;color:var(--ink)}
+.wr-bullets{margin:0;padding-left:1.1rem;list-style:disc}
+.wr-bullets li{font-size:13.5px;line-height:1.5;color:var(--ink);margin-bottom:6px}
+.wr-bullets li:last-child{margin-bottom:0}
 .wr-reporter-card{border-bottom:0.5px solid var(--border);padding:14px 0}
 .wr-reporter-card:last-child{border-bottom:none}
 .wr-reporter-name{font-size:15px;font-weight:700;color:var(--ink)}
 .wr-reporter-pub{font-size:12px;color:var(--grey-md);margin-bottom:6px}
 .wr-reporter-note{font-size:13.5px;line-height:1.55;color:var(--ink)}
+.wr-reporter-card .wr-bullets{margin-top:6px}
 .wr-gari-count{font-size:11px;color:var(--grey-md);margin-top:6px}
 .wr-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-right:6px;margin-bottom:6px}
 .wr-tag-up{background:#E0F0E0;color:#2C6B2C}
@@ -273,8 +278,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 /* ── Progress tracking ── */
 .progress-section{margin-top:2rem;background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem}
-.progress-title{font-size:15px;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.progress-title{font-size:15px;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.progress-title:hover{opacity:.8}
+.progress-chev{font-size:13px;color:#888;transition:transform .2s ease;margin-left:auto}
+.progress-chev.collapsed{transform:rotate(-90deg)}
+.progress-section.collapsed .progress-title{margin-bottom:0}
 .progress-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.progress-grid.collapsed{display:none}
 .progress-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px}
 .pc-name{font-size:14px;font-weight:700;margin-bottom:2px}
 .pc-pub{font-size:11px;color:var(--grey-md);margin-bottom:10px}
@@ -450,6 +460,7 @@ const STORY_DEFS = getStoryDefs(null);
 
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
 const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
+const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
 
 let WEEK = '';
 let ALL_DATA = {};
@@ -1069,17 +1080,33 @@ function openDrill(r) {
   const container = document.getElementById('drill-stories');
   container.innerHTML = '';
   const defs = getStoryDefs(r.pub);
-  defs.forEach(s => {
+  const dayRank = (s) => {
+    const st = data[s.n];
+    const day = st && st.file_day ? st.file_day : null;
+    const idx = day ? DAYS.indexOf(day) : -1;
+    return idx === -1 ? DAYS.length : idx; // undated stories sort after all dated ones
+  };
+  const sortedDefs = defs
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => (dayRank(a.s) - dayRank(b.s)) || (a.i - b.i))
+    .map(x => x.s);
+  sortedDefs.forEach(s => {
     container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
   });
   // Also render extras (story_num beyond this reporter's base slot count)
-  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > defs.length).sort();
+  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > defs.length);
   if (extraNums.length) {
     const extraHdr = document.createElement('div');
     extraHdr.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:16px;margin-bottom:8px';
     extraHdr.textContent = 'Extra stories';
     container.appendChild(extraHdr);
-    extraNums.forEach(num => {
+    const extraDayRank = (num) => {
+      const day = data[num] && data[num].file_day ? data[num].file_day : null;
+      const idx = day ? DAYS.indexOf(day) : -1;
+      return idx === -1 ? DAYS.length : idx;
+    };
+    const sortedExtraNums = extraNums.sort((a, b) => (extraDayRank(a) - extraDayRank(b)) || (parseInt(a,10) - parseInt(b,10)));
+    sortedExtraNums.forEach(num => {
       const sDef = { n: num, t: data[num].assigned_by ? 'imp' : 'std', lbl: data[num].assigned_by ? 'Editor assignment' : 'Extra story' };
       container.appendChild(buildDrillCard(sDef, data[num], r.name, r.pub, WEEK));
     });
@@ -1343,6 +1370,26 @@ async function loadProgressData() {
   }
 }
 
+function isProgressCollapsed() {
+  try { return localStorage.getItem('gz_progress_collapsed') === '1'; }
+  catch(e) { return false; }
+}
+function setProgressCollapsed(collapsed) {
+  try { localStorage.setItem('gz_progress_collapsed', collapsed ? '1' : '0'); }
+  catch(e) {}
+}
+function toggleProgressSection() {
+  const section = document.getElementById('progress-section');
+  const grid = section ? section.querySelector('.progress-grid') : null;
+  const chev = section ? section.querySelector('.progress-chev') : null;
+  if (!section || !grid) return;
+  const collapsed = !grid.classList.contains('collapsed');
+  grid.classList.toggle('collapsed', collapsed);
+  chev.classList.toggle('collapsed', collapsed);
+  section.classList.toggle('collapsed', collapsed);
+  setProgressCollapsed(collapsed);
+}
+
 function renderProgressSection(data) {
   let existing = document.getElementById('progress-section');
   if (!existing) {
@@ -1355,8 +1402,9 @@ function renderProgressSection(data) {
   if (!data || !data.weeks) { existing.innerHTML = ''; return; }
 
   const { byReporter, weeks } = data;
-  let html = '<div class="progress-title">Reporter progress <span style="font-size:11px;color:#888;font-weight:500">last ' + weeks.length + ' weeks</span></div>';
-  html += '<div class="progress-grid">';
+  const collapsed = isProgressCollapsed();
+  let html = '<div class="progress-title" onclick="toggleProgressSection()">Reporter progress <span style="font-size:11px;color:#888;font-weight:500">last ' + weeks.length + ' weeks</span><span class="progress-chev' + (collapsed ? ' collapsed' : '') + '">&#9662;</span></div>';
+  html += '<div class="progress-grid' + (collapsed ? ' collapsed' : '') + '">';
 
   REPORTERS.forEach(r => {
     const key = r.name + '|' + r.pub;
@@ -1394,6 +1442,7 @@ function renderProgressSection(data) {
 
   html += '</div>';
   existing.innerHTML = html;
+  existing.classList.toggle('collapsed', collapsed);
 }
 
 // Load progress data after initial data load
@@ -1815,23 +1864,23 @@ ${summaryFor(s)}
 
 ${toneRules}
 
-Write a 2-4 sentence note. It should lead with how THIS WEEK went, read in the context of the prior ${windowWeeks - 1} week(s) — not as an isolated fact, but as "this week, compared to how things have been going." Then cover anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
+Write the note as 2-4 short, scannable bullet points in the style of Axios — one clear idea per bullet, lead with the most important word or number, no throat-clearing. The first bullet should cover how THIS WEEK went, read in the context of the prior ${windowWeeks - 1} week(s) — not as an isolated fact, but as "this week, compared to how things have been going." Other bullets can cover anything notable about their coverage mix or themes, and — if relevant — a clear, specific, non-judgmental prompt for a check-in conversation. Always frame declines as "worth checking in on" rather than assuming disengagement; a reporter could be on leave, working a major story, or reassigned. Always call out strong, sustained performance specifically and positively, not just generically.
 
 Respond in this exact JSON structure and nothing else, no markdown fences:
-{ "tag": "up|down|steady|quiet", "note": "..." }
+{ "tag": "up|down|steady|quiet", "note_bullets": ["...", "..."] }
 
-The "tag" field: use "up" if this week is a clear positive step up from recent context, "down" if this week is a clear concerning drop worth a check-in, "quiet" if they haven't used the planner / filed almost nothing this period, and "steady" otherwise (including consistently strong AND consistently average — read the note for nuance, the tag is just a quick visual flag).`;
+The "tag" field: use "up" if this week is a clear positive step up from recent context, "down" if this week is a clear concerning drop worth a check-in, "quiet" if they haven't used the planner / filed almost nothing this period, and "steady" otherwise (including consistently strong AND consistently average — read the bullets for nuance, the tag is just a quick visual flag).`;
 
     try {
       const result = await callClaudeProxy('', prompt, 400);
       const cleaned = result.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(cleaned);
-      return { name: s.name, tag: parsed.tag || 'steady', note: parsed.note || '' };
+      return { name: s.name, tag: parsed.tag || 'steady', note_bullets: parsed.note_bullets || [] };
     } catch (e) {
       console.error('Failed to generate note for', s.name, e);
       // Don't let one reporter's failure take down the whole review —
       // fall back to a plain note so the rest of the report still renders.
-      return { name: s.name, tag: 'steady', note: 'Could not generate a summary for this reporter — see the raw stats above.' };
+      return { name: s.name, tag: 'steady', note_bullets: ['Could not generate a summary for this reporter — see the raw stats above.'] };
     }
   });
 
@@ -1842,28 +1891,28 @@ Here is the raw data for each reporter, combining their Planner story log with t
 
 ${allSummaries}
 
-Write a short network-wide summary (3-5 sentences). Lead with how this past week looked across the network compared to the prior weeks' context, then cover any other overall patterns — anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
+Write the network-wide summary as 3-5 short, scannable bullet points in the style of Axios — one clear idea per bullet, lead with the most important word or number, no throat-clearing. The first bullet should cover how this past week looked across the network compared to the prior weeks' context. Other bullets should cover any other overall patterns — anything structural (e.g. if one story type is consistently under-filed across multiple reporters, that's a structural problem worth naming, not an individual one).
 
 ${toneRules}
 
 Respond in this exact JSON structure and nothing else, no markdown fences:
-{ "network_summary": "..." }`;
+{ "network_summary_bullets": ["...", "...", "..."] }`;
 
   const [reporterNotes, overviewResult] = await Promise.all([
     Promise.all(notePromises),
     callClaudeProxy('', overviewPrompt, 600),
   ]);
 
-  let network_summary = '';
+  let network_summary_bullets = [];
   try {
     const cleanedOverview = overviewResult.replace(/```json|```/g, '').trim();
-    network_summary = JSON.parse(cleanedOverview).network_summary || '';
+    network_summary_bullets = JSON.parse(cleanedOverview).network_summary_bullets || [];
   } catch (e) {
     console.error('Failed to parse network summary JSON:', overviewResult);
-    network_summary = 'Could not generate a network-wide summary — see individual reporter notes below.';
+    network_summary_bullets = ['Could not generate a network-wide summary — see individual reporter notes below.'];
   }
 
-  return { network_summary, reporters: reporterNotes };
+  return { network_summary_bullets, reporters: reporterNotes };
 }
 
 function renderWeeklyReview(wrData) {
@@ -1872,6 +1921,8 @@ function renderWeeklyReview(wrData) {
 
   const tagClass = { up: 'wr-tag-up', down: 'wr-tag-down', steady: 'wr-tag-steady', quiet: 'wr-tag-quiet' };
   const tagLabel = { up: 'Trending up', down: 'Worth a check-in', steady: 'Steady', quiet: 'Not using planner' };
+
+  const bulletList = (bullets) => `<ul class="wr-bullets">${(bullets || []).map(b => `<li>${esc(b)}</li>`).join('')}</ul>`;
 
   const reporterCards = (wrData.narrative.reporters || []).map(rep => {
     const cls = tagClass[rep.tag] || 'wr-tag-steady';
@@ -1885,7 +1936,7 @@ function renderWeeklyReview(wrData) {
       <div class="wr-reporter-card">
         <div class="wr-reporter-name">${esc(rep.name)}</div>
         <span class="wr-tag ${cls}">${esc(lbl)}</span>
-        <div class="wr-reporter-note">${esc(rep.note)}</div>
+        ${bulletList(rep.note_bullets)}
         ${gariLine}
       </div>`;
   }).join('');
@@ -1893,7 +1944,7 @@ function renderWeeklyReview(wrData) {
   document.getElementById('wr-body').innerHTML = `
     <div class="wr-section">
       <div class="wr-section-title">Network summary</div>
-      <div class="wr-network-summary">${esc(wrData.narrative.network_summary)}</div>
+      ${bulletList(wrData.narrative.network_summary_bullets)}
     </div>
     <div class="wr-section">
       <div class="wr-section-title">By reporter</div>
@@ -1905,12 +1956,14 @@ function renderWeeklyReview(wrData) {
 function weeklyReviewToText(wrData) {
   let out = `GAZETTE NETWORK — WEEKLY REVIEW\n`;
   out += `Period: ${wrData.period.oldest} to ${wrData.period.latest}\n\n`;
-  out += `NETWORK SUMMARY\n${wrData.narrative.network_summary}\n\n`;
-  out += `BY REPORTER\n\n`;
+  out += `NETWORK SUMMARY\n`;
+  (wrData.narrative.network_summary_bullets || []).forEach(b => { out += `• ${b}\n`; });
+  out += `\nBY REPORTER\n\n`;
   (wrData.narrative.reporters || []).forEach(rep => {
     const stat = (wrData.stats || []).find(s => s.name === rep.name);
     const gariCount = stat ? (stat.gariSessions || []).length : null;
-    out += `${rep.name} — ${rep.tag}\n${rep.note}\n`;
+    out += `${rep.name} — ${rep.tag}\n`;
+    (rep.note_bullets || []).forEach(b => { out += `• ${b}\n`; });
     if (gariCount !== null) out += `(${gariCount} GARI coaching session${gariCount === 1 ? '' : 's'} logged this period)\n`;
     out += `\n`;
   });
@@ -1936,6 +1989,8 @@ function downloadWeeklyReviewPdf() {
   // Render a clean, printable version in a new window and trigger the
   // browser's native print-to-PDF — avoids pulling in a PDF library for
   // what's fundamentally a print stylesheet problem.
+  const bulletsHtml = (bullets) => `<ul style="margin:6px 0 0;padding-left:18px">${(bullets || []).map(b => `<li style="margin-bottom:3px">${esc(b)}</li>`).join('')}</ul>`;
+
   const reporterHtml = (WR_DATA.narrative.reporters || []).map(rep => {
     const stat = (WR_DATA.stats || []).find(s => s.name === rep.name);
     const gariCount = stat ? (stat.gariSessions || []).length : null;
@@ -1945,7 +2000,7 @@ function downloadWeeklyReviewPdf() {
     return `
     <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #ddd">
       <div style="font-weight:700;font-size:14px">${esc(rep.name)} <span style="font-size:11px;font-weight:400;color:#888">(${esc(rep.tag)})</span></div>
-      <div style="font-size:13px;line-height:1.5;margin-top:4px">${esc(rep.note)}</div>
+      <div style="font-size:13px;line-height:1.5;margin-top:4px">${bulletsHtml(rep.note_bullets)}</div>
       ${gariLine}
     </div>`;
   }).join('');
@@ -1962,7 +2017,7 @@ function downloadWeeklyReviewPdf() {
       <h1>Gazette Network — Weekly Review</h1>
       <div class="sub">Period: ${esc(WR_DATA.period.oldest)} to ${esc(WR_DATA.period.latest)}</div>
       <h2>Network summary</h2>
-      <div class="summary">${esc(WR_DATA.narrative.network_summary)}</div>
+      <div class="summary">${bulletsHtml(WR_DATA.narrative.network_summary_bullets)}</div>
       <h2>By reporter</h2>
       ${reporterHtml}
     </body></html>
