@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,6 +44,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .login-btn:hover{opacity:.88}
 .login-err{font-size:13px;color:#cc0000;margin-top:.75rem;display:none}
 .login-hint{font-size:12px;color:var(--grey-md);margin-top:1rem;text-align:center}
+.login-forgot{margin-top:.75rem;text-align:center;font-size:13px}
+.login-forgot a{color:var(--blue);text-decoration:none}
+.login-forgot a:hover{text-decoration:underline}
 
 /* ── HEADER ── */
 #dashboard{display:none}
@@ -307,7 +311,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-card">
+  <div class="login-card" id="login-panel">
     <div class="login-logo">Gazette News</div>
     <div class="login-title">Editor Dashboard</div>
     <div class="login-sub">Log in to see all reporters' weekly filing status across the network.</div>
@@ -326,6 +330,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <div class="login-err" id="login-err">Incorrect email or password.</div>
     <button class="login-btn" id="login-btn" onclick="checkLogin()">View dashboard</button>
     <div class="login-hint">Contact Brad if you can't log in.</div>
+    <div class="login-forgot"><a href="#" onclick="showForgotPanel();return false;">Forgot password?</a></div>
+  </div>
+
+  <!-- FORGOT PASSWORD: request reset email -->
+  <div class="login-card" id="forgot-panel" style="display:none">
+    <div class="login-logo">Gazette News</div>
+    <div class="login-title">Reset your password</div>
+    <div class="login-sub">Enter your email and we'll send you a link to set a new password.</div>
+    <div class="login-field">
+      <label class="login-label">Email</label>
+      <input type="email" id="forgot-email" placeholder="you@gazettenetwork.com.au">
+    </div>
+    <div class="login-err" id="forgot-err" style="display:none"></div>
+    <div class="login-sub" id="forgot-success" style="display:none;color:var(--success)">Check your email for a reset link. It can take a minute or two to arrive.</div>
+    <button class="login-btn" id="forgot-btn" onclick="sendResetEmail()">Send reset link</button>
+    <div class="login-forgot"><a href="#" onclick="showLoginPanel();return false;">Back to sign in</a></div>
+  </div>
+
+  <!-- RESET PASSWORD: shown after clicking the email link -->
+  <div class="login-card" id="reset-panel" style="display:none">
+    <div class="login-logo">Gazette News</div>
+    <div class="login-title">Set a new password</div>
+    <div class="login-sub">Choose a new password for your account.</div>
+    <div class="login-field">
+      <label class="login-label">New password</label>
+      <input type="password" id="reset-new" placeholder="At least 8 characters">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Confirm new password</label>
+      <input type="password" id="reset-confirm">
+    </div>
+    <div class="login-err" id="reset-err" style="display:none"></div>
+    <button class="login-btn" id="reset-btn" onclick="completePasswordReset()">Set new password</button>
   </div>
 </div>
 
@@ -557,6 +594,81 @@ async function checkLogin() {
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('week-inp').value = WEEK;
   loadWeek();
+}
+
+// ── Forgot / reset password ──
+function showLoginPanel(){
+  document.getElementById('login-panel').style.display = 'block';
+  document.getElementById('forgot-panel').style.display = 'none';
+  document.getElementById('reset-panel').style.display = 'none';
+}
+
+function showForgotPanel(){
+  document.getElementById('login-panel').style.display = 'none';
+  document.getElementById('forgot-panel').style.display = 'block';
+  document.getElementById('reset-panel').style.display = 'none';
+  document.getElementById('forgot-err').style.display = 'none';
+  document.getElementById('forgot-success').style.display = 'none';
+  document.getElementById('forgot-email').value = document.getElementById('inp-email').value.trim();
+}
+
+function showResetPanel(){
+  document.getElementById('login-panel').style.display = 'none';
+  document.getElementById('forgot-panel').style.display = 'none';
+  document.getElementById('reset-panel').style.display = 'block';
+}
+
+async function sendResetEmail(){
+  const email = document.getElementById('forgot-email').value.trim();
+  const errEl = document.getElementById('forgot-err');
+  const okEl = document.getElementById('forgot-success');
+  const btn = document.getElementById('forgot-btn');
+  errEl.style.display = 'none';
+  okEl.style.display = 'none';
+  if(!email){ errEl.textContent = 'Enter your email.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try{
+    const { error } = await supa.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+    if(error) throw error;
+    // Same message whether or not the email has an account, so this
+    // can't be used to check which accounts exist.
+    okEl.style.display = 'block';
+  }catch(e){
+    okEl.style.display = 'block';
+    console.error(e);
+  }finally{
+    btn.disabled = false; btn.textContent = 'Send reset link';
+  }
+}
+
+async function completePasswordReset(){
+  const next = document.getElementById('reset-new').value;
+  const confirmPw = document.getElementById('reset-confirm').value;
+  const errEl = document.getElementById('reset-err');
+  const btn = document.getElementById('reset-btn');
+  errEl.style.display = 'none';
+
+  if(!next || !confirmPw){ errEl.textContent = 'Fill in both fields.'; errEl.style.display = 'block'; return; }
+  if(next.length < 8){ errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
+  if(next !== confirmPw){ errEl.textContent = "Passwords don't match."; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Updating...';
+  try{
+    const { error } = await supa.auth.updateUser({ password: next });
+    if(error) throw error;
+    showLoginPanel();
+    document.getElementById('login-err').textContent = 'Password updated — sign in with your new password.';
+    document.getElementById('login-err').style.display = 'block';
+  }catch(e){
+    errEl.textContent = 'Could not update password. The reset link may have expired — request a new one.';
+    errEl.style.display = 'block';
+    console.error(e);
+  }finally{
+    btn.disabled = false; btn.textContent = 'Set new password';
+  }
 }
 
 async function editorSignOut() {
@@ -2027,6 +2139,16 @@ function downloadWeeklyReviewPdf() {
   win.document.close();
   setTimeout(() => win.print(), 300);
 }
+
+// ── Password recovery link detection ──
+if (window.location.hash.includes('type=recovery')) {
+  showResetPanel();
+}
+supa.auth.onAuthStateChange(function(event){
+  if (event === 'PASSWORD_RECOVERY') {
+    showResetPanel();
+  }
+});
 
 </script>
 
