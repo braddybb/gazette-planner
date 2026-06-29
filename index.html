@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -156,8 +157,7 @@ transition:background .35s ease, color .35s ease}
    meaning instead of becoming decoration. */
 .card-hdr.std{background:#F4F5FB}
 .card-hdr.imp{background:#FBEEEA}
-.card-hdr.life{background:#F2F2F2}
-.card-hdr.life{background:#FBEEEA}
+.card-hdr.life{background:#F7F1E0}
 .card-hdr.vidfirst{background:#EFEFEF}
 .card-hdr.vidflip{background:#F2F2F2}
 .card-hdr.vidflip{background:#EEEFFF}
@@ -168,8 +168,7 @@ transition:background .35s ease, color .35s ease}
 .card-hdr.std.has-content{background:#1C1C1C}
 .card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:#D9492E}
-.card-hdr.life.has-content{background:#5C5C5C}
-.card-hdr.life.has-content{background:#E8896E}
+.card-hdr.life.has-content{background:#E8CD8A}
 .card-hdr.vidfirst.has-content{background:#1C1C1C}
 .card-hdr.vidflip.has-content{background:#3A3A3A}
 .card-hdr.vidflip.has-content{background:#5555FF}
@@ -183,8 +182,7 @@ transition:background .35s ease, color .35s ease}
 .hdr-num.std{color:#BBB}
 .hdr-num.std{color:#B9C2E8}
 .hdr-num.imp{color:#E8B8A8}
-.hdr-num.life{color:#C4C4C4}
-.hdr-num.life{color:#E8B8A8}
+.hdr-num.life{color:#C9A856}
 .hdr-num.vidfirst{color:#BBB}
 .hdr-num.vidflip{color:#C4C4C4}
 .hdr-num.vidflip{color:#C2C4F5}
@@ -192,10 +190,12 @@ transition:background .35s ease, color .35s ease}
 .hdr-num.original{color:#C4C4C4}
 .hdr-num.poll{color:#B9C2E8}
 .hdr-num.newsletter{color:#CCC}
+.hdr-num.extra{color:#fff}
 /* filled num colours */
 .card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.l2n,.card-hdr.has-content .hdr-num.vidfirst,.card-hdr.has-content .hdr-num.poll{color:#fff}
 .card-hdr.has-content .hdr-num.imp{color:#FFE0D6}
-.card-hdr.has-content .hdr-num.life,.card-hdr.has-content .hdr-num.vidflip,.card-hdr.has-content .hdr-num.original,.card-hdr.has-content .hdr-num.newsletter{color:#fff}
+.card-hdr.has-content .hdr-num.vidflip,.card-hdr.has-content .hdr-num.original,.card-hdr.has-content .hdr-num.newsletter{color:#fff}
+.card-hdr.has-content .hdr-num.life{color:#3A2E0F}
 
 .hdr-info{flex:1;min-width:0}
 .hdr-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;transition:color .35s ease}
@@ -203,8 +203,7 @@ transition:background .35s ease, color .35s ease}
 .hdr-type.std{color:#999}
 .hdr-type.std{color:#A7B0D8}
 .hdr-type.imp{color:#D08C78}
-.hdr-type.life{color:#AAA}
-.hdr-type.life{color:#D08C78}
+.hdr-type.life{color:#A8893A}
 .hdr-type.vidfirst{color:#999}
 .hdr-type.vidflip{color:#AAA}
 .hdr-type.vidflip{color:#A8ACE8}
@@ -212,9 +211,11 @@ transition:background .35s ease, color .35s ease}
 .hdr-type.original{color:#AAA}
 .hdr-type.newsletter{color:#AAA}
 .hdr-type.poll{color:#A7B0D8}
+.hdr-type.extra{color:rgba(255,255,255,.7)}
 .card-hdr.has-content .hdr-type.std,.card-hdr.has-content .hdr-type.l2n,.card-hdr.has-content .hdr-type.vidfirst{color:#999}
 .card-hdr.has-content .hdr-type.imp{color:#FFCCBB}
-.card-hdr.has-content .hdr-type.life,.card-hdr.has-content .hdr-type.vidflip,.card-hdr.has-content .hdr-type.original,.card-hdr.has-content .hdr-type.newsletter{color:#DDD}
+.card-hdr.has-content .hdr-type.vidflip,.card-hdr.has-content .hdr-type.original,.card-hdr.has-content .hdr-type.newsletter{color:#DDD}
+.card-hdr.has-content .hdr-type.life{color:#5C4A18}
 .card-hdr.has-content .hdr-type.poll{color:#AABBFF}
 
 .hdr-preview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;transition:color .35s ease}
@@ -222,8 +223,7 @@ transition:background .35s ease, color .35s ease}
 .hdr-preview.std{color:#AAA}
 .hdr-preview.std{color:#9AA5D0}
 .hdr-preview.imp{color:#D8A090}
-.hdr-preview.life{color:#999}
-.hdr-preview.life{color:#D8A090}
+.hdr-preview.life{color:#A8893A}
 .hdr-preview.vidfirst{color:#AAA}
 .hdr-preview.vidflip{color:#999}
 .hdr-preview.vidflip{color:#9CA0E0}
@@ -231,26 +231,30 @@ transition:background .35s ease, color .35s ease}
 .hdr-preview.original{color:#999}
 .hdr-preview.newsletter{color:#999}
 .hdr-preview.poll{color:#9AA5D0}
+.hdr-preview.extra{color:rgba(255,255,255,.55)}
 .card-hdr.has-content .hdr-preview.std,.card-hdr.has-content .hdr-preview.l2n,.card-hdr.has-content .hdr-preview.vidfirst{color:#999}
 .card-hdr.has-content .hdr-preview.imp{color:#F5D0C4}
-.card-hdr.has-content .hdr-preview.life,.card-hdr.has-content .hdr-preview.vidflip,.card-hdr.has-content .hdr-preview.original,.card-hdr.has-content .hdr-preview.newsletter{color:#CCC}
+.card-hdr.has-content .hdr-preview.vidflip,.card-hdr.has-content .hdr-preview.original,.card-hdr.has-content .hdr-preview.newsletter{color:#CCC}
+.card-hdr.has-content .hdr-preview.life{color:#5C4A18}
 .card-hdr.has-content .hdr-preview.poll{color:#CCDDFF}
 
 .hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .filed-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:none}
 .filed-pill.std{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.imp{background:rgba(255,255,255,.25);color:#fff}
-.filed-pill.life{background:rgba(255,255,255,.15);color:#aaa}
+.filed-pill.life{background:rgba(0,0,0,.12);color:#5C4A18}
 .filed-pill.vidfirst{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.vidflip{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.l2n{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.original{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.newsletter{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.poll{background:rgba(255,255,255,.2);color:#fff}
+.filed-pill.extra{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.show{display:block}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
-.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.life{color:rgba(255,255,255,.6)}
+.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.extra{color:rgba(255,255,255,.6)}
+.hdr-chev.life{color:rgba(58,46,15,.55)}
 .hdr-chev.open{transform:rotate(180deg)}
 
 .card-body{display:none;padding:1rem}
@@ -361,6 +365,25 @@ display:flex;
 gap:10px;
 align-items:flex-start;
 box-shadow:0 1px 4px rgba(0,0,0,.06);
+transition:background .2s ease, border-color .2s ease;
+}
+.editor-note-banner .en-check{
+flex-shrink:0;
+padding-top:2px;
+cursor:pointer;
+}
+.editor-note-banner .en-check input{
+width:15px;
+height:15px;
+cursor:pointer;
+accent-color:var(--blue);
+}
+.editor-note-banner .en-body{
+flex:1;
+min-width:0;
+display:flex;
+flex-direction:column;
+gap:2px;
 }
 .editor-note-banner .en-label{
 font-weight:700;
@@ -369,14 +392,24 @@ letter-spacing:.1em;
 text-transform:uppercase;
 color:var(--blue);
 white-space:nowrap;
-padding-top:2px;
 font-family:var(--mono, monospace);
 }
 .editor-note-banner .en-text{
-flex:1;
 font-size:13px;
 color:#333;
 line-height:1.5;
+}
+.editor-note-banner.addressed{
+background:#F7F9F6;
+border-left-color:#7A9B6E;
+}
+.editor-note-banner.addressed .en-label{
+color:#7A9B6E;
+}
+.editor-note-banner.addressed .en-text{
+color:#888;
+text-decoration:line-through;
+text-decoration-color:#BBCBB3;
 }
 .save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;font-size:12px;padding:8px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
 .save-toast.show{opacity:1}
@@ -1069,7 +1102,7 @@ container.innerHTML = `<div class="loading-screen"><div class="loading-text" sty
 }
 
 function blankStory(num) {
-return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false, editor_note:'' };
+return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false };
 }
 
 function getStory(num) {
@@ -1299,11 +1332,12 @@ albl.textContent = 'Assigned by ' + st.assigned_by;
 body.appendChild(albl);
 }
 
-// Editor note banner (if present)
+// Editor note banner (if present) — addressable as a checkable item
 if (st.editor_note) {
 const banner = document.createElement('div');
-banner.className = 'editor-note-banner';
-banner.innerHTML = '<span class="en-label">Editor</span><span class="en-text">' + esc(st.editor_note) + '</span>';
+banner.className = 'editor-note-banner' + (st.editor_note_addressed ? ' addressed' : '');
+banner.innerHTML = '<label class="en-check"><input type="checkbox" ' + (st.editor_note_addressed ? 'checked' : '') + ' onchange="noteAddressedUpdate(\'' + s.n + '\',this.checked)"></label>' +
+'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(st.editor_note) + '</span></div>';
 body.appendChild(banner);
 }
 
@@ -1385,10 +1419,10 @@ DAYS.map(d => '<label><input type="radio" name="day' + s.n + '" value="' + d + '
 '</div></div>';
 body.appendChild(fmtDiv);
 
-// To do
+// Reporting
 const tdDiv = document.createElement('div');
 tdDiv.className = 'cf';
-tdDiv.innerHTML = '<div class="cl">To do</div><div class="cxgroup">' +
+tdDiv.innerHTML = '<div class="cl">Reporting</div><div class="cxgroup">' +
 TODO_ITEMS.map(t => '<label><input type="checkbox" value="' + t + '" ' + ((st.todo||[]).includes(t) ? 'checked' : '') + ' onchange="arrUpdate(\'' + s.n + '\',\'todo\',\'' + t + '\',this.checked)"> ' + t + '</label>').join('') +
 '</div>';
 body.appendChild(tdDiv);
@@ -1549,6 +1583,17 @@ if (checked && !arr.includes(val)) arr = [...arr, val];
 if (!checked) arr = arr.filter(x => x !== val);
 DATA[num][field] = arr;
 refreshCardState(num);
+scheduleSave(num);
+}
+
+function noteAddressedUpdate(num, checked) {
+if (!DATA[num]) DATA[num] = blankStory(num);
+DATA[num].editor_note_addressed = checked;
+const body = document.getElementById('body-' + num);
+if (body) {
+const banner = body.querySelector('.editor-note-banner');
+if (banner) banner.classList.toggle('addressed', checked);
+}
 scheduleSave(num);
 }
 
@@ -1774,6 +1819,7 @@ todo: st.todo || [],
 posted: [], // distribution resets — it hasn't been distributed in the new week yet
 filed: false, // unfiled in its new week
 editor_note: '',
+editor_note_addressed: false,
 assigned_by: st.assigned_by || '',
 updated_at: new Date().toISOString(),
 };
@@ -1884,7 +1930,7 @@ e.stopPropagation();
 if (!confirm('Clear all data in this story slot?')) return;
 DATA[num] = {
 headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'',
-todo:[], posted:[], filed:false, editor_note:''
+todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false
 };
 // Save the cleared state immediately
 manualSave(num);
@@ -1928,16 +1974,22 @@ const note = row.editor_note || '';
 const existing = DATA[num].editor_note || '';
 if (note !== existing) {
 DATA[num].editor_note = note;
+// A new/changed note from the editor is unaddressed until the reporter checks it again
+DATA[num].editor_note_addressed = false;
 const body = document.getElementById('body-' + num);
 if (body) {
 const existingBanner = body.querySelector('.editor-note-banner');
 if (note) {
 if (existingBanner) {
 existingBanner.querySelector('.en-text').textContent = note;
+existingBanner.classList.remove('addressed');
+const cb = existingBanner.querySelector('input[type="checkbox"]');
+if (cb) cb.checked = false;
 } else {
 const banner = document.createElement('div');
 banner.className = 'editor-note-banner';
-banner.innerHTML = '<span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span>';
+banner.innerHTML = '<label class="en-check"><input type="checkbox" onchange="noteAddressedUpdate(\'' + num + '\',this.checked)"></label>' +
+'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span></div>';
 body.insertBefore(banner, body.firstChild);
 }
 } else if (existingBanner) {
@@ -1969,16 +2021,22 @@ if (!DATA[num]) DATA[num] = blankStory(num);
 const existing = DATA[num].editor_note || '';
 if (note !== existing) {
 DATA[num].editor_note = note;
+// A new/changed note from the editor is unaddressed until the reporter checks it again
+DATA[num].editor_note_addressed = false;
 const body = document.getElementById('body-' + num);
 if (body) {
 const existingBanner = body.querySelector('.editor-note-banner');
 if (note) {
 if (existingBanner) {
 existingBanner.querySelector('.en-text').textContent = note;
+existingBanner.classList.remove('addressed');
+const cb = existingBanner.querySelector('input[type="checkbox"]');
+if (cb) cb.checked = false;
 } else {
 const banner = document.createElement('div');
 banner.className = 'editor-note-banner';
-banner.innerHTML = '<span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span>';
+banner.innerHTML = '<label class="en-check"><input type="checkbox" onchange="noteAddressedUpdate(\'' + num + '\',this.checked)"></label>' +
+'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span></div>';
 body.insertBefore(banner, body.firstChild);
 }
 } else if (existingBanner) {
@@ -2371,6 +2429,7 @@ todo:        DATA[num].todo        || [],
 posted:      DATA[num].posted      || [],
 filed:       !!DATA[num].filed,
 editor_note: DATA[num].editor_note || '',
+editor_note_addressed: !!DATA[num].editor_note_addressed,
 updated_at:  new Date().toISOString(),
 };
 try {
@@ -2408,6 +2467,7 @@ todo:        DATA[num].todo        || [],
 posted:      DATA[num].posted      || [],
 filed:       !!DATA[num].filed,
 editor_note: DATA[num].editor_note || '',
+editor_note_addressed: !!DATA[num].editor_note_addressed,
 updated_at:  new Date().toISOString(),
 };
 try {
@@ -2549,7 +2609,7 @@ document.getElementById('aab-award').addEventListener('click', e => { if(e.targe
 // ══════════════════════════════════════════
 //  FRIDAY CROSSWORD  +  GOLDEN GAZETTE BADGE
 // ══════════════════════════════════════════
-const CW_PUZZLE = {"rows": 26, "cols": 23, "cells": [{"r": 0, "c": 21, "ch": "B", "num": 1}, {"r": 1, "c": 21, "ch": "R", "num": 0}, {"r": 2, "c": 18, "ch": "A", "num": 2}, {"r": 2, "c": 19, "ch": "X", "num": 0}, {"r": 2, "c": 20, "ch": "I", "num": 0}, {"r": 2, "c": 21, "ch": "O", "num": 0}, {"r": 2, "c": 22, "ch": "S", "num": 0}, {"r": 3, "c": 2, "ch": "L", "num": 3}, {"r": 3, "c": 3, "ch": "E", "num": 0}, {"r": 3, "c": 4, "ch": "D", "num": 0}, {"r": 3, "c": 5, "ch": "E", "num": 4}, {"r": 3, "c": 10, "ch": "R", "num": 5}, {"r": 3, "c": 13, "ch": "T", "num": 6}, {"r": 3, "c": 21, "ch": "L", "num": 0}, {"r": 4, "c": 5, "ch": "L", "num": 0}, {"r": 4, "c": 10, "ch": "E", "num": 0}, {"r": 4, "c": 13, "ch": "H", "num": 0}, {"r": 4, "c": 21, "ch": "G", "num": 0}, {"r": 5, "c": 3, "ch": "D", "num": 7}, {"r": 5, "c": 4, "ch": "A", "num": 0}, {"r": 5, "c": 5, "ch": "N", "num": 0}, {"r": 5, "c": 6, "ch": "D", "num": 0}, {"r": 5, "c": 7, "ch": "E", "num": 0}, {"r": 5, "c": 8, "ch": "N", "num": 0}, {"r": 5, "c": 9, "ch": "O", "num": 0}, {"r": 5, "c": 10, "ch": "N", "num": 0}, {"r": 5, "c": 11, "ch": "G", "num": 0}, {"r": 5, "c": 13, "ch": "O", "num": 0}, {"r": 5, "c": 17, "ch": "D", "num": 8}, {"r": 5, "c": 18, "ch": "O", "num": 0}, {"r": 5, "c": 19, "ch": "U", "num": 0}, {"r": 5, "c": 20, "ch": "K", "num": 9}, {"r": 5, "c": 21, "ch": "A", "num": 0}, {"r": 5, "c": 22, "ch": "S", "num": 0}, {"r": 6, "c": 5, "ch": "I", "num": 0}, {"r": 6, "c": 10, "ch": "E", "num": 0}, {"r": 6, "c": 13, "ch": "R", "num": 0}, {"r": 6, "c": 17, "ch": "U", "num": 0}, {"r": 6, "c": 20, "ch": "O", "num": 0}, {"r": 7, "c": 0, "ch": "L", "num": 10}, {"r": 7, "c": 1, "ch": "E", "num": 0}, {"r": 7, "c": 2, "ch": "N", "num": 0}, {"r": 7, "c": 3, "ch": "N", "num": 0}, {"r": 7, "c": 4, "ch": "O", "num": 0}, {"r": 7, "c": 5, "ch": "N", "num": 0}, {"r": 7, "c": 10, "ch": "W", "num": 0}, {"r": 7, "c": 13, "ch": "N", "num": 0}, {"r": 7, "c": 17, "ch": "N", "num": 0}, {"r": 7, "c": 20, "ch": "A", "num": 0}, {"r": 8, "c": 5, "ch": "O", "num": 0}, {"r": 8, "c": 10, "ch": "A", "num": 0}, {"r": 8, "c": 13, "ch": "T", "num": 0}, {"r": 8, "c": 17, "ch": "D", "num": 0}, {"r": 8, "c": 20, "ch": "L", "num": 0}, {"r": 9, "c": 10, "ch": "B", "num": 0}, {"r": 9, "c": 13, "ch": "O", "num": 0}, {"r": 9, "c": 17, "ch": "O", "num": 0}, {"r": 9, "c": 20, "ch": "A", "num": 0}, {"r": 10, "c": 8, "ch": "W", "num": 11}, {"r": 10, "c": 9, "ch": "E", "num": 0}, {"r": 10, "c": 10, "ch": "L", "num": 0}, {"r": 10, "c": 11, "ch": "L", "num": 0}, {"r": 10, "c": 12, "ch": "I", "num": 0}, {"r": 10, "c": 13, "ch": "N", "num": 0}, {"r": 10, "c": 14, "ch": "G", "num": 12}, {"r": 10, "c": 15, "ch": "T", "num": 0}, {"r": 10, "c": 16, "ch": "O", "num": 0}, {"r": 10, "c": 17, "ch": "N", "num": 0}, {"r": 11, "c": 10, "ch": "E", "num": 0}, {"r": 11, "c": 14, "ch": "I", "num": 0}, {"r": 11, "c": 17, "ch": "N", "num": 0}, {"r": 12, "c": 10, "ch": "S", "num": 0}, {"r": 12, "c": 14, "ch": "P", "num": 0}, {"r": 12, "c": 17, "ch": "E", "num": 0}, {"r": 13, "c": 9, "ch": "B", "num": 13}, {"r": 13, "c": 14, "ch": "P", "num": 0}, {"r": 13, "c": 17, "ch": "L", "num": 0}, {"r": 14, "c": 8, "ch": "H", "num": 14}, {"r": 14, "c": 9, "ch": "U", "num": 0}, {"r": 14, "c": 10, "ch": "N", "num": 0}, {"r": 14, "c": 11, "ch": "T", "num": 0}, {"r": 14, "c": 12, "ch": "E", "num": 0}, {"r": 14, "c": 13, "ch": "R", "num": 0}, {"r": 14, "c": 14, "ch": "S", "num": 0}, {"r": 14, "c": 15, "ch": "H", "num": 0}, {"r": 14, "c": 16, "ch": "I", "num": 0}, {"r": 14, "c": 17, "ch": "L", "num": 0}, {"r": 14, "c": 18, "ch": "L", "num": 0}, {"r": 15, "c": 9, "ch": "N", "num": 0}, {"r": 15, "c": 14, "ch": "L", "num": 0}, {"r": 16, "c": 7, "ch": "K", "num": 15}, {"r": 16, "c": 9, "ch": "I", "num": 0}, {"r": 16, "c": 14, "ch": "A", "num": 0}, {"r": 17, "c": 7, "ch": "I", "num": 0}, {"r": 17, "c": 9, "ch": "N", "num": 0}, {"r": 17, "c": 11, "ch": "V", "num": 16}, {"r": 17, "c": 14, "ch": "N", "num": 17}, {"r": 17, "c": 15, "ch": "B", "num": 0}, {"r": 17, "c": 16, "ch": "N", "num": 0}, {"r": 18, "c": 7, "ch": "C", "num": 0}, {"r": 18, "c": 9, "ch": "Y", "num": 0}, {"r": 18, "c": 11, "ch": "L", "num": 0}, {"r": 18, "c": 14, "ch": "D", "num": 0}, {"r": 19, "c": 4, "ch": "K", "num": 18}, {"r": 19, "c": 7, "ch": "K", "num": 0}, {"r": 19, "c": 9, "ch": "O", "num": 0}, {"r": 19, "c": 11, "ch": "I", "num": 0}, {"r": 20, "c": 3, "ch": "H", "num": 19}, {"r": 20, "c": 4, "ch": "E", "num": 0}, {"r": 20, "c": 5, "ch": "F", "num": 0}, {"r": 20, "c": 6, "ch": "F", "num": 0}, {"r": 20, "c": 7, "ch": "E", "num": 0}, {"r": 20, "c": 8, "ch": "R", "num": 0}, {"r": 20, "c": 9, "ch": "N", "num": 0}, {"r": 20, "c": 10, "ch": "A", "num": 0}, {"r": 20, "c": 11, "ch": "N", "num": 0}, {"r": 21, "c": 4, "ch": "M", "num": 0}, {"r": 21, "c": 7, "ch": "R", "num": 0}, {"r": 21, "c": 9, "ch": "G", "num": 0}, {"r": 21, "c": 11, "ch": "E", "num": 0}, {"r": 22, "c": 4, "ch": "P", "num": 0}, {"r": 23, "c": 0, "ch": "C", "num": 20}, {"r": 23, "c": 1, "ch": "O", "num": 0}, {"r": 23, "c": 2, "ch": "F", "num": 0}, {"r": 23, "c": 3, "ch": "F", "num": 0}, {"r": 23, "c": 4, "ch": "S", "num": 0}, {"r": 24, "c": 4, "ch": "E", "num": 0}, {"r": 25, "c": 4, "ch": "Y", "num": 0}], "across": [{"num": 2, "clue": "The bullet-point structure encouraged across the network", "len": 5}, {"num": 3, "clue": "The opening line \u2014 burying it is the cardinal sin", "len": 4}, {"num": 7, "clue": "The ___ Ranges, scene of Matthew's storm-anniversary climate piece", "len": 9}, {"num": 8, "clue": "Moyne Shire councillor quoted in Zara's wind-farm benefit story", "len": 6}, {"num": 10, "clue": "John ___, subject of the One to One documentary at Buninyong", "len": 6}, {"num": 11, "clue": "Gippsland shire overhauling flood maps for 2100 sea-level rise (Jacob)", "len": 10}, {"num": 14, "clue": "Heritage-rich North Shore suburb with the lowest solar uptake (Huw, 2 words)", "len": 11}, {"num": 17, "clue": "TV network whose local bulletin cuts Doug reported (abbr.)", "len": 3}, {"num": 19, "clue": "The '___ problem' \u2014 leaning only on government sources", "len": 9}, {"num": 20, "clue": "___ Harbour \u2014 flights from here cost more than New Zealand (Doug)", "len": 5}], "down": [{"num": 1, "clue": "The West Vic masthead \u2014 also a tall native crane", "len": 6}, {"num": 4, "clue": "Weather pattern BOM declared in Jacob's Gippsland story (2 words)", "len": 6}, {"num": 5, "clue": "Wind and solar, the energy category behind several Wannon stories", "len": 10}, {"num": 6, "clue": "Warwick ___, the Australian director opening the Buninyong festival", "len": 8}, {"num": 8, "clue": "Wind farm whose community fund pays out $50k a year (Zara)", "len": 10}, {"num": 9, "clue": "Great ___ National Park, subject of the forestry moratorium story", "len": 5}, {"num": 12, "clue": "Region east of Melbourne; Jacob's patch", "len": 9}, {"num": 13, "clue": "Village whose 32-year international film festival Zara previewed", "len": 9}, {"num": 15, "clue": "A story's strong closing line", "len": 6}, {"num": 16, "clue": "Victorian regional rail operator in Zara's capacity story (2 words)", "len": 5}, {"num": 18, "clue": "Mid North Coast town whose flood anniversary Ellie covered", "len": 7}]};
+const CW_PUZZLE = {"rows": 19, "cols": 22, "cells": [{"r": 0, "c": 9, "ch": "D", "num": 1}, {"r": 1, "c": 7, "ch": "H", "num": 2}, {"r": 1, "c": 9, "ch": "U", "num": 0}, {"r": 2, "c": 7, "ch": "E", "num": 0}, {"r": 2, "c": 9, "ch": "N", "num": 0}, {"r": 2, "c": 11, "ch": "N", "num": 3}, {"r": 2, "c": 15, "ch": "G", "num": 4}, {"r": 2, "c": 18, "ch": "M", "num": 5}, {"r": 2, "c": 21, "ch": "C", "num": 6}, {"r": 3, "c": 7, "ch": "F", "num": 0}, {"r": 3, "c": 9, "ch": "D", "num": 0}, {"r": 3, "c": 11, "ch": "E", "num": 0}, {"r": 3, "c": 15, "ch": "I", "num": 0}, {"r": 3, "c": 18, "ch": "O", "num": 0}, {"r": 3, "c": 21, "ch": "O", "num": 0}, {"r": 4, "c": 5, "ch": "B", "num": 7}, {"r": 4, "c": 7, "ch": "F", "num": 0}, {"r": 4, "c": 9, "ch": "O", "num": 0}, {"r": 4, "c": 11, "ch": "W", "num": 0}, {"r": 4, "c": 13, "ch": "P", "num": 8}, {"r": 4, "c": 14, "ch": "E", "num": 0}, {"r": 4, "c": 15, "ch": "P", "num": 0}, {"r": 4, "c": 16, "ch": "P", "num": 0}, {"r": 4, "c": 17, "ch": "E", "num": 0}, {"r": 4, "c": 18, "ch": "R", "num": 0}, {"r": 4, "c": 21, "ch": "F", "num": 0}, {"r": 5, "c": 2, "ch": "W", "num": 9}, {"r": 5, "c": 5, "ch": "O", "num": 0}, {"r": 5, "c": 7, "ch": "E", "num": 0}, {"r": 5, "c": 9, "ch": "N", "num": 0}, {"r": 5, "c": 11, "ch": "C", "num": 0}, {"r": 5, "c": 15, "ch": "P", "num": 0}, {"r": 5, "c": 18, "ch": "R", "num": 0}, {"r": 5, "c": 21, "ch": "F", "num": 0}, {"r": 6, "c": 0, "ch": "F", "num": 10}, {"r": 6, "c": 1, "ch": "O", "num": 0}, {"r": 6, "c": 2, "ch": "A", "num": 0}, {"r": 6, "c": 3, "ch": "T", "num": 0}, {"r": 6, "c": 5, "ch": "X", "num": 0}, {"r": 6, "c": 7, "ch": "R", "num": 0}, {"r": 6, "c": 9, "ch": "N", "num": 0}, {"r": 6, "c": 11, "ch": "A", "num": 0}, {"r": 6, "c": 13, "ch": "B", "num": 11}, {"r": 6, "c": 15, "ch": "S", "num": 0}, {"r": 6, "c": 17, "ch": "M", "num": 12}, {"r": 6, "c": 18, "ch": "I", "num": 0}, {"r": 6, "c": 19, "ch": "L", "num": 0}, {"r": 6, "c": 20, "ch": "E", "num": 0}, {"r": 6, "c": 21, "ch": "S", "num": 0}, {"r": 7, "c": 2, "ch": "N", "num": 0}, {"r": 7, "c": 5, "ch": "H", "num": 13}, {"r": 7, "c": 6, "ch": "U", "num": 0}, {"r": 7, "c": 7, "ch": "N", "num": 0}, {"r": 7, "c": 8, "ch": "T", "num": 0}, {"r": 7, "c": 9, "ch": "E", "num": 0}, {"r": 7, "c": 10, "ch": "R", "num": 0}, {"r": 7, "c": 11, "ch": "S", "num": 0}, {"r": 7, "c": 12, "ch": "H", "num": 0}, {"r": 7, "c": 13, "ch": "I", "num": 0}, {"r": 7, "c": 14, "ch": "L", "num": 0}, {"r": 7, "c": 15, "ch": "L", "num": 0}, {"r": 7, "c": 18, "ch": "S", "num": 0}, {"r": 8, "c": 2, "ch": "N", "num": 0}, {"r": 8, "c": 5, "ch": "I", "num": 0}, {"r": 8, "c": 7, "ch": "A", "num": 0}, {"r": 8, "c": 9, "ch": "L", "num": 0}, {"r": 8, "c": 11, "ch": "T", "num": 0}, {"r": 8, "c": 13, "ch": "R", "num": 0}, {"r": 8, "c": 15, "ch": "A", "num": 0}, {"r": 9, "c": 2, "ch": "O", "num": 0}, {"r": 9, "c": 5, "ch": "L", "num": 0}, {"r": 9, "c": 7, "ch": "N", "num": 0}, {"r": 9, "c": 9, "ch": "L", "num": 0}, {"r": 9, "c": 11, "ch": "L", "num": 0}, {"r": 9, "c": 13, "ch": "R", "num": 0}, {"r": 9, "c": 15, "ch": "N", "num": 0}, {"r": 10, "c": 0, "ch": "M", "num": 14}, {"r": 10, "c": 1, "ch": "O", "num": 0}, {"r": 10, "c": 2, "ch": "N", "num": 0}, {"r": 10, "c": 3, "ch": "B", "num": 15}, {"r": 10, "c": 4, "ch": "U", "num": 0}, {"r": 10, "c": 5, "ch": "L", "num": 0}, {"r": 10, "c": 6, "ch": "K", "num": 16}, {"r": 10, "c": 10, "ch": "L", "num": 17}, {"r": 10, "c": 11, "ch": "E", "num": 0}, {"r": 10, "c": 12, "ch": "D", "num": 0}, {"r": 10, "c": 13, "ch": "E", "num": 0}, {"r": 10, "c": 15, "ch": "D", "num": 0}, {"r": 11, "c": 3, "ch": "U", "num": 0}, {"r": 11, "c": 6, "ch": "O", "num": 0}, {"r": 11, "c": 13, "ch": "G", "num": 0}, {"r": 12, "c": 3, "ch": "N", "num": 0}, {"r": 12, "c": 6, "ch": "A", "num": 0}, {"r": 12, "c": 13, "ch": "U", "num": 0}, {"r": 13, "c": 0, "ch": "T", "num": 18}, {"r": 13, "c": 1, "ch": "O", "num": 0}, {"r": 13, "c": 2, "ch": "B", "num": 0}, {"r": 13, "c": 3, "ch": "I", "num": 0}, {"r": 13, "c": 4, "ch": "N", "num": 0}, {"r": 13, "c": 6, "ch": "L", "num": 19}, {"r": 13, "c": 7, "ch": "O", "num": 0}, {"r": 13, "c": 8, "ch": "C", "num": 0}, {"r": 13, "c": 9, "ch": "H", "num": 0}, {"r": 13, "c": 10, "ch": "S", "num": 0}, {"r": 13, "c": 11, "ch": "P", "num": 0}, {"r": 13, "c": 12, "ch": "O", "num": 0}, {"r": 13, "c": 13, "ch": "R", "num": 0}, {"r": 13, "c": 14, "ch": "T", "num": 0}, {"r": 14, "c": 3, "ch": "N", "num": 0}, {"r": 14, "c": 6, "ch": "A", "num": 0}, {"r": 14, "c": 13, "ch": "R", "num": 0}, {"r": 15, "c": 3, "ch": "Y", "num": 0}, {"r": 15, "c": 7, "ch": "B", "num": 20}, {"r": 15, "c": 8, "ch": "A", "num": 0}, {"r": 15, "c": 9, "ch": "L", "num": 0}, {"r": 15, "c": 10, "ch": "L", "num": 0}, {"r": 15, "c": 11, "ch": "A", "num": 0}, {"r": 15, "c": 12, "ch": "R", "num": 0}, {"r": 15, "c": 13, "ch": "A", "num": 0}, {"r": 15, "c": 14, "ch": "T", "num": 0}, {"r": 16, "c": 0, "ch": "A", "num": 21}, {"r": 16, "c": 1, "ch": "X", "num": 0}, {"r": 16, "c": 2, "ch": "I", "num": 0}, {"r": 16, "c": 3, "ch": "O", "num": 0}, {"r": 16, "c": 4, "ch": "S", "num": 0}, {"r": 17, "c": 3, "ch": "N", "num": 0}, {"r": 18, "c": 3, "ch": "G", "num": 0}], "across": [{"num": 8, "clue": "Excellent dam-levels source near Hamilton (Zara)", "len": 6}, {"num": 10, "clue": "Wellington Shire councillor quoted on the new flood maps", "len": 4}, {"num": 12, "clue": "Hunters Hill mayor quoted on the new solar guidelines", "len": 5}, {"num": 13, "clue": "North Shore suburb with the lowest solar uptake (Huw, 2 words)", "len": 11}, {"num": 14, "clue": "Dandenong Ranges town home to Belinda Grooby (Matthew)", "len": 7}, {"num": 17, "clue": "The opening line — burying it is the cardinal sin", "len": 4}, {"num": 18, "clue": "Facilitator at the Yarrunga Rummikub story (Matthew)", "len": 5}, {"num": 19, "clue": "Wellington Shire town facing the new flood overlay (Jacob)", "len": 9}, {"num": 20, "clue": "City at the centre of Darcie's youth migration story", "len": 8}, {"num": 21, "clue": "The bullet-point structure encouraged across the network", "len": 5}], "down": [{"num": 1, "clue": "Wind farm whose community fund pays 50k a year (Zara)", "len": 10}, {"num": 2, "clue": "The ‘Heffernan problem’ — leaning on an outside expert when a local says the same", "len": 9}, {"num": 3, "clue": "City whose Lord Mayor gave Doug a strong NBN-cuts story get", "len": 9}, {"num": 4, "clue": "Region Jacob covers, often under-represented in the east", "len": 9}, {"num": 5, "clue": "UTS source for Archie's rental and housing script", "len": 6}, {"num": 6, "clue": "Harbour where flights cost more than to NZ (Doug)", "len": 5}, {"num": 7, "clue": "Melbourne suburb of Matthew's breaking murder story (2 words)", "len": 7}, {"num": 9, "clue": "Zara's electorate and masthead name", "len": 6}, {"num": 11, "clue": "Town whose hospital sale script needed a Melbourne comparison angle", "len": 10}, {"num": 15, "clue": "Village whose 32-year international film festival Zara previewed", "len": 9}, {"num": 16, "clue": "Great — National Park, subject of the forestry update story", "len": 5}]};
 
 // Which week's puzzle (use the Planner's current week so the badge is per-week)
 function cwWeekKey(){ return (typeof WEEK !== 'undefined' && WEEK) ? WEEK : 'nowk'; }
