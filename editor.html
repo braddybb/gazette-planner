@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -308,6 +309,94 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .pc-trend.down{color:#CC0000}
 .pc-trend.flat{color:var(--grey-md)}
 
+/* ── Crossword nav button ── */
+.crossword-nav{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.crossword-nav:hover{background:rgba(255,255,255,.16)}
+.crossword-nav.locked{opacity:.5;cursor:default}
+.crossword-nav.unlocked{background:var(--acid);color:var(--ink);border-color:var(--acid);animation:cwGlow 2.4s ease-in-out infinite}
+@keyframes cwGlow{0%,100%{box-shadow:0 0 0 0 rgba(238,255,0,.0)}50%{box-shadow:0 0 0 4px rgba(238,255,0,.25)}}
+.cw-ico{font-size:14px;line-height:1}
+.golden-gazette-hdr{font-size:20px;line-height:1;filter:drop-shadow(0 0 4px rgba(255,200,0,.6));animation:ggPulse 2.6s ease-in-out infinite}
+@keyframes ggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* ── Crossword modal ── */
+.cw-overlay{position:fixed;inset:0;background:rgba(17,17,17,.55);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;z-index:300;overflow-y:auto}
+.cw-overlay.show{display:flex}
+.cw-modal{background:var(--bg,#f8f8f6);border-radius:18px;max-width:1040px;width:100%;margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;animation:cwIn .3s cubic-bezier(.2,.7,.3,1)}
+@keyframes cwIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cw-head{background:var(--ink);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px}
+.cw-head-name{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#888}
+.cw-head-title{font-size:14px;font-weight:700}
+.cw-head-close{margin-left:auto;background:none;border:none;color:#999;font-size:24px;cursor:pointer;line-height:1}
+.cw-head-close:hover{color:#fff}
+.cw-body{padding:22px}
+
+/* Locked state */
+.cw-locked{text-align:center;padding:3rem 2rem}
+.cw-locked-ico{font-size:48px;margin-bottom:1rem;opacity:.4}
+.cw-locked-title{font-size:20px;font-weight:800;margin-bottom:.5rem}
+.cw-locked-sub{font-size:14px;color:var(--ink-2,#555);line-height:1.6;max-width:420px;margin:0 auto 1.25rem}
+.cw-countdown{font-size:13px;font-weight:600;color:var(--blue);background:var(--blue-lt);border-radius:999px;padding:6px 16px;display:inline-block}
+
+.cw-intro{margin-bottom:16px}
+.cw-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:.3rem}
+.cw-h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:.4rem}
+.cw-sub{font-size:13.5px;color:var(--ink-2,#555);line-height:1.5;max-width:560px}
+.cw-streak-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#9A6440;background:#FFF7ED;border:1px solid #FFE0B8;border-radius:999px;padding:4px 12px;margin-top:8px}
+
+.cw-layout{display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:start}
+@media(max-width:840px){.cw-layout{grid-template-columns:1fr}}
+.cw-board-wrap{background:#fff;border:1px solid var(--border,#ddd);border-radius:14px;padding:14px}
+#cw-board{display:grid;gap:0;background:var(--ink);border:2px solid var(--ink);width:max-content;margin:0 auto}
+.cwc{position:relative;background:#fff;border-right:1px solid #ccc;border-bottom:1px solid #ccc}
+.cwc.block{background:transparent;border:none}
+.cwc input{width:30px;height:30px;border:none;text-align:center;font-size:15px;font-weight:600;text-transform:uppercase;color:var(--ink);background:transparent;outline:none;font-family:inherit;padding:0;caret-color:transparent}
+.cwc input:focus{background:var(--blue-lt)}
+.cwc.hl input{background:#FBFBE0}
+.cwc.hl-active input{background:var(--acid)}
+.cwc .cwn{position:absolute;top:0;left:1px;font-size:7px;font-weight:700;color:#999;pointer-events:none;line-height:1}
+.cwc.correct input{color:var(--success,#15803D)}
+.cwc.wrong input{color:var(--blue)}
+@media(max-width:520px){.cwc input{width:26px;height:26px;font-size:13px}}
+
+.cw-clues{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:520px){.cw-clues{grid-template-columns:1fr}}
+.cw-cg h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:2px solid var(--ink)}
+.cw-clue{display:flex;gap:7px;font-size:13px;line-height:1.4;padding:5px 7px;border-radius:6px;cursor:pointer;margin-bottom:1px}
+.cw-clue:hover{background:var(--blue-lt)}
+.cw-clue.active{background:#FBFBE0}
+.cw-clue-num{font-weight:700;flex-shrink:0;min-width:18px}
+.cw-clue-len{color:#999;font-weight:500}
+
+.cw-toolbar{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+.cw-btn{font-size:13px;font-weight:600;font-family:inherit;border-radius:9px;padding:8px 15px;cursor:pointer;border:1px solid var(--border,#ddd);background:#fff;color:var(--ink-2,#555);transition:all .15s}
+.cw-btn:hover{border-color:var(--blue);color:var(--blue)}
+.cw-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cw-msg{margin-top:.85rem;font-size:14px;font-weight:600;min-height:20px}
+.cw-msg.win{color:var(--success,#15803D)}
+.cw-msg.near{color:var(--acid-dk,#4A5200)}
+
+/* Golden Gazette award overlay */
+.gg-award{position:fixed;inset:0;background:rgba(17,17,17,.7);display:none;align-items:center;justify-content:center;z-index:400}
+.gg-award.show{display:flex}
+.gg-card{background:#fff;border-radius:20px;padding:2.5rem 2.75rem;text-align:center;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:ggIn .5s cubic-bezier(.2,.7,.3,1.5)}
+@keyframes ggIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.gg-emoji{font-size:72px;line-height:1;margin-bottom:1rem;filter:drop-shadow(0 0 14px rgba(255,190,0,.7));animation:ggSpin .8s cubic-bezier(.2,.7,.3,1.4)}
+@keyframes ggSpin{from{transform:rotate(-12deg) scale(.6)}to{transform:rotate(0) scale(1)}}
+.gg-title{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:.5rem;color:#B8860B}
+.gg-text{font-size:14px;color:var(--ink-2,#555);line-height:1.6;margin-bottom:1.5rem}
+.gg-close{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:11px 26px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* Confetti (reused for crossword solved) */
+#celebrate-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;display:none}
+#celebrate-overlay.show{display:block}
+.confetti{position:absolute;width:10px;height:14px;top:-20px;opacity:0}
+@keyframes confettiFall{
+0%{opacity:1;transform:translateY(0) rotate(0)}
+100%{opacity:0;transform:translateY(105vh) rotate(720deg)}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -385,6 +474,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="weekly-review-btn" onclick="openWeeklyReview()">Weekly Review</button>
+    <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
+    <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
+      <span class="cw-ico" id="cw-ico">&#128279;</span>
+      <span class="cw-label" id="cw-label">Crossword</span>
+    </button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
   </div>
 
@@ -418,6 +512,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       </div>
     </div>
     <div id="wr-body"></div>
+  </div>
+</div>
+
+<div id="celebrate-overlay"></div>
+
+<!-- CROSSWORD MODAL -->
+<div class="cw-overlay" id="cw-overlay">
+  <div class="cw-modal">
+    <div class="cw-head">
+      <span class="cw-head-name">Gazette News</span>
+      <span class="cw-head-title">The Friday Crossword</span>
+      <button class="cw-head-close" onclick="closeCrossword()">&times;</button>
+    </div>
+    <div class="cw-body" id="cw-body"><!-- filled by JS --></div>
+  </div>
+</div>
+
+<!-- GOLDEN GAZETTE AWARD -->
+<div class="gg-award" id="gg-award">
+  <div class="gg-card">
+    <div class="gg-emoji">&#129309;</div>
+    <div class="gg-title">The Golden Gazette</div>
+    <div class="gg-text" id="gg-text">You solved this week's Friday crossword. The Golden Gazette is yours &mdash; it'll sit on your profile all week.</div>
+    <button class="gg-close" onclick="closeAward()">Wear it with pride</button>
   </div>
 </div>
 
@@ -504,6 +622,7 @@ const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
 const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
 
 let WEEK = '';
+let EDITOR_NAME = '';
 let ALL_DATA = {};
 
 async function supaFetch(path) {
@@ -593,10 +712,12 @@ async function checkLogin() {
   }
 
   WEEK = getMondayOf(week);
+  EDITOR_NAME = profile.name || email;
   localStorage.setItem('gz_editor_week', WEEK);
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('week-inp').value = WEEK;
+  refreshCrosswordNav();
   loadWeek();
 }
 
@@ -1334,15 +1455,17 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
   if (session) {
     const { data: profile, error: profErr } = await supa
       .from('profiles')
-      .select('role')
+      .select('role, name')
       .eq('id', session.user.id)
       .single();
 
     if (!profErr && profile && profile.role === 'editor' && savedWeek) {
       WEEK = savedWeek;
+      EDITOR_NAME = profile.name || session.user.email || '';
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       document.getElementById('week-inp').value = WEEK;
+      refreshCrosswordNav();
       loadWeek();
       return;
     }
@@ -1566,6 +1689,270 @@ async function initProgress() {
   const data = await loadProgressData();
   renderProgressSection(data);
 }
+
+// ══════════════════════════════════════════
+//  FRIDAY CROSSWORD  +  GOLDEN GAZETTE BADGE
+//  (mirrors the Planner's implementation so editors see the same
+//  puzzle reporters do — kept in sync by hand when the weekly grid
+//  is refreshed in the Planner's index.html)
+// ══════════════════════════════════════════
+const CW_PUZZLE = {"rows": 19, "cols": 22, "cells": [{"r": 0, "c": 9, "ch": "D", "num": 1}, {"r": 1, "c": 7, "ch": "H", "num": 2}, {"r": 1, "c": 9, "ch": "U", "num": 0}, {"r": 2, "c": 7, "ch": "E", "num": 0}, {"r": 2, "c": 9, "ch": "N", "num": 0}, {"r": 2, "c": 11, "ch": "N", "num": 3}, {"r": 2, "c": 15, "ch": "G", "num": 4}, {"r": 2, "c": 18, "ch": "M", "num": 5}, {"r": 2, "c": 21, "ch": "C", "num": 6}, {"r": 3, "c": 7, "ch": "F", "num": 0}, {"r": 3, "c": 9, "ch": "D", "num": 0}, {"r": 3, "c": 11, "ch": "E", "num": 0}, {"r": 3, "c": 15, "ch": "I", "num": 0}, {"r": 3, "c": 18, "ch": "O", "num": 0}, {"r": 3, "c": 21, "ch": "O", "num": 0}, {"r": 4, "c": 5, "ch": "B", "num": 7}, {"r": 4, "c": 7, "ch": "F", "num": 0}, {"r": 4, "c": 9, "ch": "O", "num": 0}, {"r": 4, "c": 11, "ch": "W", "num": 0}, {"r": 4, "c": 13, "ch": "P", "num": 8}, {"r": 4, "c": 14, "ch": "E", "num": 0}, {"r": 4, "c": 15, "ch": "P", "num": 0}, {"r": 4, "c": 16, "ch": "P", "num": 0}, {"r": 4, "c": 17, "ch": "E", "num": 0}, {"r": 4, "c": 18, "ch": "R", "num": 0}, {"r": 4, "c": 21, "ch": "F", "num": 0}, {"r": 5, "c": 2, "ch": "W", "num": 9}, {"r": 5, "c": 5, "ch": "O", "num": 0}, {"r": 5, "c": 7, "ch": "E", "num": 0}, {"r": 5, "c": 9, "ch": "N", "num": 0}, {"r": 5, "c": 11, "ch": "C", "num": 0}, {"r": 5, "c": 15, "ch": "P", "num": 0}, {"r": 5, "c": 18, "ch": "R", "num": 0}, {"r": 5, "c": 21, "ch": "F", "num": 0}, {"r": 6, "c": 0, "ch": "F", "num": 10}, {"r": 6, "c": 1, "ch": "O", "num": 0}, {"r": 6, "c": 2, "ch": "A", "num": 0}, {"r": 6, "c": 3, "ch": "T", "num": 0}, {"r": 6, "c": 5, "ch": "X", "num": 0}, {"r": 6, "c": 7, "ch": "R", "num": 0}, {"r": 6, "c": 9, "ch": "N", "num": 0}, {"r": 6, "c": 11, "ch": "A", "num": 0}, {"r": 6, "c": 13, "ch": "B", "num": 11}, {"r": 6, "c": 15, "ch": "S", "num": 0}, {"r": 6, "c": 17, "ch": "M", "num": 12}, {"r": 6, "c": 18, "ch": "I", "num": 0}, {"r": 6, "c": 19, "ch": "L", "num": 0}, {"r": 6, "c": 20, "ch": "E", "num": 0}, {"r": 6, "c": 21, "ch": "S", "num": 0}, {"r": 7, "c": 2, "ch": "N", "num": 0}, {"r": 7, "c": 5, "ch": "H", "num": 13}, {"r": 7, "c": 6, "ch": "U", "num": 0}, {"r": 7, "c": 7, "ch": "N", "num": 0}, {"r": 7, "c": 8, "ch": "T", "num": 0}, {"r": 7, "c": 9, "ch": "E", "num": 0}, {"r": 7, "c": 10, "ch": "R", "num": 0}, {"r": 7, "c": 11, "ch": "S", "num": 0}, {"r": 7, "c": 12, "ch": "H", "num": 0}, {"r": 7, "c": 13, "ch": "I", "num": 0}, {"r": 7, "c": 14, "ch": "L", "num": 0}, {"r": 7, "c": 15, "ch": "L", "num": 0}, {"r": 7, "c": 18, "ch": "S", "num": 0}, {"r": 8, "c": 2, "ch": "N", "num": 0}, {"r": 8, "c": 5, "ch": "I", "num": 0}, {"r": 8, "c": 7, "ch": "A", "num": 0}, {"r": 8, "c": 9, "ch": "L", "num": 0}, {"r": 8, "c": 11, "ch": "T", "num": 0}, {"r": 8, "c": 13, "ch": "R", "num": 0}, {"r": 8, "c": 15, "ch": "A", "num": 0}, {"r": 9, "c": 2, "ch": "O", "num": 0}, {"r": 9, "c": 5, "ch": "L", "num": 0}, {"r": 9, "c": 7, "ch": "N", "num": 0}, {"r": 9, "c": 9, "ch": "L", "num": 0}, {"r": 9, "c": 11, "ch": "L", "num": 0}, {"r": 9, "c": 13, "ch": "R", "num": 0}, {"r": 9, "c": 15, "ch": "N", "num": 0}, {"r": 10, "c": 0, "ch": "M", "num": 14}, {"r": 10, "c": 1, "ch": "O", "num": 0}, {"r": 10, "c": 2, "ch": "N", "num": 0}, {"r": 10, "c": 3, "ch": "B", "num": 15}, {"r": 10, "c": 4, "ch": "U", "num": 0}, {"r": 10, "c": 5, "ch": "L", "num": 0}, {"r": 10, "c": 6, "ch": "K", "num": 16}, {"r": 10, "c": 10, "ch": "L", "num": 17}, {"r": 10, "c": 11, "ch": "E", "num": 0}, {"r": 10, "c": 12, "ch": "D", "num": 0}, {"r": 10, "c": 13, "ch": "E", "num": 0}, {"r": 10, "c": 15, "ch": "D", "num": 0}, {"r": 11, "c": 3, "ch": "U", "num": 0}, {"r": 11, "c": 6, "ch": "O", "num": 0}, {"r": 11, "c": 13, "ch": "G", "num": 0}, {"r": 12, "c": 3, "ch": "N", "num": 0}, {"r": 12, "c": 6, "ch": "A", "num": 0}, {"r": 12, "c": 13, "ch": "U", "num": 0}, {"r": 13, "c": 0, "ch": "T", "num": 18}, {"r": 13, "c": 1, "ch": "O", "num": 0}, {"r": 13, "c": 2, "ch": "B", "num": 0}, {"r": 13, "c": 3, "ch": "I", "num": 0}, {"r": 13, "c": 4, "ch": "N", "num": 0}, {"r": 13, "c": 6, "ch": "L", "num": 19}, {"r": 13, "c": 7, "ch": "O", "num": 0}, {"r": 13, "c": 8, "ch": "C", "num": 0}, {"r": 13, "c": 9, "ch": "H", "num": 0}, {"r": 13, "c": 10, "ch": "S", "num": 0}, {"r": 13, "c": 11, "ch": "P", "num": 0}, {"r": 13, "c": 12, "ch": "O", "num": 0}, {"r": 13, "c": 13, "ch": "R", "num": 0}, {"r": 13, "c": 14, "ch": "T", "num": 0}, {"r": 14, "c": 3, "ch": "N", "num": 0}, {"r": 14, "c": 6, "ch": "A", "num": 0}, {"r": 14, "c": 13, "ch": "R", "num": 0}, {"r": 15, "c": 3, "ch": "Y", "num": 0}, {"r": 15, "c": 7, "ch": "B", "num": 20}, {"r": 15, "c": 8, "ch": "A", "num": 0}, {"r": 15, "c": 9, "ch": "L", "num": 0}, {"r": 15, "c": 10, "ch": "L", "num": 0}, {"r": 15, "c": 11, "ch": "A", "num": 0}, {"r": 15, "c": 12, "ch": "R", "num": 0}, {"r": 15, "c": 13, "ch": "A", "num": 0}, {"r": 15, "c": 14, "ch": "T", "num": 0}, {"r": 16, "c": 0, "ch": "A", "num": 21}, {"r": 16, "c": 1, "ch": "X", "num": 0}, {"r": 16, "c": 2, "ch": "I", "num": 0}, {"r": 16, "c": 3, "ch": "O", "num": 0}, {"r": 16, "c": 4, "ch": "S", "num": 0}, {"r": 17, "c": 3, "ch": "N", "num": 0}, {"r": 18, "c": 3, "ch": "G", "num": 0}], "across": [{"num": 8, "clue": "Excellent dam-levels source near Hamilton (Zara)", "len": 6}, {"num": 10, "clue": "Wellington Shire councillor quoted on the new flood maps", "len": 4}, {"num": 12, "clue": "Hunters Hill mayor quoted on the new solar guidelines", "len": 5}, {"num": 13, "clue": "North Shore suburb with the lowest solar uptake (Huw, 2 words)", "len": 11}, {"num": 14, "clue": "Dandenong Ranges town home to Belinda Grooby (Matthew)", "len": 7}, {"num": 17, "clue": "The opening line — burying it is the cardinal sin", "len": 4}, {"num": 18, "clue": "Facilitator at the Yarrunga Rummikub story (Matthew)", "len": 5}, {"num": 19, "clue": "Wellington Shire town facing the new flood overlay (Jacob)", "len": 9}, {"num": 20, "clue": "City at the centre of Darcie's youth migration story", "len": 8}, {"num": 21, "clue": "The bullet-point structure encouraged across the network", "len": 5}], "down": [{"num": 1, "clue": "Wind farm whose community fund pays 50k a year (Zara)", "len": 10}, {"num": 2, "clue": "The ‘Heffernan problem’ — leaning on an outside expert when a local says the same", "len": 9}, {"num": 3, "clue": "City whose Lord Mayor gave Doug a strong NBN-cuts story get", "len": 9}, {"num": 4, "clue": "Region Jacob covers, often under-represented in the east", "len": 9}, {"num": 5, "clue": "UTS source for Archie's rental and housing script", "len": 6}, {"num": 6, "clue": "Harbour where flights cost more than to NZ (Doug)", "len": 5}, {"num": 7, "clue": "Melbourne suburb of Matthew's breaking murder story (2 words)", "len": 7}, {"num": 9, "clue": "Zara's electorate and masthead name", "len": 6}, {"num": 11, "clue": "Town whose hospital sale script needed a Melbourne comparison angle", "len": 10}, {"num": 15, "clue": "Village whose 32-year international film festival Zara previewed", "len": 9}, {"num": 16, "clue": "Great — National Park, subject of the forestry update story", "len": 5}]};
+
+// Which week's puzzle (use the editor's currently loaded week so the
+// badge is per-week, same convention as the Planner)
+function cwWeekKey(){ return (typeof WEEK !== 'undefined' && WEEK) ? WEEK : 'nowk'; }
+function cwUser(){ return (typeof EDITOR_NAME !== 'undefined' && EDITOR_NAME) ? ('editor|' + EDITOR_NAME) : 'anon-editor'; }
+
+// Is it Friday? (local time)
+function isFriday(){ return new Date().getDay() === 5; }
+let CW_FORCE_UNLOCK = false;
+function cwUnlocked(){ return CW_FORCE_UNLOCK || isFriday(); }
+
+// ── Badge + streak storage ──
+function ggKey(){ return 'gz_golden_' + cwUser(); }
+function getGolden(){
+  try { return JSON.parse(localStorage.getItem(ggKey())) || { weeks:[], streak:0, lastWeek:null }; }
+  catch(e){ return { weeks:[], streak:0, lastWeek:null }; }
+}
+function hasGoldenThisWeek(){
+  const g = getGolden();
+  return g.weeks.indexOf(cwWeekKey()) !== -1;
+}
+function awardGolden(){
+  const g = getGolden();
+  const wk = cwWeekKey();
+  if(g.weeks.indexOf(wk) !== -1) return false; // already have it
+  g.weeks.push(wk);
+  g.streak = (g.streak || 0) + 1;
+  g.lastWeek = wk;
+  localStorage.setItem(ggKey(), JSON.stringify(g));
+  if (typeof notifySlack === 'function' && EDITOR_NAME) notifySlack(':handshake: *' + EDITOR_NAME + '* just solved this week\'s Friday crossword and earned the Golden Gazette!');
+  return true;
+}
+
+// ── Header chrome reflects state ──
+function refreshCrosswordNav(){
+  const nav = document.getElementById('crossword-nav');
+  const ico = document.getElementById('cw-ico');
+  const label = document.getElementById('cw-label');
+  const ggHdr = document.getElementById('gg-hdr');
+  if(!nav) return;
+  if(cwUnlocked()){
+    nav.classList.remove('locked'); nav.classList.add('unlocked');
+    ico.innerHTML = '&#9745;';  // boxed tick
+    label.textContent = hasGoldenThisWeek() ? 'Crossword solved' : 'Friday crossword';
+  } else {
+    nav.classList.add('locked'); nav.classList.remove('unlocked');
+    ico.innerHTML = '&#128274;'; // lock
+    label.textContent = 'Crossword';
+  }
+  if(ggHdr) ggHdr.style.display = hasGoldenThisWeek() ? 'inline-block' : 'none';
+}
+
+// ── Open / close ──
+function openCrossword(){
+  const body = document.getElementById('cw-body');
+  if(!cwUnlocked()){
+    body.innerHTML = renderLocked();
+  } else {
+    body.innerHTML = renderPuzzleShell();
+    buildCwBoard();
+    renderCwClues();
+    const f = CW_PUZZLE.cells.find(c=>c.num===1);
+    if(f) cwFocus(f.r,f.c);
+  }
+  document.getElementById('cw-overlay').classList.add('show');
+}
+function closeCrossword(){ document.getElementById('cw-overlay').classList.remove('show'); }
+
+function renderLocked(){
+  const now = new Date(); const day = now.getDay();
+  let until = (5 - day + 7) % 7; if(until===0) until = 0;
+  const dayName = until===1 ? 'tomorrow' : 'in ' + until + ' days';
+  return '<div class="cw-locked">' +
+    '<div class="cw-locked-ico">&#128274;</div>' +
+    '<div class="cw-locked-title">The Friday crossword is locked</div>' +
+    '<div class="cw-locked-sub">Every Friday, a fresh crossword unlocks here &mdash; all its answers drawn from the week\'s reporting across the network. Solve it to earn the Golden Gazette on your profile.</div>' +
+    '<span class="cw-countdown">Unlocks ' + (until===0?'today':dayName) + '</span>' +
+    '</div>';
+}
+
+function renderPuzzleShell(){
+  const g = getGolden();
+  const solved = hasGoldenThisWeek();
+  let streakChip = '';
+  if(g.streak > 0){
+    streakChip = '<div class="cw-streak-chip">&#129309; ' + g.streak + ' Golden Gazette' + (g.streak===1?'':'s') + ' earned</div>';
+  }
+  const sub = solved
+    ? 'You\'ve already earned this week\'s Golden Gazette &mdash; but the grid\'s here if you want to finish it again.'
+    : 'Every answer comes from the week\'s reporting across the network. Solve the whole grid to earn the Golden Gazette.';
+  return '<div class="cw-intro">' +
+    '<div class="cw-eyebrow">Newsroom edition &middot; this week</div>' +
+    '<div class="cw-h1">The week on the desk</div>' +
+    '<div class="cw-sub">' + sub + '</div>' +
+    streakChip +
+    '</div>' +
+    '<div class="cw-layout">' +
+    '<div class="cw-board-wrap"><div id="cw-board"></div>' +
+    '<div class="cw-toolbar">' +
+    '<button class="cw-btn primary" onclick="cwCheck()">Check answers</button>' +
+    '<button class="cw-btn" onclick="cwReveal()">Reveal word</button>' +
+    '<button class="cw-btn" onclick="cwClear()">Clear</button>' +
+    '</div>' +
+    '<div class="cw-msg" id="cw-msg"></div>' +
+    '</div>' +
+    '<div class="cw-clues">' +
+    '<div class="cw-cg"><h3>Across</h3><div id="cw-across"></div></div>' +
+    '<div class="cw-cg"><h3>Down</h3><div id="cw-down"></div></div>' +
+    '</div>' +
+    '</div>';
+}
+
+// ── Grid engine ──
+const cwCellMap = {};
+CW_PUZZLE.cells.forEach(c => cwCellMap[c.r+','+c.c] = c);
+function cwAt(r,c){ return cwCellMap[r+','+c]; }
+let CW_ENTRIES = null;
+function cwBuildEntries(){
+  const e = {across:{},down:{}};
+  CW_PUZZLE.cells.forEach(c=>{
+    if(c.num){
+      if(!cwAt(c.r,c.c-1) && cwAt(c.r,c.c+1)){ const s=[];let cc=c.c;while(cwAt(c.r,cc)){s.push([c.r,cc]);cc++;}e.across[c.num]=s; }
+      if(!cwAt(c.r-1,c.c) && cwAt(c.r+1,c.c)){ const s=[];let rr=c.r;while(cwAt(rr,c.c)){s.push([rr,c.c]);rr++;}e.down[c.num]=s; }
+    }
+  });
+  return e;
+}
+let cwInputs = {};
+let cwDir='across', cwNum=null;
+
+function buildCwBoard(){
+  CW_ENTRIES = cwBuildEntries();
+  cwInputs = {};
+  const board = document.getElementById('cw-board');
+  board.style.gridTemplateColumns = 'repeat('+CW_PUZZLE.cols+', auto)';
+  let html='';
+  for(let r=0;r<CW_PUZZLE.rows;r++){
+    for(let c=0;c<CW_PUZZLE.cols;c++){
+      const cd=cwAt(r,c);
+      if(!cd){ html+='<div class="cwc block"></div>'; continue; }
+      html+='<div class="cwc" id="cwc-'+r+'-'+c+'">'+
+        (cd.num?'<span class="cwn">'+cd.num+'</span>':'')+
+        '<input maxlength="1" data-r="'+r+'" data-c="'+c+'">'+
+        '</div>';
+    }
+  }
+  board.innerHTML=html;
+  board.querySelectorAll('input').forEach(inp=>{
+    const r=+inp.dataset.r, c=+inp.dataset.c;
+    cwInputs[r+','+c]=inp;
+    inp.addEventListener('focus',()=>cwOnFocus(r,c));
+    inp.addEventListener('input',(e)=>cwOnInput(e,r,c));
+    inp.addEventListener('keydown',(e)=>cwOnKey(e,r,c));
+  });
+}
+
+function cwClearHL(){
+  document.querySelectorAll('.cwc').forEach(el=>el.classList.remove('hl','hl-active'));
+  document.querySelectorAll('.cw-clue').forEach(el=>el.classList.remove('active'));
+}
+function cwEntryFor(r,c,dir){
+  const list=CW_ENTRIES[dir];
+  for(const num in list){ if(list[num].some(([rr,cc])=>rr===r&&cc===c)) return {num:+num,seq:list[num]}; }
+  return null;
+}
+function cwOnFocus(r,c){
+  let e=cwEntryFor(r,c,cwDir);
+  if(!e){ cwDir = cwDir==='across'?'down':'across'; e=cwEntryFor(r,c,cwDir); }
+  if(!e) return;
+  cwClearHL(); cwNum=e.num;
+  e.seq.forEach(([rr,cc])=>{ document.getElementById('cwc-'+rr+'-'+cc).classList.add(rr===r&&cc===c?'hl-active':'hl'); });
+  const ce=document.getElementById('cwclue-'+cwDir+'-'+e.num); if(ce) ce.classList.add('active');
+}
+function cwFocus(r,c){ const i=cwInputs[r+','+c]; if(i) i.focus(); }
+function cwOnInput(ev,r,c){
+  const v=ev.target.value.toUpperCase().replace(/[^A-Z]/g,''); ev.target.value=v;
+  document.getElementById('cwc-'+r+'-'+c).classList.remove('correct','wrong');
+  if(v){ const e=cwEntryFor(r,c,cwDir); if(e){ const i=e.seq.findIndex(([rr,cc])=>rr===r&&cc===c); if(i<e.seq.length-1){ const [nr,nc]=e.seq[i+1]; cwFocus(nr,nc); } } }
+}
+function cwOnKey(ev,r,c){
+  const k=ev.key;
+  if(k==='Backspace'){ if(!ev.target.value){ ev.preventDefault(); const e=cwEntryFor(r,c,cwDir); if(e){ const i=e.seq.findIndex(([rr,cc])=>rr===r&&cc===c); if(i>0){ const [pr,pc]=e.seq[i-1]; cwFocus(pr,pc); } } } document.getElementById('cwc-'+r+'-'+c).classList.remove('correct','wrong'); }
+  else if(k==='ArrowRight'){ ev.preventDefault(); cwFocus(r,c+1); }
+  else if(k==='ArrowLeft'){ ev.preventDefault(); cwFocus(r,c-1); }
+  else if(k==='ArrowDown'){ ev.preventDefault(); cwDir='down'; cwFocus(r+1,c); }
+  else if(k==='ArrowUp'){ ev.preventDefault(); cwDir='down'; cwFocus(r-1,c); }
+}
+function renderCwClues(){
+  const ac=document.getElementById('cw-across'), dn=document.getElementById('cw-down');
+  let ah='',dh='';
+  CW_PUZZLE.across.forEach(w=>{ ah+='<div class="cw-clue" id="cwclue-across-'+w.num+'" onclick="cwGoto(\'across\','+w.num+')"><span class="cw-clue-num">'+w.num+'</span><span>'+w.clue+' <span class="cw-clue-len">('+w.len+')</span></span></div>'; });
+  CW_PUZZLE.down.forEach(w=>{ dh+='<div class="cw-clue" id="cwclue-down-'+w.num+'" onclick="cwGoto(\'down\','+w.num+')"><span class="cw-clue-num">'+w.num+'</span><span>'+w.clue+' <span class="cw-clue-len">('+w.len+')</span></span></div>'; });
+  ac.innerHTML=ah; dn.innerHTML=dh;
+}
+function cwGoto(dir,num){ cwDir=dir; const seq=CW_ENTRIES[dir][num]; if(seq){ cwFocus(seq[0][0],seq[0][1]); } }
+
+function cwCheck(){
+  let filled=0,correct=0,total=0;
+  CW_PUZZLE.cells.forEach(cd=>{
+    total++; const inp=cwInputs[cd.r+','+cd.c]; const el=document.getElementById('cwc-'+cd.r+'-'+cd.c);
+    el.classList.remove('correct','wrong');
+    if(inp.value){ filled++; if(inp.value.toUpperCase()===cd.ch){ correct++; el.classList.add('correct'); } else el.classList.add('wrong'); }
+  });
+  const msg=document.getElementById('cw-msg');
+  if(correct===total){
+    msg.className='cw-msg win'; msg.textContent='Filed and clean \u2014 every answer correct.';
+    onCrosswordSolved();
+  } else if(filled===total){ msg.className='cw-msg near'; msg.textContent=correct+' of '+total+' right. The blue squares need another look.'; }
+  else { msg.className='cw-msg near'; msg.textContent=correct+' correct so far \u2014 '+(total-filled)+' squares still empty.'; }
+}
+function cwReveal(){
+  if(!cwNum){ document.getElementById('cw-msg').textContent='Pick a clue first, then reveal.'; return; }
+  const seq=CW_ENTRIES[cwDir][cwNum]; if(!seq) return;
+  seq.forEach(([r,c])=>{ cwInputs[r+','+c].value=cwAt(r,c).ch; document.getElementById('cwc-'+r+'-'+c).classList.remove('wrong'); });
+}
+function cwClear(){
+  Object.values(cwInputs).forEach(i=>i.value='');
+  document.querySelectorAll('.cwc').forEach(el=>el.classList.remove('correct','wrong'));
+  document.getElementById('cw-msg').textContent='';
+}
+
+// ── Solved → award Golden Gazette ──
+function onCrosswordSolved(){
+  const fresh = awardGolden();
+  refreshCrosswordNav();
+  if(fresh){
+    try{
+      const overlay = document.getElementById('celebrate-overlay');
+      if(overlay){
+        const colours = ['#FFD700','#EEFF00','#B8860B','#0000EE','#FFC400','#fff3b0'];
+        for(let i=0;i<70;i++){ const c=document.createElement('div'); c.className='confetti';
+          c.style.left=Math.random()*100+'vw'; c.style.background=colours[Math.floor(Math.random()*colours.length)];
+          c.style.animation='confettiFall '+(1.8+Math.random()*1.4)+'s '+(Math.random()*0.5)+'s ease-in forwards';
+          overlay.appendChild(c); }
+        overlay.classList.add('show');
+        setTimeout(()=>{ overlay.classList.remove('show'); overlay.innerHTML=''; }, 3200);
+      }
+    }catch(e){}
+    const g = getGolden();
+    const txt = document.getElementById('gg-text');
+    if(txt){
+      txt.innerHTML = 'You solved this week\'s Friday crossword. The Golden Gazette is yours &mdash; it\'ll sit on your profile all week.' +
+        (g.streak>1 ? ' That\'s <strong>'+g.streak+'</strong> you\'ve earned now.' : '');
+    }
+    setTimeout(()=>{ document.getElementById('gg-award').classList.add('show'); }, 600);
+  }
+}
+function closeAward(){ document.getElementById('gg-award').classList.remove('show'); }
+
+// close overlays on backdrop / escape
+document.getElementById('cw-overlay').addEventListener('click', e=>{ if(e.target.id==='cw-overlay') closeCrossword(); });
+document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.id==='gg-award') closeAward(); });
+
+// Reflect lock/unlock + Golden Gazette state as soon as the script loads,
+// in case the editor's session restores straight into the dashboard.
+refreshCrosswordNav();
 
 </script>
 
