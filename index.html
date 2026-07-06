@@ -545,6 +545,18 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .crossword-nav.unlocked{background:var(--acid);color:var(--ink);border-color:var(--acid);animation:cwGlow 2.4s ease-in-out infinite}
 @keyframes cwGlow{0%,100%{box-shadow:0 0 0 0 rgba(238,255,0,.0)}50%{box-shadow:0 0 0 4px rgba(238,255,0,.25)}}
 .cw-ico{font-size:14px;line-height:1}
+/* ── Gold Star — permanent, cumulative, escalating tiers ──
+   1: plain star (with a small count once >1)
+   5+: pulsing star
+   10+: glowing "different" star
+   20+: rainbow star */
+.gs-hdr{display:inline-flex;align-items:center;font-size:20px;line-height:1;color:#D4A017;position:relative}
+.gs-hdr .gs-count{font-size:10px;font-weight:800;color:#8A6A00;vertical-align:super;margin-left:1px}
+.gs-hdr.gs-tier2{animation:gsPulse 1.7s ease-in-out infinite}
+.gs-hdr.gs-tier3{color:#B8860B;text-shadow:0 0 6px rgba(255,200,0,.85);animation:gsPulse 2.2s ease-in-out infinite}
+.gs-hdr.gs-tier4{background:linear-gradient(90deg,#ff4d4d,#ffb84d,#e8e84d,#4dd97a,#4dc3ff,#b366ff,#ff4d4d);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gsRainbowMove 3s linear infinite}
+@keyframes gsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+@keyframes gsRainbowMove{to{background-position:200% center}}
 .golden-gazette-hdr{font-size:20px;line-height:1;filter:drop-shadow(0 0 4px rgba(255,200,0,.6));animation:ggPulse 2.6s ease-in-out infinite}
 @keyframes ggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
@@ -757,6 +769,7 @@ padding:5px 12px;border-radius:999px}
 <button class="week-arrow" id="week-next" onclick="shiftWeek(1)" title="Next week">&#8250;</button>
 </div>
 <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
+<span class="gs-hdr" id="gs-hdr" style="display:none"></span>
 <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
 <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="This week's crossword">
@@ -1215,6 +1228,7 @@ loadStories();
 refreshCrosswordNav();
 renderBadges();
 refreshNextWeekBadges();
+loadGoldStar();
 }
 
 // Intercept back button
@@ -2399,6 +2413,7 @@ const pbMsg = updatePB(grandTotal);
 if (baseTotal === baseCount && _progressInitialised && _lastFiledCount < baseCount && !opts.silent) {
 celebrateComplete(pbMsg);
 bumpStreak();
+awardGoldStar();
 }
 
 // Above & Beyond: filed more than the base total (first time crossing the threshold this session)
@@ -2842,6 +2857,51 @@ setTimeout(() => { document.getElementById('aab-award').classList.add('show'); }
 }
 function closeAab(){ document.getElementById('aab-award').classList.remove('show'); }
 document.getElementById('aab-award').addEventListener('click', e => { if(e.target.id==='aab-award') closeAab(); });
+
+// ── Gold Star — permanent, cumulative, lives on the reporter's profile
+// (Supabase `profiles.gold_star_count`/`gold_star_weeks`), unlike the
+// Golden Gazette/Above & Beyond badges which are weekly and per-browser.
+// Awarded once per week the first time a reporter files their full base
+// slate; `gold_star_weeks` is the server-side guard against double-counting.
+function goldStarTier(count){
+if (count >= 20) return 4;
+if (count >= 10) return 3;
+if (count >= 5) return 2;
+return 1;
+}
+function renderGoldStarHdr(count){
+const el = document.getElementById('gs-hdr');
+if (!el) return;
+if (!count || count < 1) { el.style.display = 'none'; return; }
+const tier = goldStarTier(count);
+el.className = 'gs-hdr gs-tier' + tier;
+el.innerHTML = '\u2605' + (count > 1 ? '<span class="gs-count">' + count + '</span>' : '');
+el.title = count + ' gold star' + (count===1?'':'s') + ' \u2014 filed every story, every week';
+el.style.display = 'inline-flex';
+}
+async function loadGoldStar(){
+try {
+const { data: { session } } = await supa.auth.getSession();
+if (!session) return;
+const { data: profile } = await supa.from('profiles').select('gold_star_count').eq('id', session.user.id).single();
+renderGoldStarHdr(profile ? (profile.gold_star_count || 0) : 0);
+} catch(e) { console.warn('Gold star load failed (non-critical):', e); }
+}
+async function awardGoldStar(){
+try {
+const { data: { session } } = await supa.auth.getSession();
+if (!session) return;
+const { data: profile } = await supa.from('profiles').select('gold_star_count, gold_star_weeks').eq('id', session.user.id).single();
+if (!profile) return;
+const weeks = profile.gold_star_weeks || [];
+if (weeks.indexOf(WEEK) !== -1) return; // already awarded for this week
+const newCount = (profile.gold_star_count || 0) + 1;
+const newWeeks = weeks.concat([WEEK]);
+await supa.from('profiles').update({ gold_star_count: newCount, gold_star_weeks: newWeeks }).eq('id', session.user.id);
+renderGoldStarHdr(newCount);
+if (USER) notifySlack(':star: *' + USER.name + '* filed every story this week \u2014 gold star #' + newCount + ' on their profile!');
+} catch(e) { console.warn('Gold star award failed (non-critical):', e); }
+}
 
 // ══════════════════════════════════════════
 //  FRIDAY CROSSWORD  +  GOLDEN GAZETTE BADGE
