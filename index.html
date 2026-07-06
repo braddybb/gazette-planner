@@ -2979,18 +2979,22 @@ document.getElementById('cw-overlay').classList.add('show');
 }
 function closeCrossword(){ document.getElementById('cw-overlay').classList.remove('show'); }
 
-// Best-effort single Slack ping per week — the first reporter to open the
-// crossword that week triggers it. Since there's no shared server-side lock,
-// this can still fire once per reporter (not truly once for the whole team)
-// if several people open it independently before anyone's seen the ping —
-// a fully single-fire guarantee needs a shared flag (e.g. in Supabase), not
-// just this client-side check.
-function announceCrosswordUnlockOnce(){
-const key = 'gz_cw_announced_' + cwWeekKey();
-if (localStorage.getItem(key)) return;
-localStorage.setItem(key, '1');
+// Real single-fire guarantee: system_flags.key is a primary key, so
+// Postgres itself only lets one insert for this week's flag succeed —
+// every other reporter opening the crossword around the same time gets a
+// rejected insert and simply doesn't send anything. This replaces the old
+// localStorage check, which could never coordinate across different
+// reporters' browsers and was pinging once per person, not once per team.
+async function announceCrosswordUnlockOnce(){
+try {
+const { error } = await supa.from('system_flags').insert({ key: 'cw_announced_' + cwWeekKey(), value: '1' });
+if (error) return; // someone else already claimed it this week
 if (typeof notifySlack === 'function') {
 notifySlack(':crossword: This week\'s crossword is live in the Planner \u2014 available all week, first to finish earns the Golden Gazette \uD83E\uDD1D');
+}
+} catch(e) {
+// If system_flags isn't set up yet, fail quietly rather than spam
+console.warn('Crossword announce lock failed (non-critical):', e);
 }
 }
 
