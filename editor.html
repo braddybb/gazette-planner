@@ -605,11 +605,15 @@ function newNoteId() {
 let GOLD_STARS = {};
 async function loadGoldStars() {
   try {
-    const rows = await supaFetch('profiles?select=reporter_name,gold_star_count&role=eq.reporter');
+    // No role filter — match on whichever name column is populated, since
+    // we can't be sure reporter_name vs name is the one actually in use.
+    const rows = await supaFetch('profiles?select=name,reporter_name,gold_star_count');
     GOLD_STARS = {};
     (rows || []).forEach(p => {
-      if (p.reporter_name) GOLD_STARS[p.reporter_name] = p.gold_star_count || 0;
+      const key = p.reporter_name || p.name;
+      if (key) GOLD_STARS[key] = p.gold_star_count || 0;
     });
+    console.log('Gold stars loaded:', GOLD_STARS);
   } catch(e) { console.warn('Gold star load failed (non-critical):', e); }
 }
 function goldStarTier(count) {
