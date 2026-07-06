@@ -4,6 +4,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -133,6 +134,11 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 
 /* ── STORY GRID ── */
 .stories-grid{padding:1.75rem 2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;max-width:1400px;margin:0 auto;align-items:start}
+.sort-toolbar{max-width:1400px;margin:0 auto;padding:0.75rem 2rem 0;display:flex;align-items:center;gap:8px}
+.sort-label{font-size:12px;font-weight:600;color:var(--grey-md,#888);text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
+.sort-btn{font-size:12px;font-weight:600;font-family:inherit;padding:5px 12px;border-radius:999px;border:0.5px solid var(--border,#DDD);background:#fff;color:#555;cursor:pointer}
+.sort-btn:hover{background:#F5F5F5}
+.sort-btn.active{background:var(--blue,#0000EE);border-color:var(--blue,#0000EE);color:#fff}
 
 /* ── STORY CARD ── */
 .story-card{background:#fff;border:0.5px solid var(--border);border-radius:14px;overflow:hidden;position:relative;
@@ -266,7 +272,17 @@ transition:background .35s ease, color .35s ease}
 
 .cf{margin-bottom:12px}
 .cf:last-child{margin-bottom:0}
-.cl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--grey-md);margin-bottom:4px}
+.cl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--grey-md);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.notes-expand-btn{font-size:12px;background:none;border:none;cursor:pointer;color:var(--grey-md);padding:0 2px;line-height:1;text-transform:none;letter-spacing:normal;font-weight:400}
+.notes-expand-btn:hover{color:var(--ink)}
+.notes-expand-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,20,.5);z-index:200;align-items:center;justify-content:center}
+.notes-expand-overlay.show{display:flex}
+.notes-expand-modal{background:#fff;border-radius:14px;width:min(640px,92vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.notes-expand-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:0.5px solid var(--border,#DDD)}
+.notes-expand-hdr span{font-size:15px;font-weight:600;color:var(--ink)}
+.notes-expand-hdr button{background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--grey-md);padding:0 4px}
+.notes-expand-hdr button:hover{color:var(--ink)}
+.notes-expand-modal textarea{flex:1;min-height:340px;border:none;padding:20px;font-family:inherit;font-size:14px;line-height:1.6;resize:vertical;outline:none}
 .cf input[type=text],.cf textarea{width:100%;border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:#111;outline:none;resize:vertical;transition:border-color .2s}
 .cf input[type=text]:focus,.cf textarea:focus{border-color:var(--blue)}
 .cf textarea{min-height:52px}
@@ -581,7 +597,9 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .cw-clue-num{font-weight:700;flex-shrink:0;min-width:18px}
 .cw-clue-len{color:#999;font-weight:500}
 
-.cw-toolbar{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+.cw-toolbar{display:flex;gap:8px;align-items:center;margin-top:1rem;flex-wrap:wrap}
+.cw-reveal-count{font-size:12px;color:var(--grey-md,#888)}
+.cw-btn:disabled{opacity:.45;cursor:not-allowed}
 .cw-btn{font-size:13px;font-weight:600;font-family:inherit;border-radius:9px;padding:8px 15px;cursor:pointer;border:1px solid var(--border,#ddd);background:#fff;color:var(--ink-2,#555);transition:all .15s}
 .cw-btn:hover{border-color:var(--blue);color:var(--blue)}
 .cw-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -741,7 +759,7 @@ padding:5px 12px;border-radius:999px}
 <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
 <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
-<button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
+<button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="This week's crossword">
 <span class="cw-ico" id="cw-ico">&#128279;</span>
 <span class="cw-label" id="cw-label">Crossword</span>
 </button>
@@ -790,6 +808,19 @@ padding:5px 12px;border-radius:999px}
 </div>
 <div id="celebrate-overlay"></div>
 
+<div class="notes-expand-overlay" id="notes-expand-overlay">
+<div class="notes-expand-modal">
+<div class="notes-expand-hdr"><span id="notes-expand-title">Notes</span><button onclick="closeNotesExpand()">&times;</button></div>
+<textarea id="notes-expand-textarea" oninput="onNotesExpandInput()" placeholder="Key sources, contacts..."></textarea>
+</div>
+</div>
+
+<div class="sort-toolbar" id="sort-toolbar">
+<span class="sort-label">Order:</span>
+<button class="sort-btn" data-sort="default" onclick="setCardSort('default')">Slot order</button>
+<button class="sort-btn" data-sort="day" onclick="setCardSort('day')">By day</button>
+<button class="sort-btn" data-sort="type" onclick="setCardSort('type')">By type</button>
+</div>
 <div id="stories-container">
 <div class="loading-screen">
 <div class="loading-spinner"></div>
@@ -918,6 +949,47 @@ return [
 ];
 }
 let STORIES = getStoryDefs(null);
+
+// ── Card sort (Slot order / By day / By type) ──
+let CARD_SORT = localStorage.getItem('gz_card_sort') || 'default';
+function dayIndex(day) {
+const idx = DAYS.indexOf(day);
+return idx === -1 ? DAYS.length : idx; // undated goes last
+}
+function sortStoryDefs(defs) {
+if (CARD_SORT === 'default') return defs;
+const withIdx = defs.map((s, idx) => ({ s, idx }));
+if (CARD_SORT === 'day') {
+withIdx.sort((a, b) => {
+const da = dayIndex(getStory(a.s.n).file_day);
+const db = dayIndex(getStory(b.s.n).file_day);
+if (da !== db) return da - db;
+return a.idx - b.idx; // stable tiebreak, keeps slot order within a day
+});
+} else if (CARD_SORT === 'type') {
+// Group by label, preserving the order labels first appear in STORIES
+// so the grouping still reads naturally (video-first first, etc.)
+const order = [];
+defs.forEach(s => { if (order.indexOf(s.lbl) === -1) order.push(s.lbl); });
+withIdx.sort((a, b) => {
+const oa = order.indexOf(a.s.lbl);
+const ob = order.indexOf(b.s.lbl);
+if (oa !== ob) return oa - ob;
+return a.idx - b.idx;
+});
+}
+return withIdx.map(x => x.s);
+}
+function setCardSort(mode) {
+CARD_SORT = mode;
+localStorage.setItem('gz_card_sort', mode);
+renderGrid();
+}
+function updateSortToolbar() {
+document.querySelectorAll('.sort-btn').forEach(b => {
+b.classList.toggle('active', b.dataset.sort === CARD_SORT);
+});
+}
 
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
 const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube','dotcom'];
@@ -1209,7 +1281,7 @@ const rows = await supaFetch('GET',
 `${TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=*`
 );
 DATA = {};
-(rows || []).forEach(r => { DATA[r.story_num] = r; });
+(rows || []).forEach(r => { DATA[r.story_num] = r; DATA[r.story_num].editor_notes = parseEditorNotes(r); });
 renderGrid();
 renderCalendar();
 renderStreak();
@@ -1223,7 +1295,24 @@ container.innerHTML = `<div class="loading-screen"><div class="loading-text" sty
 }
 
 function blankStory(num) {
-return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false };
+return { story_num: num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false, editor_notes:[] };
+}
+
+// ── Editor notes: stored as a JSON-encoded array in the existing editor_note
+// text column (no new Supabase column needed). Each note is independently
+// addressable. Old single plain-text notes are read as one legacy note so
+// nothing outstanding gets lost in the switch.
+function parseEditorNotes(row) {
+const raw = row && row.editor_note;
+if (!raw) return [];
+try {
+const parsed = JSON.parse(raw);
+if (Array.isArray(parsed)) return parsed;
+} catch(e) {}
+return [{ id: 'legacy', text: raw, addressed: !!(row && row.editor_note_addressed) }];
+}
+function serializeEditorNotes(notes) {
+return JSON.stringify(notes || []);
 }
 
 function getStory(num) {
@@ -1322,13 +1411,14 @@ container.innerHTML = '';
 // Base 8 story cards
 const grid = document.createElement('div');
 grid.className = 'stories-grid';
-STORIES.forEach((s,i) => {
+sortStoryDefs(STORIES).forEach((s,i) => {
 grid.appendChild(buildCard(s, i));
 });
 container.appendChild(grid);
 
 // Extra stories (story_num > '08') — includes editor assignments + reporter-added
 renderExtras(container);
+updateSortToolbar();
 }
 
 function getExtras() {
@@ -1348,7 +1438,15 @@ return String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0')
 }
 
 function renderExtras(container) {
-const extras = getExtras();
+let extras = getExtras();
+if (CARD_SORT === 'day') {
+extras = extras.slice().sort((a,b) => {
+const da = dayIndex(a.data.file_day);
+const db = dayIndex(b.data.file_day);
+if (da !== db) return da - db;
+return parseInt(a.num, 10) - parseInt(b.num, 10);
+});
+}
 // Always show the section (even if empty, for the + button)
 let section = document.createElement('div');
 section.className = 'extras-section';
@@ -1425,7 +1523,7 @@ wrap.id = 'card-' + s.n;
 const hdr = document.createElement('div');
 hdr.className = 'card-hdr ' + s.t + (hasContent ? ' has-content' : '');
 hdr.onclick = () => toggleCard(s.n);
-const showDot = st.editor_note && !noteSeen(s.n, st.editor_note);
+const showDot = st.editor_notes && st.editor_notes.length && !noteSeen(s.n, st.editor_notes);
 hdr.innerHTML =
 '<div class="hdr-num ' + s.t + '">' + s.n + '</div>' +
 '<div class="hdr-info">' +
@@ -1453,13 +1551,11 @@ albl.textContent = 'Assigned by ' + st.assigned_by;
 body.appendChild(albl);
 }
 
-// Editor note banner (if present) — addressable as a checkable item
-if (st.editor_note) {
-const banner = document.createElement('div');
-banner.className = 'editor-note-banner' + (st.editor_note_addressed ? ' addressed' : '');
-banner.innerHTML = '<label class="en-check"><input type="checkbox" ' + (st.editor_note_addressed ? 'checked' : '') + ' onchange="noteAddressedUpdate(\'' + s.n + '\',this.checked)"></label>' +
-'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(st.editor_note) + '</span></div>';
-body.appendChild(banner);
+// Editor note banners (if present) — each addressable independently as a checkable item
+if (st.editor_notes && st.editor_notes.length) {
+const holder = document.createElement('div');
+holder.innerHTML = noteBannersHtml(s.n, st.editor_notes);
+body.appendChild(holder.firstChild);
 }
 
 // Headline — relabelled for poll/newsletter cards
@@ -1489,7 +1585,7 @@ body.appendChild(hlDiv);
 if (isPoll) {
 const notesDiv = document.createElement('div');
 notesDiv.className = 'cf';
-notesDiv.innerHTML = '<div class="cl">Notes</div><textarea placeholder="Platform, context, what you\'re hoping to learn..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea>';
+notesDiv.innerHTML = '<div class="cl">Notes <button type="button" class="notes-expand-btn" title="Expand notes" onclick="openNotesExpand(\'' + s.n + '\')">&#10530;</button></div><textarea id="notes-fld-' + s.n + '" placeholder="Platform, context, what you\'re hoping to learn..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea>';
 body.appendChild(notesDiv);
 }
 // Newsletter cards: subject line (above) + notes + send day. No format,
@@ -1497,7 +1593,7 @@ body.appendChild(notesDiv);
 else if (isNewsletter) {
 const notesDiv = document.createElement('div');
 notesDiv.className = 'cf';
-notesDiv.innerHTML = '<div class="cl">Notes</div><textarea placeholder="What\'s in this edition..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea>';
+notesDiv.innerHTML = '<div class="cl">Notes <button type="button" class="notes-expand-btn" title="Expand notes" onclick="openNotesExpand(\'' + s.n + '\')">&#10530;</button></div><textarea id="notes-fld-' + s.n + '" placeholder="What\'s in this edition..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea>';
 body.appendChild(notesDiv);
 const sendDiv = document.createElement('div');
 sendDiv.className = 'cf';
@@ -1514,7 +1610,7 @@ const anDiv = document.createElement('div');
 anDiv.className = 'grid2';
 anDiv.innerHTML =
 '<div class="cf"><div class="cl">Angle</div><textarea placeholder="What\'s the angle?" oninput="fieldUpdate(\'' + s.n + '\',\'angle\',this.value)">' + esc(st.angle) + '</textarea></div>' +
-'<div class="cf"><div class="cl">Notes / sources</div><textarea placeholder="Key sources, contacts..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea></div>';
+'<div class="cf"><div class="cl">Notes / sources <button type="button" class="notes-expand-btn" title="Expand notes" onclick="openNotesExpand(\'' + s.n + '\')">&#10530;</button></div><textarea id="notes-fld-' + s.n + '" placeholder="Key sources, contacts..." oninput="fieldUpdate(\'' + s.n + '\',\'notes\',this.value)">' + esc(st.notes) + '</textarea></div>';
 body.appendChild(anDiv);
 
 // Suggest contacts — pulls keyword/suburb matches from the Source Tracker
@@ -1619,12 +1715,29 @@ return wrap;
 
 // ── Editor-note "seen" tracking ──
 
-// Show/hide the note dot for a card based on whether the note is unseen
+// Renders one banner per editor note, each independently checkable
+function noteBannersHtml(num, notes) {
+if (!notes || !notes.length) return '';
+return '<div class="editor-notes-wrap">' + notes.map(n =>
+'<div class="editor-note-banner' + (n.addressed ? ' addressed' : '') + '" data-note-id="' + esc(n.id) + '">' +
+'<label class="en-check"><input type="checkbox" ' + (n.addressed ? 'checked' : '') + ' onchange="noteAddressedUpdate(\'' + num + '\',\'' + esc(n.id) + '\',this.checked)"></label>' +
+'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(n.text) + '</span></div>' +
+'</div>'
+).join('') + '</div>';
+}
+
+// "Seen" is tracked against the set of note IDs present (not their addressed
+// state, and not their text) — so ticking a box doesn't make a note look
+// unseen again, but a genuinely new note from the editor does.
+function notesSignature(notes) {
+return (notes || []).map(n => n.id).join(',');
+}
+// Show/hide the note dot for a card based on whether any note is unseen
 function refreshNoteDot(num) {
 const dot = document.getElementById('notedot-' + num);
 if (!dot) return;
-const note = DATA[num] && DATA[num].editor_note;
-const show = note && !noteSeen(num, note);
+const notes = DATA[num] && DATA[num].editor_notes;
+const show = notes && notes.length && !noteSeen(num, notes);
 dot.classList.toggle('show', !!show);
 }
 
@@ -1635,16 +1748,18 @@ function getSeenNotes() {
 try { return JSON.parse(localStorage.getItem(noteSeenKey())) || {}; }
 catch(e) { return {}; }
 }
-function noteSeen(num, noteText) {
-if (!noteText) return true;
+function noteSeen(num, notes) {
+const sig = notesSignature(notes);
+if (!sig) return true;
 const seen = getSeenNotes();
-return seen[num] === noteText;
+return seen[num] === sig;
 }
-function markNoteSeen(num, noteText) {
-if (!noteText) return;
+function markNoteSeen(num, notes) {
+const sig = notesSignature(notes);
+if (!sig) return;
 const seen = getSeenNotes();
-if (seen[num] === noteText) return;
-seen[num] = noteText;
+if (seen[num] === sig) return;
+seen[num] = sig;
 localStorage.setItem(noteSeenKey(), JSON.stringify(seen));
 const dot = document.getElementById('notedot-' + num);
 if (dot) dot.classList.remove('show');
@@ -1669,9 +1784,9 @@ void card.offsetWidth; // reflow to restart animation
 card.classList.add('just-opened');
 setTimeout(() => card.classList.remove('just-opened'), 400);
 }
-// Opening the card means the reporter has seen any editor note — clear the dot
-if (DATA[num] && DATA[num].editor_note) {
-markNoteSeen(num, DATA[num].editor_note);
+// Opening the card means the reporter has seen any editor notes — clear the dot
+if (DATA[num] && DATA[num].editor_notes && DATA[num].editor_notes.length) {
+markNoteSeen(num, DATA[num].editor_notes);
 }
 }
 }
@@ -1697,6 +1812,30 @@ refreshCardState(num);
 scheduleSave(num);
 }
 
+// ── Notes expand modal — gives reporters a bigger, easier-to-read space
+// for the notes/sources field without cramping the story card itself ──
+let _notesExpandNum = null;
+function openNotesExpand(num) {
+_notesExpandNum = num;
+const st = getStory(num);
+document.getElementById('notes-expand-textarea').value = st.notes || '';
+document.getElementById('notes-expand-overlay').classList.add('show');
+setTimeout(() => document.getElementById('notes-expand-textarea').focus(), 50);
+}
+function onNotesExpandInput() {
+if (!_notesExpandNum) return;
+const val = document.getElementById('notes-expand-textarea').value;
+fieldUpdate(_notesExpandNum, 'notes', val);
+// keep the small in-card textarea in sync so it's correct if the card
+// is already open behind the modal
+const small = document.getElementById('notes-fld-' + _notesExpandNum);
+if (small) small.value = val;
+}
+function closeNotesExpand() {
+document.getElementById('notes-expand-overlay').classList.remove('show');
+_notesExpandNum = null;
+}
+
 function arrUpdate(num, field, val, checked) {
 if (!DATA[num]) DATA[num] = blankStory(num);
 let arr = DATA[num][field] || [];
@@ -1707,14 +1846,15 @@ refreshCardState(num);
 scheduleSave(num);
 }
 
-function noteAddressedUpdate(num, checked) {
+function noteAddressedUpdate(num, noteId, checked) {
 if (!DATA[num]) DATA[num] = blankStory(num);
-DATA[num].editor_note_addressed = checked;
-const body = document.getElementById('body-' + num);
-if (body) {
-const banner = body.querySelector('.editor-note-banner');
+const notes = DATA[num].editor_notes || [];
+const idx = notes.findIndex(n => n.id === noteId);
+if (idx === -1) return;
+notes[idx].addressed = checked;
+DATA[num].editor_notes = notes;
+const banner = document.querySelector('#body-' + num + ' .editor-note-banner[data-note-id="' + noteId + '"]');
 if (banner) banner.classList.toggle('addressed', checked);
-}
 scheduleSave(num);
 }
 
@@ -2051,7 +2191,7 @@ e.stopPropagation();
 if (!confirm('Clear all data in this story slot?')) return;
 DATA[num] = {
 headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'',
-todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false
+todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false, editor_notes:[]
 };
 // Save the cleared state immediately
 manualSave(num);
@@ -2089,32 +2229,20 @@ filter: 'reporter=eq.' + USER.name
 const row = payload.new;
 if (!row || row.week_of !== WEEK) return;
 const num = row.story_num;
-// ONLY sync editor_note — never overwrite reporter's own in-progress data
+// ONLY sync editor notes — never overwrite reporter's own in-progress data
 if (!DATA[num]) DATA[num] = blankStory(num);
-const note = row.editor_note || '';
-const existing = DATA[num].editor_note || '';
-if (note !== existing) {
-DATA[num].editor_note = note;
-// A new/changed note from the editor is unaddressed until the reporter checks it again
-DATA[num].editor_note_addressed = false;
+const newNotes = parseEditorNotes(row);
+const existingSig = JSON.stringify(DATA[num].editor_notes || []);
+if (JSON.stringify(newNotes) !== existingSig) {
+DATA[num].editor_notes = newNotes;
 const body = document.getElementById('body-' + num);
 if (body) {
-const existingBanner = body.querySelector('.editor-note-banner');
-if (note) {
-if (existingBanner) {
-existingBanner.querySelector('.en-text').textContent = note;
-existingBanner.classList.remove('addressed');
-const cb = existingBanner.querySelector('input[type="checkbox"]');
-if (cb) cb.checked = false;
-} else {
-const banner = document.createElement('div');
-banner.className = 'editor-note-banner';
-banner.innerHTML = '<label class="en-check"><input type="checkbox" onchange="noteAddressedUpdate(\'' + num + '\',this.checked)"></label>' +
-'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span></div>';
-body.insertBefore(banner, body.firstChild);
-}
-} else if (existingBanner) {
-existingBanner.remove();
+const oldWrap = body.querySelector('.editor-notes-wrap');
+if (oldWrap) oldWrap.remove();
+if (newNotes.length) {
+const holder = document.createElement('div');
+holder.innerHTML = noteBannersHtml(num, newNotes);
+body.insertBefore(holder.firstChild, body.firstChild);
 }
 }
 refreshNoteDot(num);
@@ -2133,35 +2261,23 @@ try {
 const rows = await supaFetch('GET',
 TABLE + '?reporter=eq.' + encodeURIComponent(USER.name) +
 '&publication=eq.' + encodeURIComponent(USER.pub) +
-'&week_of=eq.' + encodeURIComponent(WEEK) + '&select=story_num,editor_note'
+'&week_of=eq.' + encodeURIComponent(WEEK) + '&select=story_num,editor_note,editor_note_addressed'
 );
 (rows || []).forEach(r => {
 const num = r.story_num;
-const note = r.editor_note || '';
 if (!DATA[num]) DATA[num] = blankStory(num);
-const existing = DATA[num].editor_note || '';
-if (note !== existing) {
-DATA[num].editor_note = note;
-// A new/changed note from the editor is unaddressed until the reporter checks it again
-DATA[num].editor_note_addressed = false;
+const newNotes = parseEditorNotes(r);
+const existingSig = JSON.stringify(DATA[num].editor_notes || []);
+if (JSON.stringify(newNotes) !== existingSig) {
+DATA[num].editor_notes = newNotes;
 const body = document.getElementById('body-' + num);
 if (body) {
-const existingBanner = body.querySelector('.editor-note-banner');
-if (note) {
-if (existingBanner) {
-existingBanner.querySelector('.en-text').textContent = note;
-existingBanner.classList.remove('addressed');
-const cb = existingBanner.querySelector('input[type="checkbox"]');
-if (cb) cb.checked = false;
-} else {
-const banner = document.createElement('div');
-banner.className = 'editor-note-banner';
-banner.innerHTML = '<label class="en-check"><input type="checkbox" onchange="noteAddressedUpdate(\'' + num + '\',this.checked)"></label>' +
-'<div class="en-body"><span class="en-label">Editor</span><span class="en-text">' + esc(note) + '</span></div>';
-body.insertBefore(banner, body.firstChild);
-}
-} else if (existingBanner) {
-existingBanner.remove();
+const oldWrap = body.querySelector('.editor-notes-wrap');
+if (oldWrap) oldWrap.remove();
+if (newNotes.length) {
+const holder = document.createElement('div');
+holder.innerHTML = noteBannersHtml(num, newNotes);
+body.insertBefore(holder.firstChild, body.firstChild);
 }
 }
 refreshNoteDot(num);
@@ -2549,8 +2665,8 @@ file_day:    DATA[num].file_day    || '',
 todo:        DATA[num].todo        || [],
 posted:      DATA[num].posted      || [],
 filed:       !!DATA[num].filed,
-editor_note: DATA[num].editor_note || '',
-editor_note_addressed: !!DATA[num].editor_note_addressed,
+editor_note: serializeEditorNotes(DATA[num].editor_notes),
+editor_note_addressed: false,
 updated_at:  new Date().toISOString(),
 };
 try {
@@ -2587,8 +2703,8 @@ file_day:    DATA[num].file_day    || '',
 todo:        DATA[num].todo        || [],
 posted:      DATA[num].posted      || [],
 filed:       !!DATA[num].filed,
-editor_note: DATA[num].editor_note || '',
-editor_note_addressed: !!DATA[num].editor_note_addressed,
+editor_note: serializeEditorNotes(DATA[num].editor_notes),
+editor_note_addressed: false,
 updated_at:  new Date().toISOString(),
 };
 try {
@@ -2736,11 +2852,11 @@ const CW_PUZZLE = {"rows": 19, "cols": 22, "cells": [{"r": 0, "c": 9, "ch": "D",
 function cwWeekKey(){ return (typeof WEEK !== 'undefined' && WEEK) ? WEEK : 'nowk'; }
 function cwUser(){ return (typeof USER !== 'undefined' && USER) ? (USER.name + '|' + USER.pub) : 'anon'; }
 
-// Is it Friday? (local time)
-function isFriday(){ return new Date().getDay() === 5; }
-// For testing/preview we allow a manual override
-let CW_FORCE_UNLOCK = false;
-function cwUnlocked(){ return CW_FORCE_UNLOCK || isFriday(); }
+// A fresh crossword is published once a week (Chef updates CW_PUZZLE by
+// hand); it's now available the whole week it's live rather than only on
+// the Friday it unlocked, so reporters aren't locked out if they don't get
+// to it straight away.
+function cwUnlocked(){ return true; }
 
 // ── Badge + streak storage ──
 function ggKey(){ return 'gz_golden_' + cwUser(); }
@@ -2776,7 +2892,7 @@ if(cwUnlocked()){
 nav.classList.remove('locked'); nav.classList.add('unlocked');
 ico.innerHTML = '&#10005;'; // little cross like a crossword square
 ico.innerHTML = '&#9745;';  // boxed tick
-label.textContent = hasGoldenThisWeek() ? 'Crossword solved' : 'Friday crossword';
+label.textContent = hasGoldenThisWeek() ? 'Crossword solved' : "This week's crossword";
 } else {
 nav.classList.add('locked'); nav.classList.remove('unlocked');
 ico.innerHTML = '&#128274;'; // lock
@@ -2803,16 +2919,18 @@ document.getElementById('cw-overlay').classList.add('show');
 }
 function closeCrossword(){ document.getElementById('cw-overlay').classList.remove('show'); }
 
-// Best-effort single Slack ping per Friday — the first reporter to open
-// the crossword that day triggers it. Not a perfect single-fire guarantee
-// across the whole team, but harmless if it fires more than once.
+// Best-effort single Slack ping per week — the first reporter to open the
+// crossword that week triggers it. Since there's no shared server-side lock,
+// this can still fire once per reporter (not truly once for the whole team)
+// if several people open it independently before anyone's seen the ping —
+// a fully single-fire guarantee needs a shared flag (e.g. in Supabase), not
+// just this client-side check.
 function announceCrosswordUnlockOnce(){
-const today = new Date().toISOString().slice(0,10);
-const key = 'gz_cw_announced_' + today;
+const key = 'gz_cw_announced_' + cwWeekKey();
 if (localStorage.getItem(key)) return;
 localStorage.setItem(key, '1');
 if (typeof notifySlack === 'function') {
-notifySlack(':crossword: This week\'s Friday crossword just unlocked in the Planner \u2014 first one to finish earns the Golden Gazette \uD83E\uDD1D');
+notifySlack(':crossword: This week\'s crossword is live in the Planner \u2014 available all week, first to finish earns the Golden Gazette \uD83E\uDD1D');
 }
 }
 
@@ -2849,8 +2967,9 @@ streakChip +
 '<div class="cw-board-wrap"><div id="cw-board"></div>' +
 '<div class="cw-toolbar">' +
 '<button class="cw-btn primary" onclick="cwCheck()">Check answers</button>' +
-'<button class="cw-btn" onclick="cwReveal()">Reveal word</button>' +
+'<button class="cw-btn" id="cw-reveal-btn" onclick="cwReveal()">Reveal word</button>' +
 '<button class="cw-btn" onclick="cwClear()">Clear</button>' +
+'<span class="cw-reveal-count" id="cw-reveal-count"></span>' +
 '</div>' +
 '<div class="cw-msg" id="cw-msg"></div>' +
 '</div>' +
@@ -2879,9 +2998,32 @@ return e;
 let cwInputs = {};
 let cwDir='across', cwNum=null;
 
+// ── Progress persistence — remembers a reporter's in-progress answers and
+// reveal count for the week, so closing/reopening the crossword (or the
+// whole Planner) doesn't lose their place. Lives in localStorage per
+// reporter+week, same convention as the Golden Gazette/Above & Beyond badges.
+const CW_MAX_REVEALS = 3;
+let cwProgress = { vals:{}, reveals:0 };
+function cwProgressKey(){ return 'gz_cw_progress_' + cwUser() + '_' + cwWeekKey(); }
+function cwLoadProgress(){
+try { cwProgress = JSON.parse(localStorage.getItem(cwProgressKey())) || { vals:{}, reveals:0 }; }
+catch(e){ cwProgress = { vals:{}, reveals:0 }; }
+}
+function cwSaveProgress(){
+try { localStorage.setItem(cwProgressKey(), JSON.stringify(cwProgress)); } catch(e){}
+}
+function cwUpdateRevealUI(){
+const left = Math.max(0, CW_MAX_REVEALS - (cwProgress.reveals || 0));
+const btn = document.getElementById('cw-reveal-btn');
+const lbl = document.getElementById('cw-reveal-count');
+if (btn) btn.disabled = left <= 0;
+if (lbl) lbl.textContent = left > 0 ? (left + ' reveal' + (left===1?'':'s') + ' left') : 'No reveals left';
+}
+
 function buildCwBoard(){
 CW_ENTRIES = cwBuildEntries();
 cwInputs = {};
+cwLoadProgress();
 const board = document.getElementById('cw-board');
 board.style.gridTemplateColumns = 'repeat('+CW_PUZZLE.cols+', auto)';
 let html='';
@@ -2903,7 +3045,11 @@ cwInputs[r+','+c]=inp;
 inp.addEventListener('focus',()=>cwOnFocus(r,c));
 inp.addEventListener('input',(e)=>cwOnInput(e,r,c));
 inp.addEventListener('keydown',(e)=>cwOnKey(e,r,c));
+// restore any saved progress for this cell
+const saved = cwProgress.vals[r+','+c];
+if (saved) inp.value = saved;
 });
+cwUpdateRevealUI();
 }
 
 function cwClearHL(){
@@ -2927,6 +3073,8 @@ function cwFocus(r,c){ const i=cwInputs[r+','+c]; if(i) i.focus(); }
 function cwOnInput(ev,r,c){
 const v=ev.target.value.toUpperCase().replace(/[^A-Z]/g,''); ev.target.value=v;
 document.getElementById('cwc-'+r+'-'+c).classList.remove('correct','wrong');
+if(v){ cwProgress.vals[r+','+c]=v; } else { delete cwProgress.vals[r+','+c]; }
+cwSaveProgress();
 if(v){ const e=cwEntryFor(r,c,cwDir); if(e){ const i=e.seq.findIndex(([rr,cc])=>rr===r&&cc===c); if(i<e.seq.length-1){ const [nr,nc]=e.seq[i+1]; cwFocus(nr,nc); } } }
 }
 function cwOnKey(ev,r,c){
@@ -2962,13 +3110,24 @@ else { msg.className='cw-msg near'; msg.textContent=correct+' correct so far \u2
 }
 function cwReveal(){
 if(!cwNum){ document.getElementById('cw-msg').textContent='Pick a clue first, then reveal.'; return; }
+if((cwProgress.reveals||0) >= CW_MAX_REVEALS){
+document.getElementById('cw-msg').textContent = 'No reveals left \u2014 you\'ve used all ' + CW_MAX_REVEALS + ' for this crossword.';
+return;
+}
 const seq=CW_ENTRIES[cwDir][cwNum]; if(!seq) return;
-seq.forEach(([r,c])=>{ cwInputs[r+','+c].value=cwAt(r,c).ch; document.getElementById('cwc-'+r+'-'+c).classList.remove('wrong'); });
+seq.forEach(([r,c])=>{ cwInputs[r+','+c].value=cwAt(r,c).ch; document.getElementById('cwc-'+r+'-'+c).classList.remove('wrong'); cwProgress.vals[r+','+c]=cwAt(r,c).ch; });
+cwProgress.reveals = (cwProgress.reveals||0) + 1;
+cwSaveProgress();
+cwUpdateRevealUI();
+const left = CW_MAX_REVEALS - cwProgress.reveals;
+document.getElementById('cw-msg').textContent = left > 0 ? (left + ' reveal' + (left===1?'':'s') + ' left this week') : 'That was your last reveal \u2014 you\'re on your own from here.';
 }
 function cwClear(){
 Object.values(cwInputs).forEach(i=>i.value='');
 document.querySelectorAll('.cwc').forEach(el=>el.classList.remove('correct','wrong'));
 document.getElementById('cw-msg').textContent='';
+cwProgress.vals = {};
+cwSaveProgress();
 }
 
 // ── Solved → award Golden Gazette ──
