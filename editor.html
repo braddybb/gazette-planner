@@ -99,6 +99,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rep-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.07)}
 .rep-header{background:var(--ink);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
 .rep-name{font-size:15px;font-weight:600;color:#fff}
+
+/* ── Gold Star — permanent, cumulative, escalating tiers (see index.html
+   for the matching reporter-facing version) ── */
+.gs-badge{display:inline-flex;align-items:center;font-size:15px;line-height:1;color:#FFD700;margin-left:6px;position:relative}
+.gs-badge .gs-count{font-size:9px;font-weight:800;color:#FFE9A8;vertical-align:super;margin-left:1px}
+.gs-badge.gs-tier2{animation:gsPulse 1.7s ease-in-out infinite}
+.gs-badge.gs-tier3{color:#FFD700;text-shadow:0 0 6px rgba(255,200,0,.85);animation:gsPulse 2.2s ease-in-out infinite}
+.gs-badge.gs-tier4{background:linear-gradient(90deg,#ff4d4d,#ffb84d,#e8e84d,#4dd97a,#4dc3ff,#b366ff,#ff4d4d);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gsRainbowMove 3s linear infinite}
+@keyframes gsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+@keyframes gsRainbowMove{to{background-position:200% center}}
 .rep-pub{font-size:11px;color:#666;margin-top:2px}
 .rep-filed-big{font-size:22px;font-weight:600;color:#fff}
 .rep-filed-sub{font-size:10px;color:#555;text-align:right;margin-top:1px}
@@ -499,7 +509,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
   <div id="drilldown">
     <button class="back-btn" onclick="closeDrill()">&#8592; Back to all reporters</button>
     <div class="drill-header">
-      <div class="drill-name" id="drill-name"></div>
+      <div class="drill-name" id="drill-name"></div><span id="drill-name-star"></span>
       <div class="drill-pub" id="drill-pub"></div>
     </div>
     <div class="drill-stories" id="drill-stories"></div>
@@ -588,6 +598,33 @@ function serializeEditorNotes(notes) {
 function newNoteId() {
   return 'n' + Date.now() + Math.random().toString(36).slice(2, 6);
 }
+
+// ── Gold Star — permanent, cumulative record living on each reporter's
+// profiles row (gold_star_count), same source of truth the Planner writes
+// to. Loaded once per session/refresh and cached here for card rendering.
+let GOLD_STARS = {};
+async function loadGoldStars() {
+  try {
+    const rows = await supaFetch('profiles?select=reporter_name,gold_star_count&role=eq.reporter');
+    GOLD_STARS = {};
+    (rows || []).forEach(p => {
+      if (p.reporter_name) GOLD_STARS[p.reporter_name] = p.gold_star_count || 0;
+    });
+  } catch(e) { console.warn('Gold star load failed (non-critical):', e); }
+}
+function goldStarTier(count) {
+  if (count >= 20) return 4;
+  if (count >= 10) return 3;
+  if (count >= 5) return 2;
+  return 1;
+}
+function goldStarBadgeHtml(name) {
+  const count = GOLD_STARS[name] || 0;
+  if (count < 1) return '';
+  const tier = goldStarTier(count);
+  return '<span class="gs-badge gs-tier' + tier + '" title="' + count + ' gold star' + (count===1?'':'s') + ' \u2014 filed every story, every week">\u2605' +
+    (count > 1 ? '<span class="gs-count">' + count + '</span>' : '') + '</span>';
+}
 // Global Supabase client — created once, used for every auth + data call.
 // Once a user signs in, this client automatically attaches their session
 // token to every request, which is what makes RLS policies actually work.
@@ -602,6 +639,23 @@ const REPORTERS = [
   {name:'Jacob Wallace',       pub:'Gippsland Monitor',          region:'Victoria'},
   {name:'Archie Milligan',     pub:'National Account',           region:'National'},
 ];
+
+// Slack member IDs — lets a note ping the reporter directly in the channel
+// (<@ID> notation) even though this is a plain Incoming Webhook with no
+// bot token, so a true private DM isn't possible from here.
+const REPORTER_SLACK_IDS = {
+  'Zara Cuthbertson':  'U08LY1YR6E8',
+  'Matthew Sims':      'U07SHH3RB46',
+  'Jacob Wallace':     'U08DG9R5A6R',
+  'Huw Bradshaw':      'U08P2C7862Z',
+  'Darcie Humphreys':  'U0AFJML3A1G',
+  'Douglas Connor':    'U0B71KH9Y0K',
+  'Archie Milligan':   'U08DQ26CEE7',
+};
+function slackMention(name) {
+  const id = REPORTER_SLACK_IDS[name];
+  return id ? ('<@' + id + '> ') : '';
+}
 
 // Region display order
 const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
@@ -841,6 +895,8 @@ async function loadWeek() {
 
   try {
     await refreshData();
+    await loadGoldStars();
+    renderGrid();
     initEditorRealtime();
     // Polling fallback — refresh every 20s in case realtime is unavailable
     if (editorPollTimer) clearInterval(editorPollTimer);
@@ -1147,7 +1203,7 @@ function buildRepCard(r) {
   card.innerHTML = `
     <div class="rep-header">
       <div>
-        <div class="rep-name">${r.name}</div>
+        <div class="rep-name">${r.name}${goldStarBadgeHtml(r.name)}</div>
         <div class="rep-pub">${r.pub}</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
@@ -1313,7 +1369,7 @@ async function sendNote(reporter, pub, week, storyNum, noteText, formEl) {
     await editorUpsert(row);
     // Quietly let the team know — doesn't block or alter the UI either way
     const storyLabel = (row.headline ? '"' + row.headline + '"' : 'story ' + storyNum);
-    notifySlack(':memo: Editor left a note for *' + reporter + '* on ' + storyLabel + ':\n>' + noteText.trim());
+    notifySlack(slackMention(reporter) + ':memo: Editor left a note for *' + reporter + '* on ' + storyLabel + ':\n>' + noteText.trim());
     // Show confirmation and re-render the notes list (new note included, textarea cleared)
     const sent = formEl.querySelector('.note-sent');
     if (sent) { sent.style.display='block'; setTimeout(()=>sent.style.display='none',2500); }
@@ -1398,6 +1454,8 @@ function openDrill(r) {
   document.getElementById('main-view').style.display = 'none';
   document.getElementById('drilldown').style.display = 'block';
   document.getElementById('drill-name').textContent = r.name;
+  const drillStar = document.getElementById('drill-name-star');
+  if (drillStar) drillStar.innerHTML = goldStarBadgeHtml(r.name);
   document.getElementById('drill-pub').textContent  = r.pub;
   // Assign button
   let assignBtn = document.getElementById('drill-assign-btn');
@@ -1589,7 +1647,7 @@ async function saveAssignment() {
 
   try {
     await editorUpsert(row);
-    notifySlack(':clipboard: A story was assigned to *' + r.name + '*: "' + headline + '"');
+    notifySlack(slackMention(r.name) + ':clipboard: A story was assigned to *' + r.name + '*: "' + headline + '"');
     closeAssign();
     // Refresh the drilldown to show the new assignment
     openDrill(r);
