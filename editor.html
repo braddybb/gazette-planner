@@ -4,6 +4,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -209,8 +210,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .note-send-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .note-send-btn:hover{opacity:.88}
 .note-sent{font-size:12px;color:var(--success);display:none;align-items:center}
-.existing-note{background:#FFF9C4;border:1px solid #F0E060;border-radius:6px;padding:8px 12px;font-size:12px;color:#5A4A00;margin-top:8px}
+.existing-note{background:#FFF9C4;border:1px solid #F0E060;border-radius:6px;padding:8px 12px;font-size:12px;color:#5A4A00;margin-top:8px;display:flex;align-items:flex-start;gap:8px}
+.existing-note .en-val{flex:1}
 .existing-note-label{font-weight:600;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#8A6A00;margin-bottom:3px}
+.note-remove-btn{background:none;border:none;color:#8A6A00;font-size:11px;font-weight:600;cursor:pointer;text-decoration:underline;padding:0;flex-shrink:0}
+.note-remove-btn:hover{color:#cc0000}
 .drill-body{padding:1rem 1.25rem}
 .drill-field{margin-bottom:10px;display:flex;gap:8px}
 .drill-field:last-child{margin-bottom:0}
@@ -266,6 +270,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 /* ── Editor assignment ── */
 .assign-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px}
+.drill-sort-btn{background:#fff;color:var(--blue-dk,var(--blue));border:0.5px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px;margin-left:8px}
+.drill-sort-btn:hover{background:var(--blue-lt,#EEF3FF)}
 .assign-btn:hover{opacity:.85}
 .assign-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:300;padding:1.5rem}
 .assign-modal-overlay.show{display:flex}
@@ -562,6 +568,25 @@ function esc(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// Editor notes are stored as a JSON-encoded array in the existing editor_note
+// text column (no new Supabase column needed) so multiple notes can sit on
+// one story. Old single plain-text notes are read as one legacy note.
+function parseEditorNotes(row) {
+  const raw = row && row.editor_note;
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+  } catch(e) {}
+  return [{ id: 'legacy', text: raw, addressed: !!(row && row.editor_note_addressed) }];
+}
+function serializeEditorNotes(notes) {
+  return JSON.stringify(notes || []);
+}
+function newNoteId() {
+  return 'n' + Date.now() + Math.random().toString(36).slice(2, 6);
 }
 // Global Supabase client — created once, used for every auth + data call.
 // Once a user signs in, this client automatically attaches their session
@@ -873,13 +898,8 @@ async function refreshDataQuietly() {
           // Only refresh if the editor isn't actively typing a note
           const activeEl = document.activeElement;
           const typingNote = activeEl && activeEl.tagName === 'TEXTAREA';
-          if (!typingNote) {
-            container.innerHTML = '';
-            getStoryDefs(pubEl.textContent).forEach(s => {
-              container.appendChild(buildDrillCard(
-                s, ALL_DATA[key][s.n], nameEl.textContent, pubEl.textContent, WEEK
-              ));
-            });
+          if (!typingNote && window._assignReporter) {
+            renderDrillBody(window._assignReporter);
           }
         }
       }
@@ -919,14 +939,9 @@ function initEditorRealtime() {
           const pubEl  = document.getElementById('drill-pub');
           if (nameEl && pubEl &&
               nameEl.textContent === row.reporter &&
-              pubEl.textContent  === row.publication) {
-            const container = document.getElementById('drill-stories');
-            container.innerHTML = '';
-            getStoryDefs(row.publication).forEach(s => {
-              container.appendChild(buildDrillCard(
-                s, ALL_DATA[key][s.n], row.reporter, row.publication, WEEK
-              ));
-            });
+              pubEl.textContent  === row.publication &&
+              window._assignReporter) {
+            renderDrillBody(window._assignReporter);
           }
         }
       })
@@ -941,8 +956,20 @@ function getReporterData(reporter, pub) {
   return ALL_DATA[reporter + '|' + pub] || {};
 }
 
-function getFiledCount(data) {
-  return STORY_DEFS.filter(s => data[s.n] && data[s.n].filed).length;
+function getFiledCount(data, pub) {
+  return getStoryDefs(pub).filter(s => data[s.n] && data[s.n].filed).length;
+}
+
+// Extras = story_num beyond a reporter's base slot count (editor assignments
+// + reporter-added stories). These were previously invisible to every tally
+// on this dashboard — a reporter who filed their full base slate PLUS extras
+// would show identically to one who filed only the base slate.
+function getExtrasFiledCount(data, pub) {
+  const baseCount = getStoryDefs(pub).length;
+  return Object.keys(data).filter(n => parseInt(n, 10) > baseCount && data[n] && data[n].filed).length;
+}
+function getTotalFiledCount(data, pub) {
+  return getFiledCount(data, pub) + getExtrasFiledCount(data, pub);
 }
 
 function renderEditorCalendar() {
@@ -989,14 +1016,17 @@ function toggleEcalWhy(i) {
 
 function renderNetworkBar() {
   const bar = document.getElementById('network-bar');
-  let totalFiled = 0;
+  let baseFiled = 0;
+  let extrasFiled = 0;
   let totalStories = 0;
   REPORTERS.forEach(r => {
     const data = getReporterData(r.name, r.pub);
-    totalFiled += getFiledCount(data);
+    baseFiled += getFiledCount(data, r.pub);
+    extrasFiled += getExtrasFiledCount(data, r.pub);
     totalStories += getStoryDefs(r.pub).length; // 8 for National Account, 10 for local mastheads
   });
-  const pct = Math.round(totalFiled / totalStories * 100);
+  const totalFiled = baseFiled + extrasFiled; // headline count includes extras/assigned stories
+  const pct = Math.round(baseFiled / totalStories * 100); // progress bar reflects the committed base slate only
   function fmtWk(ds) {
     try {
       const m = new Date(ds+'T00:00:00');
@@ -1012,7 +1042,7 @@ function renderNetworkBar() {
     </div>
     <div class="net-divider"></div>
     <div class="net-stat">
-      <div class="net-num">${totalStories - totalFiled}</div>
+      <div class="net-num">${totalStories - baseFiled}</div>
       <div class="net-label">Still to file</div>
     </div>
     <div class="net-divider"></div>
@@ -1044,7 +1074,7 @@ function renderGrid() {
     // Region header
     const header = document.createElement('div');
     header.className = 'region-header';
-    const filedTotal = inRegion.reduce((sum, r) => sum + getFiledCount(getReporterData(r.name, r.pub)), 0);
+    const filedTotal = inRegion.reduce((sum, r) => sum + getTotalFiledCount(getReporterData(r.name, r.pub), r.pub), 0);
     const possibleTotal = inRegion.reduce((sum, r) => sum + getStoryDefs(r.pub).length, 0);
     header.innerHTML = '<span class="region-name">' + esc(region) + '</span>' +
       '<span class="region-count">' + filedTotal + ' / ' + possibleTotal + ' filed</span>';
@@ -1062,7 +1092,8 @@ function buildRepCard(r) {
   const data = getReporterData(r.name, r.pub);
   const repDefs = getStoryDefs(r.pub);
   const baseCount = repDefs.length; // 8 for National Account, 10 for local mastheads
-  const filed = getFiledCount(data);
+  const filed = getFiledCount(data, r.pub);
+  const extrasFiled = getExtrasFiledCount(data, r.pub);
   const pct   = Math.round(filed / baseCount * 100);
 
   const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
@@ -1126,7 +1157,7 @@ function buildRepCard(r) {
           Open planner ↗
         </a>
         <div style="text-align:right">
-          <div class="rep-filed-big">${filed}/${baseCount}</div>
+          <div class="rep-filed-big">${filed}/${baseCount}${extrasFiled ? ` <span style="font-size:13px;font-weight:600;color:var(--blue-dk)">+${extrasFiled} extra</span>` : ''}</div>
           <div class="rep-filed-sub">stories filed</div>
         </div>
       </div>
@@ -1171,8 +1202,40 @@ async function editorUpsert(row) {
   }
 }
 
-async function clearNote(reporter, pub, week, storyNum, btnEl) {
-  if (!confirm('Clear the note sent to this reporter?')) return;
+// Builds/rebuilds the note-form contents: the list of notes already sent
+// (each independently removable) plus the textarea to send a new one.
+function renderNoteForm(formEl, notes) {
+  const reporter = formEl.dataset.reporter, pub = formEl.dataset.pub,
+        week = formEl.dataset.week, num = formEl.dataset.num;
+  const existingHtml = notes.map(n =>
+    '<div class="existing-note" data-note-id="' + esc(n.id) + '">' +
+      '<div style="flex:1">' +
+        '<div class="existing-note-label">Note to reporter' + (n.addressed ? ' \u2014 addressed' : '') + '</div>' +
+        '<span class="en-val">' + esc(n.text) + '</span>' +
+      '</div>' +
+      '<button type="button" class="note-remove-btn">Remove</button>' +
+    '</div>'
+  ).join('');
+  formEl.innerHTML = existingHtml +
+    '<textarea placeholder="Send a note to the reporter about this story..."></textarea>' +
+    '<div class="note-form-btns">' +
+      '<span class="note-sent">\u2713 Sent</span>' +
+      '<button class="note-send-btn">Send note</button>' +
+    '</div>';
+  formEl.querySelector('.note-send-btn').addEventListener('click', function() {
+    const ta = formEl.querySelector('textarea');
+    sendNote(reporter, pub, week, num, ta.value, formEl);
+  });
+  formEl.querySelectorAll('.note-remove-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const noteId = this.closest('.existing-note').dataset.noteId;
+      removeNote(reporter, pub, week, num, noteId, formEl);
+    });
+  });
+}
+
+async function removeNote(reporter, pub, week, storyNum, noteId, formEl) {
+  if (!confirm('Remove this note?')) return;
   try {
     const existing = await supaFetch(
       TABLE + '?reporter=eq.' + encodeURIComponent(reporter) +
@@ -1180,28 +1243,20 @@ async function clearNote(reporter, pub, week, storyNum, btnEl) {
       '&week_of=eq.' + encodeURIComponent(week) +
       '&story_num=eq.' + encodeURIComponent(storyNum) + '&select=*'
     );
-    if (existing && existing.length > 0) {
-      const row = Object.assign({}, existing[0], {
-        editor_note: '',
-        updated_at: new Date().toISOString()
-      });
-      await editorUpsert(row);
-    }
-    // Remove the existing-note display from the form
-    const noteForm = btnEl.closest('.note-form');
-    if (noteForm) {
-      const existingEl = noteForm.querySelector('.existing-note');
-      if (existingEl) existingEl.remove();
-      const ta = noteForm.querySelector('textarea');
-      if (ta) ta.value = '';
-    }
-    // Update local cache
+    if (!existing || existing.length === 0) return;
+    const notes = parseEditorNotes(existing[0]).filter(n => n.id !== noteId);
+    const row = Object.assign({}, existing[0], {
+      editor_note: serializeEditorNotes(notes),
+      updated_at: new Date().toISOString()
+    });
+    await editorUpsert(row);
+    renderNoteForm(formEl, notes);
     const key = reporter + '|' + pub;
     if (ALL_DATA[key] && ALL_DATA[key][storyNum]) {
-      ALL_DATA[key][storyNum].editor_note = '';
+      ALL_DATA[key][storyNum].editor_note = row.editor_note;
     }
   } catch(e) {
-    alert('Failed to clear note. Check your connection and try again.');
+    alert('Failed to remove note. Check your connection and try again.');
     console.error(e);
   }
 }
@@ -1224,7 +1279,7 @@ async function notifySlack(text) {
   }
 }
 
-async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
+async function sendNote(reporter, pub, week, storyNum, noteText, formEl) {
   if (!noteText.trim()) return;
   try {
     // Step 1: fetch the existing row so we can preserve all reporter data
@@ -1234,20 +1289,23 @@ async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
       '&week_of=eq.' + encodeURIComponent(week) +
       '&story_num=eq.' + encodeURIComponent(storyNum) + '&select=*'
     );
-    let row;
+    let row, notes;
     if (existing && existing.length > 0) {
-      // Preserve all existing reporter data, just update editor_note
+      // Preserve all existing reporter data + existing notes, append the new one
+      notes = parseEditorNotes(existing[0]);
+      notes.push({ id: newNoteId(), text: noteText.trim(), addressed: false });
       row = Object.assign({}, existing[0], {
-        editor_note: noteText.trim(),
+        editor_note: serializeEditorNotes(notes),
         updated_at: new Date().toISOString()
       });
     } else {
       // Row doesn't exist yet — create minimal row with just the note
+      notes = [{ id: newNoteId(), text: noteText.trim(), addressed: false }];
       row = {
         reporter, publication: pub, week_of: week, story_num: storyNum,
         headline: '', angle: '', notes: '', format: '', word_count: '',
         file_day: '', todo: [], posted: [], filed: false,
-        editor_note: noteText.trim(),
+        editor_note: serializeEditorNotes(notes),
         updated_at: new Date().toISOString()
       };
     }
@@ -1256,43 +1314,83 @@ async function sendNote(reporter, pub, week, storyNum, noteText, btnEl) {
     // Quietly let the team know — doesn't block or alter the UI either way
     const storyLabel = (row.headline ? '"' + row.headline + '"' : 'story ' + storyNum);
     notifySlack(':memo: Editor left a note for *' + reporter + '* on ' + storyLabel + ':\n>' + noteText.trim());
-    // Show confirmation
-    const noteForm = btnEl.closest('.note-form');
-    const sent = noteForm ? noteForm.querySelector('.note-sent') : null;
-    const ta = noteForm ? noteForm.querySelector('textarea') : null;
+    // Show confirmation and re-render the notes list (new note included, textarea cleared)
+    const sent = formEl.querySelector('.note-sent');
     if (sent) { sent.style.display='block'; setTimeout(()=>sent.style.display='none',2500); }
-    if (ta) ta.value = '';
-    // Update existing note display in the form
-    if (noteForm) {
-      let existingEl = noteForm.querySelector('.existing-note');
-      if (!existingEl) {
-        existingEl = document.createElement('div');
-        existingEl.className = 'existing-note';
-        existingEl.innerHTML = '<div class="existing-note-label">Current note to reporter</div><span class="en-val"></span>';
-        noteForm.insertBefore(existingEl, noteForm.firstChild);
-      }
-      const valEl = existingEl.querySelector('.en-val') || existingEl;
-      if (valEl) valEl.textContent = noteText.trim();
-      // Add a Clear button if the form doesn't have one yet
-      const btnRow = noteForm.querySelector('.note-form-btns');
-      if (btnRow && !btnRow.querySelector('.note-clear-btn')) {
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'note-clear-btn';
-        clearBtn.textContent = 'Clear note';
-        clearBtn.addEventListener('click', function() {
-          clearNote(reporter, pub, week, storyNum, this);
-        });
-        const sendBtn = btnRow.querySelector('.note-send-btn');
-        btnRow.insertBefore(clearBtn, sendBtn);
-      }
-    }
+    renderNoteForm(formEl, notes);
     // Update local cache
     if (!ALL_DATA[reporter+'|'+pub]) ALL_DATA[reporter+'|'+pub] = {};
     if (!ALL_DATA[reporter+'|'+pub][storyNum]) ALL_DATA[reporter+'|'+pub][storyNum] = {};
-    ALL_DATA[reporter+'|'+pub][storyNum].editor_note = noteText.trim();
+    ALL_DATA[reporter+'|'+pub][storyNum].editor_note = row.editor_note;
   } catch(e) {
     alert('Failed to send note. Check your connection and try again.');
     console.error(e);
+  }
+}
+
+// Drilldown card ordering. 'day' mirrors the reporter's own week-at-a-glance
+// (by file day, undated last); 'unfiled'/'filed' group by filing status so
+// an editor can jump straight to what still needs attention. All three
+// places that render the drilldown (initial open, quiet poll, realtime)
+// share this so cards never silently reorder mid-session — that was the
+// actual bug, not the sort itself.
+let DRILL_SORT = 'day';
+const DRILL_SORT_LABELS = { day: 'Sort: By day', unfiled: 'Sort: Unfiled first', filed: 'Sort: Filed first' };
+function sortDrillDefs(defs, data) {
+  const dayRank = (s) => {
+    const st = data[s.n];
+    const day = st && st.file_day ? st.file_day : null;
+    const idx = day ? DAYS.indexOf(day) : -1;
+    return idx === -1 ? DAYS.length : idx;
+  };
+  const filedRank = (s, filedFirst) => {
+    const isFiled = !!(data[s.n] && data[s.n].filed);
+    return filedFirst ? (isFiled ? 0 : 1) : (isFiled ? 1 : 0);
+  };
+  const withIdx = defs.map((s, i) => ({ s, i }));
+  if (DRILL_SORT === 'unfiled') {
+    withIdx.sort((a, b) => (filedRank(a.s, false) - filedRank(b.s, false)) || (a.i - b.i));
+  } else if (DRILL_SORT === 'filed') {
+    withIdx.sort((a, b) => (filedRank(a.s, true) - filedRank(b.s, true)) || (a.i - b.i));
+  } else {
+    withIdx.sort((a, b) => (dayRank(a.s) - dayRank(b.s)) || (a.i - b.i));
+  }
+  return withIdx.map(x => x.s);
+}
+function cycleDrillSort() {
+  const order = ['day', 'unfiled', 'filed'];
+  DRILL_SORT = order[(order.indexOf(DRILL_SORT) + 1) % order.length];
+  const btn = document.getElementById('drill-sort-btn');
+  if (btn) btn.textContent = DRILL_SORT_LABELS[DRILL_SORT];
+  if (window._assignReporter) renderDrillBody(window._assignReporter);
+}
+// Renders the full drilldown card list (base + extras) for a reporter,
+// using the shared sort above. Called on open and on every background
+// refresh so the ordering never jumps.
+function renderDrillBody(r) {
+  const data = getReporterData(r.name, r.pub);
+  const container = document.getElementById('drill-stories');
+  container.innerHTML = '';
+  const defs = getStoryDefs(r.pub);
+  const sortedDefs = sortDrillDefs(defs, data);
+  sortedDefs.forEach(s => {
+    container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
+  });
+  // Also render extras (story_num beyond this reporter's base slot count)
+  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > defs.length);
+  if (extraNums.length) {
+    const extraHdr = document.createElement('div');
+    extraHdr.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:16px;margin-bottom:8px';
+    extraHdr.textContent = 'Extra stories';
+    container.appendChild(extraHdr);
+    const extraDefs = extraNums.map(num => ({
+      n: num, t: data[num].assigned_by ? 'imp' : 'std',
+      lbl: data[num].assigned_by ? 'Editor assignment' : 'Extra story'
+    }));
+    const sortedExtraDefs = sortDrillDefs(extraDefs, data);
+    sortedExtraDefs.forEach(sDef => {
+      container.appendChild(buildDrillCard(sDef, data[sDef.n], r.name, r.pub, WEEK));
+    });
   }
 }
 
@@ -1311,43 +1409,19 @@ function openDrill(r) {
     document.querySelector('.drill-header').appendChild(assignBtn);
   }
   assignBtn.onclick = () => openAssign(r);
-  // Store current reporter for assignment
-  window._assignReporter = r;
-  const data = getReporterData(r.name, r.pub);
-  const container = document.getElementById('drill-stories');
-  container.innerHTML = '';
-  const defs = getStoryDefs(r.pub);
-  const dayRank = (s) => {
-    const st = data[s.n];
-    const day = st && st.file_day ? st.file_day : null;
-    const idx = day ? DAYS.indexOf(day) : -1;
-    return idx === -1 ? DAYS.length : idx; // undated stories sort after all dated ones
-  };
-  const sortedDefs = defs
-    .map((s, i) => ({ s, i }))
-    .sort((a, b) => (dayRank(a.s) - dayRank(b.s)) || (a.i - b.i))
-    .map(x => x.s);
-  sortedDefs.forEach(s => {
-    container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
-  });
-  // Also render extras (story_num beyond this reporter's base slot count)
-  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > defs.length);
-  if (extraNums.length) {
-    const extraHdr = document.createElement('div');
-    extraHdr.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:16px;margin-bottom:8px';
-    extraHdr.textContent = 'Extra stories';
-    container.appendChild(extraHdr);
-    const extraDayRank = (num) => {
-      const day = data[num] && data[num].file_day ? data[num].file_day : null;
-      const idx = day ? DAYS.indexOf(day) : -1;
-      return idx === -1 ? DAYS.length : idx;
-    };
-    const sortedExtraNums = extraNums.sort((a, b) => (extraDayRank(a) - extraDayRank(b)) || (parseInt(a,10) - parseInt(b,10)));
-    sortedExtraNums.forEach(num => {
-      const sDef = { n: num, t: data[num].assigned_by ? 'imp' : 'std', lbl: data[num].assigned_by ? 'Editor assignment' : 'Extra story' };
-      container.appendChild(buildDrillCard(sDef, data[num], r.name, r.pub, WEEK));
-    });
+  // Sort toggle button
+  let sortBtn = document.getElementById('drill-sort-btn');
+  if (!sortBtn) {
+    sortBtn = document.createElement('button');
+    sortBtn.id = 'drill-sort-btn';
+    sortBtn.className = 'drill-sort-btn';
+    sortBtn.onclick = cycleDrillSort;
+    document.querySelector('.drill-header').appendChild(sortBtn);
   }
+  sortBtn.textContent = DRILL_SORT_LABELS[DRILL_SORT];
+  // Store current reporter for assignment + re-sorting
+  window._assignReporter = r;
+  renderDrillBody(r);
 }
 
 function closeDrill() {
@@ -1420,27 +1494,11 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
   // Add note form separately to avoid nested template literal issues
   const noteForm = document.createElement('div');
   noteForm.className = 'note-form';
-  const hasNote = !!(st && st.editor_note);
-  const existingNote = hasNote
-    ? '<div class="existing-note"><div class="existing-note-label">Current note to reporter</div>' + st.editor_note + '</div>'
-    : '';
-  noteForm.innerHTML = existingNote +
-    '<textarea placeholder="Send a note to the reporter about this story..." id="note-' + s.n + '"></textarea>' +
-    '<div class="note-form-btns">' +
-      '<span class="note-sent">\u2713 Sent</span>' +
-      (hasNote ? '<button class="note-clear-btn">Clear note</button>' : '') +
-      '<button class="note-send-btn">Send note</button>' +
-    '</div>';
-  noteForm.querySelector('.note-send-btn').addEventListener('click', function() {
-    const ta = noteForm.querySelector('textarea');
-    sendNote(r_name, r_pub, r_week, s.n, ta.value, this);
-  });
-  const clearBtn = noteForm.querySelector('.note-clear-btn');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', function() {
-      clearNote(r_name, r_pub, r_week, s.n, this);
-    });
-  }
+  noteForm.dataset.reporter = r_name;
+  noteForm.dataset.pub = r_pub;
+  noteForm.dataset.week = r_week;
+  noteForm.dataset.num = s.n;
+  renderNoteForm(noteForm, parseEditorNotes(st));
   div.querySelector('.drill-body').appendChild(noteForm);
   return div;
 }
