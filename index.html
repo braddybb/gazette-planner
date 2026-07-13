@@ -5,6 +5,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1944,6 +1945,27 @@ if (!DATA[num]) DATA[num] = blankStory(num);
 const cardDef = STORIES.find(s => s.n === num) || (getExtras().find(e => e.num === num) ? {t: (DATA[num].assigned_by ? 'imp' : 'std')} : null);
 const cardType = cardDef ? cardDef.t : null;
 const exemptFromDist = cardType === 'poll' || cardType === 'newsletter';
+
+// ── Minimum-fields gate: block filing until baseline planning info
+// exists. Applies before the distribution gate below. Poll cards have no
+// day field (they go straight to filed) so are exempt from that half of
+// the check; every other card type needs it. ──
+if (checked) {
+const st = DATA[num];
+const hasAngleOrNotes = !!((st.angle && st.angle.trim()) || (st.notes && st.notes.trim()));
+const hasDay = cardType === 'poll' || !!st.file_day;
+
+if (!hasAngleOrNotes) {
+showDistWarning(num, 'Add something to Angle or Notes before filing — there needs to be at least a starting point on what this story is.');
+bounceFiledCheckbox(num);
+return;
+}
+if (!hasDay) {
+showDistWarning(num, (cardType === 'newsletter' ? 'Select a send day' : 'Select the day you think this will file') + ' before filing.');
+bounceFiledCheckbox(num);
+return;
+}
+}
 
 // ── Distribution gate: only when trying to FILE (not unfile), and only
 // for card types the gate actually applies to ──
