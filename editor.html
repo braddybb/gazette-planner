@@ -5,6 +5,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,6 +155,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-header{margin-bottom:1.5rem}
 
 #weekly-review{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+#impact-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+.impact-row{display:flex;align-items:center;gap:14px;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.impact-date{font-size:12px;font-weight:600;color:#D9492E;min-width:96px}
+.impact-main{flex:1;min-width:0}
+.impact-headline{font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.impact-meta{font-size:12px;color:var(--grey-md);margin-top:2px}
+.impact-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap}
+.impact-badge-filed{background:#E0F0E0;color:#2C6B2C}
+.impact-badge-open{background:var(--grey-lt);color:var(--grey-dk)}
 .wr-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
 .wr-title{font-size:22px;font-weight:700;color:var(--ink)}
 .wr-sub{font-size:13px;color:var(--grey-md);margin-top:2px}
@@ -478,7 +488,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 <!-- DASHBOARD -->
 <div id="dashboard">
   <div class="app-header">
-    <span class="app-wordmark">Gazette News</span>
+    <span class="app-wordmark" onclick="goHome()" style="cursor:pointer" title="Back to dashboard">Gazette News</span>
     <div class="app-divider"></div>
     <span class="header-title">Editor Dashboard</span>
     <div class="header-spacer"></div>
@@ -490,6 +500,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="weekly-review-btn" onclick="openWeeklyReview()">Weekly Review</button>
+    <button class="weekly-review-btn" id="impact-list-btn" onclick="openImpactList()" title="List every Impact-slot story across the network, past and present">Impact stories</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
@@ -528,6 +539,17 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       </div>
     </div>
     <div id="wr-body"></div>
+  </div>
+
+  <div id="impact-view">
+    <button class="back-btn" onclick="closeImpactList()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">All Impact stories</div>
+        <div class="wr-sub" id="impact-sub">Every Impact-slot story across the network, past and present</div>
+      </div>
+    </div>
+    <div id="impact-body"></div>
   </div>
 </div>
 
@@ -800,9 +822,20 @@ async function checkLogin() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('week-inp').value = WEEK;
+  // Push state so back button doesn't sign out
+  if (history.state !== 'dashboard') {
+    history.pushState('dashboard', '', window.location.pathname);
+  }
   refreshCrosswordNav();
   loadWeek();
 }
+
+// Intercept back button — same fix as the reporter Planner
+window.addEventListener('popstate', function() {
+  if (EDITOR_NAME) {
+    history.pushState('dashboard', '', window.location.pathname);
+  }
+});
 
 // ── Forgot / reset password ──
 function showLoginPanel(){
@@ -1491,6 +1524,24 @@ function closeDrill() {
   document.getElementById('main-view').style.display = 'block';
 }
 
+// Clicking the "Gazette News" wordmark returns to the main dashboard view
+// from anywhere — drilldown, Weekly Review, or with the crossword/assign
+// overlays open — rather than only working from the top level.
+function goHome() {
+  const drilldown = document.getElementById('drilldown');
+  const weeklyReview = document.getElementById('weekly-review');
+  const impactView = document.getElementById('impact-view');
+  const mainView = document.getElementById('main-view');
+  const cwOverlay = document.getElementById('cw-overlay');
+  const assignOverlay = document.getElementById('assign-overlay');
+  if (drilldown) drilldown.style.display = 'none';
+  if (weeklyReview) weeklyReview.style.display = 'none';
+  if (impactView) impactView.style.display = 'none';
+  if (cwOverlay) cwOverlay.classList.remove('show');
+  if (assignOverlay) assignOverlay.classList.remove('show');
+  if (mainView) mainView.style.display = 'block';
+}
+
 function buildDrillCard(s, st, r_name, r_pub, r_week) {
   const filed    = st && st.filed;
   const headline = st && st.headline ? st.headline : null;
@@ -1585,6 +1636,10 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       document.getElementById('week-inp').value = WEEK;
+      // Push state so back button doesn't sign out
+      if (history.state !== 'dashboard') {
+        history.pushState('dashboard', '', window.location.pathname);
+      }
       refreshCrosswordNav();
       loadWeek();
       return;
@@ -2151,6 +2206,100 @@ async function openWeeklyReview() {
 function closeWeeklyReview() {
   document.getElementById('weekly-review').style.display = 'none';
   document.getElementById('main-view').style.display = 'block';
+}
+
+// ── Impact stories list: every Impact-slot story across every reporter,
+// every week (past and present), sorted by the actual date it's/was due
+// to file. Impact slots differ by publication type — locals use story_num
+// 09, National Account uses 03 and 04 — so rows are filtered per-reporter
+// against getStoryDefs rather than assuming a fixed slot number network-wide.
+function openImpactList() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('impact-view').style.display = 'block';
+  loadImpactList();
+}
+
+function closeImpactList() {
+  document.getElementById('impact-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+
+function fileDateFor(weekOf, day) {
+  if (!weekOf || !day) return null;
+  const idx = DAYS.indexOf(day);
+  if (idx === -1) return null;
+  const d = new Date(weekOf + 'T00:00:00');
+  d.setDate(d.getDate() + idx);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return yyyy + '-' + mm + '-' + dd;
+}
+
+function formatImpactDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function loadImpactList() {
+  const body = document.getElementById('impact-body');
+  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering every Impact story across the network...</div>';
+  try {
+    // Superset fetch — every row that could possibly be an Impact slot for
+    // any publication. Filtered down accurately per-row below.
+    const rows = await supaFetch(
+      TABLE + '?story_num=in.(03,04,09)' +
+      '&select=reporter,publication,week_of,story_num,headline,angle,notes,file_day,filed,updated_at' +
+      '&order=week_of.desc'
+    );
+
+    const pubByReporter = {};
+    REPORTERS.forEach(r => { pubByReporter[r.name] = r.pub; });
+
+    const impactRows = (rows || []).filter(row => {
+      const pub = pubByReporter[row.reporter] || row.publication;
+      const def = getStoryDefs(pub).find(d => d.n === row.story_num);
+      return def && def.t === 'imp';
+    });
+
+    if (!impactRows.length) {
+      body.innerHTML = '<div class="wr-err">No Impact stories found yet.</div>';
+      document.getElementById('impact-sub').textContent = 'Every Impact-slot story across the network, past and present';
+      return;
+    }
+
+    impactRows.forEach(row => { row._date = fileDateFor(row.week_of, row.file_day); });
+
+    // Soonest/most recent first; undated cards (no file day picked yet) sort last.
+    impactRows.sort((a, b) => {
+      if (!a._date && !b._date) return 0;
+      if (!a._date) return 1;
+      if (!b._date) return -1;
+      return b._date.localeCompare(a._date);
+    });
+
+    document.getElementById('impact-sub').textContent =
+      impactRows.length + ' Impact ' + (impactRows.length === 1 ? 'story' : 'stories') + ' across the network, newest first';
+
+    body.innerHTML = impactRows.map(row => {
+      const dateLabel = row._date ? formatImpactDate(row._date) : 'No day selected';
+      const headline = row.headline || row.angle || '(no headline or angle yet)';
+      const filedBadge = row.filed
+        ? '<span class="impact-badge impact-badge-filed">Filed</span>'
+        : '<span class="impact-badge impact-badge-open">Not filed</span>';
+      return '<div class="impact-row">' +
+        '<div class="impact-date">' + dateLabel + '</div>' +
+        '<div class="impact-main">' +
+          '<div class="impact-headline">' + esc(headline) + '</div>' +
+          '<div class="impact-meta">' + esc(row.reporter) + ' &middot; ' + esc(row.publication || pubByReporter[row.reporter] || '') + '</div>' +
+        '</div>' +
+        filedBadge +
+      '</div>';
+    }).join('');
+  } catch (err) {
+    console.error('Impact list failed:', err);
+    body.innerHTML = '<div class="wr-err">Something went wrong loading Impact stories: ' + esc(err.message || String(err)) + '</div>';
+  }
 }
 
 async function generateWeeklyReview() {
