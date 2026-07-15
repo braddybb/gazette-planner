@@ -6,6 +6,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -125,6 +126,7 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .ppill-poll{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 
 /* ── WEEK PICKER BANNER ── */
+.dupe-warning{background:#FFF4E5;border-bottom:1px solid #F0C36D;color:#7A4E00;padding:.75rem 2rem;font-size:13px;font-weight:600;text-align:center}
 .week-banner{background:var(--blue-lt);border-bottom:1px solid #AABBEE;padding:.75rem 2rem;display:flex;align-items:center;gap:1rem}
 .week-banner label{font-size:13px;color:var(--blue-dk);font-weight:500}
 .week-banner input{border:1px solid #AABBEE;border-radius:6px;padding:5px 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);outline:none}
@@ -829,6 +831,9 @@ padding:5px 12px;border-radius:999px}
 </div>
 </div>
 
+<div class="dupe-warning" id="dupe-warning" style="display:none">
+⚠️ Two stories are sharing the same slot number — one may be hidden. Contact Chef so this can be fixed in Supabase before either card is edited further.
+</div>
 <div class="sort-toolbar" id="sort-toolbar">
 <span class="sort-label">Order:</span>
 <button class="sort-btn" data-sort="default" onclick="setCardSort('default')">Slot order</button>
@@ -1296,7 +1301,23 @@ const rows = await supaFetch('GET',
 `${TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=*`
 );
 DATA = {};
-(rows || []).forEach(r => { DATA[r.story_num] = r; DATA[r.story_num].editor_notes = parseEditorNotes(r); });
+const seenNums = {};
+const dupeNums = [];
+(rows || []).forEach(r => {
+if (seenNums[r.story_num]) dupeNums.push(r.story_num);
+seenNums[r.story_num] = true;
+DATA[r.story_num] = r; DATA[r.story_num].editor_notes = parseEditorNotes(r);
+});
+if (dupeNums.length) {
+// Two rows exist in Supabase for the same slot number — this happens when
+// two saves race (e.g. reporter + editor assigning at once). Only one row
+// ever shows here since DATA is keyed by story_num, so surface this loudly
+// rather than letting a story silently vanish from view.
+console.warn('Duplicate story_num rows detected for ' + USER.name + ' / ' + USER.pub + ' / ' + WEEK + ':', dupeNums);
+showDupeWarning(dupeNums);
+} else {
+hideDupeWarning();
+}
 renderGrid();
 renderCalendar();
 renderStreak();
@@ -1446,9 +1467,34 @@ extras.sort((a,b) => parseInt(a.num) - parseInt(b.num));
 return extras;
 }
 
-function nextExtraNum() {
+function showDupeWarning(nums) {
+const el = document.getElementById('dupe-warning');
+if (!el) return;
+el.textContent = '⚠️ Slot' + (nums.length > 1 ? 's ' : ' ') + nums.join(', ') + ' — two stories are sharing the same number, one may be hidden. Contact Chef so this can be fixed in Supabase before either card is edited further.';
+el.style.display = 'block';
+}
+function hideDupeWarning() {
+const el = document.getElementById('dupe-warning');
+if (el) el.style.display = 'none';
+}
+
+async function nextExtraNum() {
 const baseCount = STORIES.length;
-const used = Object.keys(DATA).map(n => parseInt(n, 10)).filter(n => n > baseCount);
+// Fetch the live story numbers right before assigning a new slot, rather
+// than trusting local cache — shrinks the window where two clients (e.g.
+// this reporter in another tab, or an editor assigning a story) compute
+// the same "next" number at once and one silently overwrites the other.
+let freshNums = [];
+try {
+const rows = await supaFetch('GET',
+`${TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=story_num`
+);
+freshNums = (rows || []).map(r => parseInt(r.story_num, 10));
+} catch(e) {
+console.warn('Could not fetch fresh story numbers for extra-slot assignment, falling back to local cache', e);
+}
+const localNums = Object.keys(DATA).map(n => parseInt(n, 10));
+const used = freshNums.concat(localNums).filter(n => n > baseCount);
 return String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0');
 }
 
@@ -1492,8 +1538,8 @@ section.appendChild(addBtn);
 container.appendChild(section);
 }
 
-function addExtraStory() {
-const num = nextExtraNum();
+async function addExtraStory() {
+const num = await nextExtraNum();
 DATA[num] = blankStory(num);
 scheduleSave(num);
 renderGrid();
