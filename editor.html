@@ -6,6 +6,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,6 +79,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 /* ── NETWORK SUMMARY ── */
 .network-bar{background:#fff;border-bottom:0.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap}
+.dupe-warning{background:#FFF4E5;border-bottom:1px solid #F0C36D;color:#7A4E00;padding:.75rem 2rem;font-size:13px;font-weight:600;text-align:center}
 .net-stat{display:flex;flex-direction:column;gap:2px}
 .net-num{font-size:24px;font-weight:600;color:var(--ink)}
 .net-label{font-size:11px;color:var(--grey-md);text-transform:uppercase;letter-spacing:.07em}
@@ -511,6 +513,8 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
   <div class="network-bar" id="network-bar"></div>
 
+  <div class="dupe-warning" id="dupe-warning" style="display:none"></div>
+
   <div id="ecal-container"></div>
 
   <div id="main-view">
@@ -922,6 +926,17 @@ async function editorSignOut() {
 
 let editorPollTimer = null;
 
+function showEditorDupeWarning(dupes) {
+  const el = document.getElementById('dupe-warning');
+  if (!el) return;
+  el.textContent = '⚠️ Duplicate slot' + (dupes.length > 1 ? 's' : '') + ' this week — ' + dupes.join(', ') + '. One card may be hiding another; check Supabase before either is edited further.';
+  el.style.display = 'block';
+}
+function hideEditorDupeWarning() {
+  const el = document.getElementById('dupe-warning');
+  if (el) el.style.display = 'none';
+}
+
 async function loadWeek() {
   const inp = document.getElementById('week-inp');
   if (inp.value.trim()) WEEK = getMondayOf(inp.value.trim());
@@ -949,11 +964,26 @@ async function refreshData() {
     `${TABLE}?week_of=eq.${encodeURIComponent(WEEK)}&select=*&order=reporter.asc`
   );
   ALL_DATA = {};
+  const seenKeys = {};
+  const dupes = [];
   rows.forEach(r => {
     const key = r.reporter + '|' + r.publication;
+    const seenKey = key + '|' + r.story_num;
+    if (seenKeys[seenKey]) dupes.push(key + ' slot ' + r.story_num);
+    seenKeys[seenKey] = true;
     if (!ALL_DATA[key]) ALL_DATA[key] = {};
     ALL_DATA[key][r.story_num] = r;
   });
+  if (dupes.length) {
+    // Two rows share the same reporter+pub+slot — a save race (e.g. editor
+    // assigning + reporter self-adding at once). Only one shows here since
+    // ALL_DATA is keyed by story_num, so surface it rather than letting a
+    // story silently vanish from every tally on this dashboard.
+    console.warn('Duplicate story_num rows detected this week:', dupes);
+    showEditorDupeWarning(dupes);
+  } else {
+    hideEditorDupeWarning();
+  }
   renderNetworkBar();
   renderEditorCalendar();
   renderGrid();
@@ -968,11 +998,22 @@ async function refreshDataQuietly() {
       `${TABLE}?week_of=eq.${encodeURIComponent(WEEK)}&select=*&order=reporter.asc`
     );
     const fresh = {};
+    const seenKeys = {};
+    const dupes = [];
     rows.forEach(r => {
       const key = r.reporter + '|' + r.publication;
+      const seenKey = key + '|' + r.story_num;
+      if (seenKeys[seenKey]) dupes.push(key + ' slot ' + r.story_num);
+      seenKeys[seenKey] = true;
       if (!fresh[key]) fresh[key] = {};
       fresh[key][r.story_num] = r;
     });
+    if (dupes.length) {
+      console.warn('Duplicate story_num rows detected this week:', dupes);
+      showEditorDupeWarning(dupes);
+    } else {
+      hideEditorDupeWarning();
+    }
     ALL_DATA = fresh;
     renderNetworkBar();
     // Only re-render grid if drilldown isn't open (don't disrupt active editing)
@@ -1250,8 +1291,8 @@ function buildRepCard(r) {
           Open planner ↗
         </a>
         <div style="text-align:right">
-          <div class="rep-filed-big">${filed}/${baseCount}${extrasFiled ? ` <span style="font-size:13px;font-weight:600;color:var(--blue-dk)">+${extrasFiled} extra</span>` : ''}</div>
-          <div class="rep-filed-sub">stories filed</div>
+          <div class="rep-filed-big">${filed + extrasFiled}</div>
+          <div class="rep-filed-sub">of ${baseCount} filed${extrasFiled ? ` (${filed} base +${extrasFiled} extra)` : ''}</div>
         </div>
       </div>
     </div>
@@ -1655,7 +1696,7 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
 // ══════════════════════════════════════════
 //  EDITOR STORY ASSIGNMENT
 // ══════════════════════════════════════════
-function openAssign(r) {
+async function openAssign(r) {
   window._assignReporter = r;
   document.getElementById('am-title').textContent = 'Assign a story to ' + r.name;
   document.getElementById('am-headline').value = '';
@@ -1663,10 +1704,23 @@ function openAssign(r) {
   document.getElementById('am-notes').value = '';
   document.getElementById('am-format').value = '';
   // Auto-assign slot: next extra number, beyond this reporter's own base count
-  // (8 for National Account, 10 for local mastheads)
-  const data = getReporterData(r.name, r.pub);
+  // (8 for National Account, 10 for local mastheads). Fetch fresh from
+  // Supabase rather than trusting local ALL_DATA cache — shrinks the race
+  // window where a reporter self-adding an extra at the same moment could
+  // compute the same slot number and one save silently overwrites the other.
   const baseCount = getStoryDefs(r.pub).length;
-  const used = Object.keys(data).map(n => parseInt(n, 10)).filter(n => n > baseCount);
+  let freshNums = [];
+  try {
+    const rows = await supaFetch(
+      `${TABLE}?reporter=eq.${encodeURIComponent(r.name)}&publication=eq.${encodeURIComponent(r.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=story_num`
+    );
+    freshNums = (rows || []).map(n => parseInt(n.story_num, 10));
+  } catch(e) {
+    console.warn('Could not fetch fresh story numbers for assignment, falling back to local cache', e);
+  }
+  const data = getReporterData(r.name, r.pub);
+  const localNums = Object.keys(data).map(n => parseInt(n, 10));
+  const used = freshNums.concat(localNums).filter(n => n > baseCount);
   const nextNum = String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0');
   document.getElementById('am-slot').innerHTML = '<option value="' + nextNum + '">Extra slot ' + nextNum + ' (new card)</option>';
   document.getElementById('assign-overlay').classList.add('show');
