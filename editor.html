@@ -7,6 +7,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,6 +159,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 #weekly-review{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #impact-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+#todo-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+#foi-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+.rollup-reporter-block{margin-bottom:6px}
+.rollup-todo-row{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:0.5px solid var(--border)}
+.rollup-todo-row:last-child{border-bottom:none}
+.rollup-todo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rollup-todo-dot.open{background:var(--blue,#0000EE)}
+.rollup-todo-dot.done{background:var(--grey-md,#888)}
+.rollup-todo-text{flex:1;font-size:13px;color:var(--ink)}
+.rollup-todo-text.done{color:var(--grey-md);text-decoration:line-through}
+.rollup-empty{font-size:13px;color:var(--grey-md);padding:6px 4px}
+.foi-status-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.foi-status-good{background:#E0F0E0;color:#2C6B2C}
+.foi-status-partial{background:#FFF7E0;color:#946200}
+.foi-status-bad{background:#FBEEEA;color:#B8391F}
+.foi-status-pending{background:var(--blue-lt,#EEF0FF);color:var(--blue-dk,#0000AA)}
+.rollup-foi-row{padding:10px 4px;border-bottom:0.5px solid var(--border)}
+.rollup-foi-row:last-child{border-bottom:none}
+.rollup-foi-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.rollup-foi-agency{font-size:13px;font-weight:600;color:var(--ink)}
+.rollup-foi-desc{font-size:12.5px;color:var(--grey-dk)}
+.rollup-foi-meta{font-size:11px;color:var(--grey-md);margin-top:2px}
 .impact-row{display:flex;align-items:center;gap:14px;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
 .impact-date{font-size:12px;font-weight:600;color:#D9492E;min-width:96px}
 .impact-main{flex:1;min-width:0}
@@ -503,6 +526,8 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="weekly-review-btn" onclick="openWeeklyReview()">Weekly Review</button>
     <button class="weekly-review-btn" id="impact-list-btn" onclick="openImpactList()" title="List every Impact-slot story across the network, past and present">Impact stories</button>
+    <button class="weekly-review-btn" id="todo-rollup-btn" onclick="openTodoRollup()" title="See every reporter's to-do list">To-do</button>
+    <button class="weekly-review-btn" id="foi-rollup-btn" onclick="openFOIRollup()" title="See every reporter's FOI requests">FOI</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
@@ -554,6 +579,28 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       </div>
     </div>
     <div id="impact-body"></div>
+  </div>
+
+  <div id="todo-rollup-view">
+    <button class="back-btn" onclick="closeTodoRollup()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">Reporter to-do lists</div>
+        <div class="wr-sub">Every reporter's admin list — read-only, they manage their own</div>
+      </div>
+    </div>
+    <div id="todo-rollup-body"></div>
+  </div>
+
+  <div id="foi-rollup-view">
+    <button class="back-btn" onclick="closeFOIRollup()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">FOI requests</div>
+        <div class="wr-sub">Every FOI request in flight or resolved across the network</div>
+      </div>
+    </div>
+    <div id="foi-rollup-body"></div>
   </div>
 </div>
 
@@ -1572,12 +1619,16 @@ function goHome() {
   const drilldown = document.getElementById('drilldown');
   const weeklyReview = document.getElementById('weekly-review');
   const impactView = document.getElementById('impact-view');
+  const todoRollupView = document.getElementById('todo-rollup-view');
+  const foiRollupView = document.getElementById('foi-rollup-view');
   const mainView = document.getElementById('main-view');
   const cwOverlay = document.getElementById('cw-overlay');
   const assignOverlay = document.getElementById('assign-overlay');
   if (drilldown) drilldown.style.display = 'none';
   if (weeklyReview) weeklyReview.style.display = 'none';
   if (impactView) impactView.style.display = 'none';
+  if (todoRollupView) todoRollupView.style.display = 'none';
+  if (foiRollupView) foiRollupView.style.display = 'none';
   if (cwOverlay) cwOverlay.classList.remove('show');
   if (assignOverlay) assignOverlay.classList.remove('show');
   if (mainView) mainView.style.display = 'block';
@@ -2276,6 +2327,129 @@ function openImpactList() {
 function closeImpactList() {
   document.getElementById('impact-view').style.display = 'none';
   document.getElementById('main-view').style.display = 'block';
+}
+
+// ── To-do rollup: read-only view of every reporter's admin list.
+// Editors can see what's outstanding but manage nothing here — the
+// to-do list is the reporter's own space, this is just visibility.
+function openTodoRollup() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('todo-rollup-view').style.display = 'block';
+  loadTodoRollup();
+}
+function closeTodoRollup() {
+  document.getElementById('todo-rollup-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+async function loadTodoRollup() {
+  const body = document.getElementById('todo-rollup-body');
+  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering to-do lists across the network...</div>';
+  try {
+    const rows = await supaFetch('reporter_todos?select=reporter,publication,item,done,created_at&order=created_at.asc');
+    const byReporter = {};
+    REPORTERS.forEach(r => { byReporter[r.name] = { ...r, items: [] }; });
+    (rows || []).forEach(row => {
+      if (!byReporter[row.reporter]) byReporter[row.reporter] = { name: row.reporter, pub: row.publication, region: 'Other', items: [] };
+      byReporter[row.reporter].items.push(row);
+    });
+    let html = '';
+    REGION_ORDER.forEach(region => {
+      const reportersInRegion = REPORTERS.filter(r => r.region === region);
+      if (!reportersInRegion.length) return;
+      html += '<div class="wr-section"><div class="wr-section-title">' + esc(region) + '</div>';
+      reportersInRegion.forEach(r => {
+        const entry = byReporter[r.name];
+        const items = entry ? entry.items : [];
+        const openCount = items.filter(i => !i.done).length;
+        html += '<div class="rollup-reporter-block wr-reporter-card">';
+        html += '<div class="wr-reporter-name">' + esc(r.name) + ' <span style="font-weight:400;color:var(--grey-md);font-size:12px">(' + openCount + ' open)</span></div>';
+        html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
+        if (!items.length) {
+          html += '<div class="rollup-empty">Nothing on the list.</div>';
+        } else {
+          items.forEach(i => {
+            html += '<div class="rollup-todo-row">' +
+              '<span class="rollup-todo-dot ' + (i.done ? 'done' : 'open') + '"></span>' +
+              '<span class="rollup-todo-text' + (i.done ? ' done' : '') + '">' + esc(i.item) + '</span>' +
+              '</div>';
+          });
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    body.innerHTML = html || '<div class="rollup-empty">No to-do items across the network yet.</div>';
+  } catch(e) {
+    console.error('Could not load to-do rollup:', e);
+    body.innerHTML = '<div class="wr-err">Could not load to-do lists. Try refreshing.</div>';
+  }
+}
+
+// ── FOI rollup: read-only view of every reporter's tracked FOI
+// requests network-wide, so a slow agency or a near-miss appeal
+// deadline doesn't get missed just because it's sitting in one
+// reporter's tab.
+function openFOIRollup() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('foi-rollup-view').style.display = 'block';
+  loadFOIRollup();
+}
+function closeFOIRollup() {
+  document.getElementById('foi-rollup-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+function foiDaysUntil(dateStr) {
+  const target = new Date(dateStr + 'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+function foiStatusPill(r) {
+  const dd = foiDaysUntil(r.decision_due);
+  if (r.status === 'full') return '<span class="foi-status-pill foi-status-good">Released in full</span>';
+  if (r.status === 'partial') return '<span class="foi-status-pill foi-status-partial">Partially released</span>';
+  if (r.status === 'refused') return '<span class="foi-status-pill foi-status-bad">Refused</span>';
+  if (dd < 0) return '<span class="foi-status-pill foi-status-bad">Overdue by ' + Math.abs(dd) + ' days</span>';
+  return '<span class="foi-status-pill foi-status-pending">Due in ' + dd + ' days</span>';
+}
+async function loadFOIRollup() {
+  const body = document.getElementById('foi-rollup-body');
+  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering FOI requests across the network...</div>';
+  try {
+    const rows = await supaFetch('foi_requests?select=*&order=date_sent.desc');
+    const byReporter = {};
+    (rows || []).forEach(row => {
+      if (!byReporter[row.reporter]) byReporter[row.reporter] = [];
+      byReporter[row.reporter].push(row);
+    });
+    let html = '';
+    REGION_ORDER.forEach(region => {
+      const reportersInRegion = REPORTERS.filter(r => r.region === region);
+      if (!reportersInRegion.length) return;
+      const anyInRegion = reportersInRegion.some(r => byReporter[r.name] && byReporter[r.name].length);
+      if (!anyInRegion) return;
+      html += '<div class="wr-section"><div class="wr-section-title">' + esc(region) + '</div>';
+      reportersInRegion.forEach(r => {
+        const items = byReporter[r.name] || [];
+        if (!items.length) return;
+        html += '<div class="rollup-reporter-block wr-reporter-card">';
+        html += '<div class="wr-reporter-name">' + esc(r.name) + '</div>';
+        html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
+        items.forEach(i => {
+          html += '<div class="rollup-foi-row">' +
+            '<div class="rollup-foi-top"><span class="rollup-foi-agency">' + esc(i.agency) + '</span>' + foiStatusPill(i) + '</div>' +
+            '<div class="rollup-foi-desc">' + esc(i.document_description) + '</div>' +
+            '<div class="rollup-foi-meta">Sent ' + esc(i.date_sent) + ' &middot; ' + esc(i.jurisdiction) + '</div>' +
+            '</div>';
+        });
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    body.innerHTML = html || '<div class="rollup-empty">No FOI requests tracked across the network yet.</div>';
+  } catch(e) {
+    console.error('Could not load FOI rollup:', e);
+    body.innerHTML = '<div class="wr-err">Could not load FOI requests. Try refreshing.</div>';
+  }
 }
 
 function fileDateFor(weekOf, day) {
