@@ -7,6 +7,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -142,6 +143,68 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .sort-btn{font-size:12px;font-weight:600;font-family:inherit;padding:5px 12px;border-radius:999px;border:0.5px solid var(--border,#DDD);background:#fff;color:#555;cursor:pointer}
 .sort-btn:hover{background:#F5F5F5}
 .sort-btn.active{background:var(--blue,#0000EE);border-color:var(--blue,#0000EE);color:#fff}
+
+/* ── To-do panel ── */
+.todo-panel{max-width:1400px;margin:.75rem auto 0;padding:0 2rem}
+.todo-panel-inner{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
+.todo-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none}
+.todo-panel-title{font-size:13px;font-weight:600;color:var(--ink)}
+.todo-count{font-weight:400;color:var(--grey-md);margin-left:4px}
+.todo-panel-chevron{color:var(--grey-md);font-size:12px}
+.todo-panel-body{padding:0 16px 16px}
+.todo-add-row{display:flex;gap:8px;margin-bottom:10px}
+.todo-add-row input{flex:1;border:0.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+.todo-add-row input:focus{border-color:var(--blue)}
+.todo-add-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.todo-list{display:flex;flex-direction:column;gap:2px}
+.todo-item{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px}
+.todo-item:hover{background:var(--grey-lt)}
+.todo-item input[type=checkbox]{width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.todo-item-text{flex:1;font-size:13px;color:var(--ink);word-break:break-word}
+.todo-item.todo-done .todo-item-text{color:var(--grey-md);text-decoration:line-through}
+.todo-del-btn{background:none;border:none;color:var(--grey-md);font-size:16px;cursor:pointer;padding:0 4px;line-height:1}
+.todo-del-btn:hover{color:#C0362C}
+.todo-empty{font-size:13px;color:var(--grey-md);padding:8px 4px}
+.todo-actions{margin-top:8px;text-align:right}
+.todo-clear-btn{background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:inherit}
+
+/* ── FOI builder ── */
+.foi-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.foi-nav:hover{background:#222}
+.foi-wrap{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
+.foi-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.foi-title{font-size:22px;font-weight:600;color:var(--ink);margin:0}
+.foi-back-btn{background:none;border:0.5px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.foi-back-btn:hover{background:var(--grey-lt)}
+.foi-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.foi-layout{grid-template-columns:1fr}}
+.foi-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:18px}
+.foi-card-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cf select,.cf input[type=date]{width:100%;border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:#111;outline:none}
+.cf select:focus,.cf input[type=date]:focus{border-color:var(--blue)}
+.foi-generate-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
+.foi-letter-preview{width:100%;min-height:260px;border:0.5px solid var(--border);border-radius:8px;padding:12px;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical;color:var(--ink)}
+.foi-letter-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.foi-letter-actions button{border-radius:6px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:0.5px solid var(--border);background:#fff;color:var(--ink)}
+.foi-letter-actions button:hover{background:var(--grey-lt)}
+.foi-sent-btn{background:var(--success)!important;border-color:var(--success)!important;color:#fff!important}
+.foi-hint{font-size:11px;color:var(--grey-md);margin-top:8px;line-height:1.4}
+.foi-tracker{max-width:1400px;margin:20px auto 0;padding:0 2rem 2rem}
+.foi-tracker-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.foi-tracker-item{background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:12px 14px}
+.foi-tracker-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.foi-tracker-agency{font-size:13px;font-weight:600;color:var(--ink)}
+.foi-status-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.foi-status-good{background:var(--success-lt);color:var(--success)}
+.foi-status-partial{background:#FFF7E0;color:#946200}
+.foi-status-bad{background:#FDEDEC;color:#C0362C}
+.foi-status-pending{background:var(--blue-lt);color:var(--blue-dk)}
+.foi-tracker-desc{font-size:12.5px;color:var(--grey-dk);margin-bottom:4px}
+.foi-tracker-meta{font-size:11px;color:var(--grey-md)}
+.foi-tracker-actions{margin-top:8px}
+.foi-tracker-actions select{font-size:12px;border:0.5px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit}
+.foi-empty{font-size:13px;color:var(--grey-md);padding:8px 0}
 
 /* ── STORY CARD ── */
 .story-card{background:#fff;border:0.5px solid var(--border);border-radius:14px;overflow:hidden;position:relative;
@@ -779,6 +842,9 @@ padding:5px 12px;border-radius:999px}
 <span class="cw-ico" id="cw-ico">&#128279;</span>
 <span class="cw-label" id="cw-label">Crossword</span>
 </button>
+<button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
+<span>&#128196;</span><span>FOI</span>
+</button>
 <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()" title="Sound on completion">&#128266;</button>
 <button class="signout-btn" onclick="signOut()">Sign out</button>
 </div>
@@ -834,6 +900,25 @@ padding:5px 12px;border-radius:999px}
 <div class="dupe-warning" id="dupe-warning" style="display:none">
 ⚠️ Two stories are sharing the same slot number — one may be hidden. Contact Chef so this can be fixed in Supabase before either card is edited further.
 </div>
+<div id="stories-view">
+<div class="todo-panel" id="todo-panel">
+<div class="todo-panel-inner">
+<div class="todo-panel-hdr" onclick="toggleTodoPanel()">
+<span class="todo-panel-title">To-do <span class="todo-count" id="todo-count"></span></span>
+<span class="todo-panel-chevron" id="todo-chevron">&#9662;</span>
+</div>
+<div class="todo-panel-body" id="todo-panel-body">
+<div class="todo-add-row">
+<input type="text" id="todo-new-input" placeholder="Add a task — post to IG, call council, chase FOI..." onkeydown="if(event.key==='Enter')addTodoItem()">
+<button class="todo-add-btn" onclick="addTodoItem()">Add</button>
+</div>
+<div class="todo-list" id="todo-list"></div>
+<div class="todo-actions" id="todo-actions" style="display:none">
+<button class="todo-clear-btn" onclick="clearCompletedTodos()">Clear completed</button>
+</div>
+</div>
+</div>
+</div>
 <div class="sort-toolbar" id="sort-toolbar">
 <span class="sort-label">Order:</span>
 <button class="sort-btn" data-sort="default" onclick="setCardSort('default')">Slot order</button>
@@ -847,6 +932,70 @@ padding:5px 12px;border-radius:999px}
 </div>
 </div>
 <div id="cal-container"></div>
+</div>
+
+<!-- FOI BUILDER VIEW -->
+<div id="foi-view" style="display:none">
+<div class="foi-wrap">
+<div class="foi-header-row">
+<h2 class="foi-title">FOI Builder</h2>
+<button class="foi-back-btn" onclick="showStoriesView()">&larr; Back to stories</button>
+</div>
+<div class="foi-layout">
+<div class="foi-builder-col">
+<div class="foi-card">
+<div class="foi-card-title">New request</div>
+<div class="cf"><div class="cl">Jurisdiction</div>
+<select id="foi-jurisdiction">
+<option value="Federal">Federal — Freedom of Information Act 1982 — free</option>
+<option value="NSW">NSW — Government Information (Public Access) Act — $30</option>
+<option value="VIC">VIC — Freedom of Information Act — $32.70</option>
+<option value="QLD">QLD — Right to Information Act — $55.75 (no waiver available)</option>
+<option value="SA">SA — Freedom of Information Act — $42</option>
+<option value="WA">WA — Freedom of Information Act — $30</option>
+<option value="TAS">TAS — Right to Information Act — $46.75</option>
+<option value="NT">NT — Information Act — $30</option>
+<option value="ACT">ACT — Freedom of Information Act — free</option>
+</select>
+</div>
+<div class="cf"><div class="cl">Agency</div>
+<input type="text" id="foi-agency" placeholder="e.g. Department of Transport and Planning">
+</div>
+<div class="cf"><div class="cl">Agency FOI email (if known)</div>
+<input type="text" id="foi-email" placeholder="foi@agency.gov.au">
+</div>
+<div class="cf"><div class="cl">Document(s) sought — be specific</div>
+<textarea id="foi-docs" placeholder="e.g. A copy of the final council report into the Bendigo Street overpass, including cost estimates and community consultation summaries."></textarea>
+</div>
+<div class="cf-row">
+<div class="cf"><div class="cl">From</div><input type="date" id="foi-date-from"></div>
+<div class="cf"><div class="cl">To</div><input type="date" id="foi-date-to"></div>
+</div>
+<div class="cf"><div class="cl">Story / notes (internal — not sent)</div>
+<textarea id="foi-notes" placeholder="Which story this is for, why you're asking..."></textarea>
+</div>
+<button class="foi-generate-btn" onclick="generateFOILetter()">Generate letter</button>
+</div>
+</div>
+<div class="foi-letter-col">
+<div class="foi-card">
+<div class="foi-card-title">Letter preview</div>
+<textarea id="foi-letter-preview" class="foi-letter-preview" placeholder="Fill in the form and click Generate letter — you can edit the wording here before sending."></textarea>
+<div class="foi-letter-actions">
+<button class="foi-copy-btn" onclick="copyFOILetter()">Copy letter</button>
+<button class="foi-mailto-btn" onclick="mailtoFOILetter()">Open in Mail</button>
+<button class="foi-sent-btn" onclick="markFOISent()">Mark as sent &amp; track</button>
+</div>
+<div class="foi-hint">Marking as sent saves this to your tracker below, starts the 30-day decision clock, and drops a chase-up reminder into your to-do list.</div>
+</div>
+</div>
+</div>
+<div class="foi-tracker">
+<div class="foi-card-title">Your FOI requests</div>
+<div id="foi-tracker-list" class="foi-tracker-list"></div>
+</div>
+</div>
+</div>
 </div>
 
 <div class="save-toast" id="save-toast">Saved</div>
@@ -1235,6 +1384,7 @@ refreshCrosswordNav();
 renderBadges();
 refreshNextWeekBadges();
 loadGoldStar();
+loadTodos();
 }
 
 // Intercept back button
@@ -1356,6 +1506,313 @@ return DATA[num] || blankStory(num);
 }
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ══════════════════════════════════════════════════════════════
+// TO-DO LIST — lightweight per-reporter admin/note-taking list.
+// Persists in Supabase (reporter_todos), visible to the reporter
+// here and to editors on the Dashboard rollup. Not tied to story
+// slots — general admin tasks (IG posts, calls, FOI chase-ups).
+// ══════════════════════════════════════════════════════════════
+let TODOS = [];
+let todoPanelCollapsed = false;
+
+async function loadTodos() {
+try {
+const rows = await supaFetch('GET',
+`reporter_todos?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&order=created_at.asc`);
+TODOS = rows || [];
+} catch(e) {
+console.warn('Could not load to-do list:', e);
+TODOS = [];
+}
+renderTodos();
+}
+
+function renderTodos() {
+const list = document.getElementById('todo-list');
+const countEl = document.getElementById('todo-count');
+const actionsEl = document.getElementById('todo-actions');
+if (!list) return;
+const open = TODOS.filter(t => !t.done);
+const done = TODOS.filter(t => t.done);
+countEl.textContent = TODOS.length ? `(${open.length} open)` : '';
+actionsEl.style.display = done.length ? 'block' : 'none';
+if (!TODOS.length) {
+list.innerHTML = '<div class="todo-empty">Nothing on the list — add admin tasks, IG posts, calls to make.</div>';
+return;
+}
+const row = t => `<div class="todo-item ${t.done ? 'todo-done' : ''}" data-id="${t.id}">
+<input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodoItem('${t.id}', this.checked)">
+<span class="todo-item-text">${esc(t.item)}</span>
+<button class="todo-del-btn" onclick="deleteTodoItem('${t.id}')" title="Remove">&times;</button>
+</div>`;
+list.innerHTML = open.map(row).join('') + done.map(row).join('');
+}
+
+async function addTodoItem() {
+const input = document.getElementById('todo-new-input');
+const text = input.value.trim();
+if (!text) return;
+input.value = '';
+try {
+const [row] = await supaFetch('POST', 'reporter_todos', {
+reporter: USER.name, publication: USER.pub, item: text, done: false
+});
+if (row) TODOS.push(row);
+renderTodos();
+} catch(e) {
+console.error('Could not add to-do item:', e);
+}
+}
+
+async function toggleTodoItem(id, done) {
+const t = TODOS.find(x => String(x.id) === String(id));
+if (t) t.done = done;
+renderTodos();
+try {
+await supaFetch('PATCH', `reporter_todos?id=eq.${id}`, { done, done_at: done ? new Date().toISOString() : null });
+} catch(e) {
+console.error('Could not update to-do item:', e);
+}
+}
+
+async function deleteTodoItem(id) {
+TODOS = TODOS.filter(x => String(x.id) !== String(id));
+renderTodos();
+try {
+await supaFetch('DELETE', `reporter_todos?id=eq.${id}`);
+} catch(e) {
+console.error('Could not delete to-do item:', e);
+}
+}
+
+async function clearCompletedTodos() {
+const doneIds = TODOS.filter(t => t.done).map(t => t.id);
+TODOS = TODOS.filter(t => !t.done);
+renderTodos();
+for (const id of doneIds) {
+try { await supaFetch('DELETE', `reporter_todos?id=eq.${id}`); } catch(e) { console.error(e); }
+}
+}
+
+function toggleTodoPanel() {
+todoPanelCollapsed = !todoPanelCollapsed;
+document.getElementById('todo-panel-body').style.display = todoPanelCollapsed ? 'none' : 'block';
+document.getElementById('todo-chevron').textContent = todoPanelCollapsed ? '\u25B8' : '\u25BE';
+}
+
+// ══════════════════════════════════════════════════════════════
+// FOI BUILDER — generates a compliant FOI request letter from a
+// short form, tracks it in Supabase (foi_requests) once sent, and
+// auto-calculates decision/appeal deadlines. No auto-sending —
+// reporters copy the letter or open it in Mail themselves.
+// ══════════════════════════════════════════════════════════════
+const FOI_JURISDICTIONS = {
+Federal: { act: 'Freedom of Information Act 1982' },
+NSW:     { act: 'Government Information (Public Access) Act 2009' },
+VIC:     { act: 'Freedom of Information Act 1982' },
+QLD:     { act: 'Right to Information Act 2009' },
+SA:      { act: 'Freedom of Information Act 1991' },
+WA:      { act: 'Freedom of Information Act 1992' },
+TAS:     { act: 'Right to Information Act 2009' },
+NT:      { act: 'Information Act 2002' },
+ACT:     { act: 'Freedom of Information Act 2016' },
+};
+
+let FOI_REQUESTS = [];
+
+function formatDateAU(d) {
+if (!d) return '';
+try {
+const dt = new Date(d + 'T00:00:00');
+return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+} catch(e) { return d; }
+}
+
+function addDays(dateObj, days) {
+const d = new Date(dateObj);
+d.setDate(d.getDate() + days);
+return d;
+}
+
+function toISODate(d) {
+const yyyy = d.getFullYear();
+const mm = String(d.getMonth() + 1).padStart(2, '0');
+const dd = String(d.getDate()).padStart(2, '0');
+return `${yyyy}-${mm}-${dd}`;
+}
+
+function generateFOILetter() {
+const jur = document.getElementById('foi-jurisdiction').value;
+const agency = document.getElementById('foi-agency').value.trim();
+const docs = document.getElementById('foi-docs').value.trim();
+const from = document.getElementById('foi-date-from').value;
+const to = document.getElementById('foi-date-to').value;
+const act = (FOI_JURISDICTIONS[jur] || FOI_JURISDICTIONS.Federal).act;
+
+if (!agency || !docs) {
+alert("Add the agency and what you're asking for before generating the letter.");
+return;
+}
+
+let dateLine = '';
+if (from && to) dateLine = ` created between ${formatDateAU(from)} and ${formatDateAU(to)}`;
+else if (from) dateLine = ` created since ${formatDateAU(from)}`;
+
+const letter = `To: ${agency} FOI team\n\n` +
+`Dear FOI team,\n\n` +
+`Under the terms of the ${act}, I would like to request access to the following document(s)${dateLine}:\n\n` +
+`${docs}\n\n` +
+`Please send any correspondence or documents to this email address.\n\n` +
+`Kind regards,\n${USER.name}\n${USER.pub}, Gazette News`;
+
+document.getElementById('foi-letter-preview').value = letter;
+}
+
+function copyFOILetter() {
+const ta = document.getElementById('foi-letter-preview');
+if (!ta.value.trim()) { alert('Generate the letter first.'); return; }
+ta.select();
+document.execCommand('copy');
+showToast();
+}
+
+function mailtoFOILetter() {
+const letter = document.getElementById('foi-letter-preview').value;
+if (!letter.trim()) { alert('Generate the letter first.'); return; }
+const email = document.getElementById('foi-email').value.trim();
+const agency = document.getElementById('foi-agency').value.trim();
+const subject = encodeURIComponent(`FOI request — ${agency}`);
+const body = encodeURIComponent(letter);
+window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+}
+
+async function markFOISent() {
+const jur = document.getElementById('foi-jurisdiction').value;
+const agency = document.getElementById('foi-agency').value.trim();
+const email = document.getElementById('foi-email').value.trim();
+const docs = document.getElementById('foi-docs').value.trim();
+const notes = document.getElementById('foi-notes').value.trim();
+const letter = document.getElementById('foi-letter-preview').value.trim();
+
+if (!agency || !docs || !letter) {
+alert('Generate the letter first.');
+return;
+}
+
+const sentDate = new Date();
+const decisionDue = addDays(sentDate, 30);
+const internalReviewDeadline = addDays(decisionDue, 30);
+const oaicReviewDeadline = addDays(decisionDue, 60);
+
+const record = {
+reporter: USER.name,
+publication: USER.pub,
+jurisdiction: jur,
+agency: agency,
+agency_email: email,
+document_description: docs,
+letter_text: letter,
+notes: notes,
+date_sent: toISODate(sentDate),
+decision_due: toISODate(decisionDue),
+internal_review_deadline: toISODate(internalReviewDeadline),
+oaic_review_deadline: toISODate(oaicReviewDeadline),
+status: 'pending',
+};
+
+try {
+const [row] = await supaFetch('POST', 'foi_requests', record);
+if (row) FOI_REQUESTS.unshift(row);
+renderFOITracker();
+['foi-agency','foi-email','foi-docs','foi-notes'].forEach(id => document.getElementById(id).value = '');
+document.getElementById('foi-date-from').value = '';
+document.getElementById('foi-date-to').value = '';
+document.getElementById('foi-letter-preview').value = '';
+showToast();
+// Drop a chase-up reminder into the to-do list so the deadline doesn't get lost.
+try {
+const [t] = await supaFetch('POST', 'reporter_todos', {
+reporter: USER.name, publication: USER.pub,
+item: `Chase FOI decision from ${agency} (due ${formatDateAU(record.decision_due)})`, done: false
+});
+if (t) { TODOS.push(t); renderTodos(); }
+} catch(e) { console.warn('Could not add FOI reminder to to-do list:', e); }
+} catch(e) {
+console.error('Could not save FOI request:', e);
+alert('Could not save the request — check your connection and try again.');
+}
+}
+
+async function loadFOIRequests() {
+try {
+const rows = await supaFetch('GET',
+`foi_requests?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&order=date_sent.desc`);
+FOI_REQUESTS = rows || [];
+} catch(e) {
+console.warn('Could not load FOI requests:', e);
+FOI_REQUESTS = [];
+}
+renderFOITracker();
+}
+
+function daysUntil(dateStr) {
+const target = new Date(dateStr + 'T00:00:00');
+const now = new Date(); now.setHours(0,0,0,0);
+return Math.round((target - now) / 86400000);
+}
+
+function renderFOITracker() {
+const list = document.getElementById('foi-tracker-list');
+if (!list) return;
+if (!FOI_REQUESTS.length) {
+list.innerHTML = '<div class="foi-empty">No FOI requests tracked yet — generate a letter above and mark it as sent once it\'s gone out.</div>';
+return;
+}
+list.innerHTML = FOI_REQUESTS.map(r => {
+const dd = daysUntil(r.decision_due);
+let statusLabel, statusClass;
+if (r.status === 'full') { statusLabel = 'Released in full'; statusClass = 'foi-status-good'; }
+else if (r.status === 'partial') { statusLabel = 'Partially released'; statusClass = 'foi-status-partial'; }
+else if (r.status === 'refused') { statusLabel = 'Refused'; statusClass = 'foi-status-bad'; }
+else if (dd < 0) { statusLabel = `Overdue by ${Math.abs(dd)} days`; statusClass = 'foi-status-bad'; }
+else { statusLabel = `Decision due in ${dd} days`; statusClass = 'foi-status-pending'; }
+return `<div class="foi-tracker-item">
+<div class="foi-tracker-top">
+<span class="foi-tracker-agency">${esc(r.agency)}</span>
+<span class="foi-status-pill ${statusClass}">${statusLabel}</span>
+</div>
+<div class="foi-tracker-desc">${esc(r.document_description)}</div>
+<div class="foi-tracker-meta">Sent ${formatDateAU(r.date_sent)} &middot; ${esc(r.jurisdiction)}</div>
+<div class="foi-tracker-actions">
+<select onchange="updateFOIStatus('${r.id}', this.value)">
+<option value="pending" ${r.status === 'pending' ? 'selected' : ''}>Pending</option>
+<option value="full" ${r.status === 'full' ? 'selected' : ''}>Released in full</option>
+<option value="partial" ${r.status === 'partial' ? 'selected' : ''}>Partially released</option>
+<option value="refused" ${r.status === 'refused' ? 'selected' : ''}>Refused</option>
+</select>
+</div>
+</div>`;
+}).join('');
+}
+
+async function updateFOIStatus(id, status) {
+const r = FOI_REQUESTS.find(x => String(x.id) === String(id));
+if (r) r.status = status;
+renderFOITracker();
+try { await supaFetch('PATCH', `foi_requests?id=eq.${id}`, { status }); }
+catch(e) { console.error('Could not update FOI status:', e); }
+}
+
+function showStoriesView() {
+document.getElementById('stories-view').style.display = 'block';
+document.getElementById('foi-view').style.display = 'none';
+}
+function showFOIView() {
+document.getElementById('stories-view').style.display = 'none';
+document.getElementById('foi-view').style.display = 'block';
+loadFOIRequests();
+}
 
 function renderCalendar() {
 const container = document.getElementById('cal-container');
