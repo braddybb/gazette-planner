@@ -8,6 +8,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,6 +145,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dot-original{background:#3A3A3A}
 .dot-newsletter{background:#787878}
 .dot-poll{background:var(--blue)}
+.dot-election{background:#2B2F77}
 .story-headline{font-size:13px;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-headline.empty{color:var(--grey-md);font-style:italic}
 .story-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -159,6 +161,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 #weekly-review{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #impact-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+#election-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #todo-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #foi-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 .rollup-reporter-block{margin-bottom:6px}
@@ -189,6 +192,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .impact-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap}
 .impact-badge-filed{background:#E0F0E0;color:#2C6B2C}
 .impact-badge-open{background:var(--grey-lt);color:var(--grey-dk)}
+.election-row{display:flex;align-items:center;gap:14px;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.election-date{font-size:12px;font-weight:600;color:#2B2F77;min-width:96px}
 .wr-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
 .wr-title{font-size:22px;font-weight:700;color:var(--ink)}
 .wr-sub{font-size:13px;color:var(--grey-md);margin-top:2px}
@@ -230,8 +235,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-card-hdr.vidflip{background:#5555FF}
 .drill-card-hdr.original{background:#3A3A3A}
 .drill-card-hdr.newsletter{background:#787878}
+.drill-card-hdr.election{background:#2B2F77}
 .drill-num{font-size:24px;font-weight:600;min-width:34px}
-.drill-num.std,.drill-num.imp,.drill-num.l2n,.drill-num.vidfirst,.drill-num.life,.drill-num.vidflip,.drill-num.original,.drill-num.newsletter,.drill-num.poll{color:#fff}
+.drill-num.std,.drill-num.imp,.drill-num.l2n,.drill-num.vidfirst,.drill-num.life,.drill-num.vidflip,.drill-num.original,.drill-num.newsletter,.drill-num.poll,.drill-num.election{color:#fff}
 .drill-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
 .drill-type.l2n,.drill-type.vidfirst{color:#999}
 .drill-type.std,.drill-type.poll{color:#AABBFF}
@@ -239,8 +245,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-type.life{color:#FFD8CC}
 .drill-type.vidflip{color:#D8DBFF}
 .drill-type.original,.drill-type.newsletter{color:#DDD}
+.drill-type.election{color:#C0C3F0}
 .drill-headline-hdr{font-size:13px;font-weight:500}
-.drill-headline-hdr.std,.drill-headline-hdr.imp,.drill-headline-hdr.l2n,.drill-headline-hdr.vidfirst,.drill-headline-hdr.life,.drill-headline-hdr.vidflip,.drill-headline-hdr.original,.drill-headline-hdr.newsletter,.drill-headline-hdr.poll{color:#fff}
+.drill-headline-hdr.std,.drill-headline-hdr.imp,.drill-headline-hdr.l2n,.drill-headline-hdr.vidfirst,.drill-headline-hdr.life,.drill-headline-hdr.vidflip,.drill-headline-hdr.original,.drill-headline-hdr.newsletter,.drill-headline-hdr.poll,.drill-headline-hdr.election{color:#fff}
 .drill-headline-hdr.empty{opacity:.4;font-style:italic;font-weight:400}
 .drill-filed-badge{margin-left:auto;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
 .drill-filed-badge.l2n,.drill-filed-badge.vidfirst{background:rgba(255,255,255,.15);color:#aaa}
@@ -249,6 +256,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-filed-badge.vidflip{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.original,.drill-filed-badge.newsletter{background:rgba(255,255,255,.15);color:#aaa}
 .drill-filed-badge.std,.drill-filed-badge.poll{background:rgba(255,255,255,.2);color:#fff}
+.drill-filed-badge.election{background:rgba(255,255,255,.22);color:#fff}
 .note-form{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
 .note-form textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical;min-height:64px;outline:none}
 .note-form textarea:focus{border-color:var(--blue)}
@@ -359,6 +367,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .pc-trend.up{color:#15803D}
 .pc-trend.down{color:#CC0000}
 .pc-trend.flat{color:var(--grey-md)}
+
+/* ── Notes (reporter to-dos) — same collapsible shell as Progress ── */
+.notes-section{margin-top:1.25rem;background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem}
+.notes-section.collapsed .notes-title{margin-bottom:0}
+.notes-grid{display:flex;flex-direction:column;gap:10px}
+.notes-grid.collapsed{display:none}
 
 /* ── Crossword nav button ── */
 .crossword-nav{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
@@ -526,6 +540,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
     <button class="weekly-review-btn" onclick="openWeeklyReview()">Weekly Review</button>
     <button class="weekly-review-btn" id="impact-list-btn" onclick="openImpactList()" title="List every Impact-slot story across the network, past and present">Impact stories</button>
+    <button class="weekly-review-btn" id="election-list-btn" onclick="openElectionList()" title="List every Election-slot story across Victoria — filed and still in planners">Election stories</button>
     <button class="weekly-review-btn" id="todo-rollup-btn" onclick="openTodoRollup()" title="See every reporter's to-do list">To-do</button>
     <button class="weekly-review-btn" id="foi-rollup-btn" onclick="openFOIRollup()" title="See every reporter's FOI requests">FOI</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
@@ -579,6 +594,17 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       </div>
     </div>
     <div id="impact-body"></div>
+  </div>
+
+  <div id="election-view">
+    <button class="back-btn" onclick="closeElectionList()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">All Election stories</div>
+        <div class="wr-sub" id="election-sub">Every Election-slot story across Victoria — filed and still in planners</div>
+      </div>
+    </div>
+    <div id="election-body"></div>
   </div>
 
   <div id="todo-rollup-view">
@@ -737,7 +763,21 @@ function slackMention(name) {
 // Region display order
 const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
 
-function getStoryDefs(pub) {
+// Victorian mastheads get one "Story" slot relabelled to "Election" from
+// the week of Monday 3 August 2026 onward — mirrors the same logic in the
+// reporter planner (index.html) so slot 08 reads identically on both sides.
+const ELECTION_START_WEEK = '2026-08-03';
+const VICTORIAN_PUBS = ['West Vic Brolga — Wannon', 'West Vic Brolga — Ballarat', 'Gippsland Monitor', 'Eastern Melburnian'];
+function isVictorianElectionWeek(pub, week) {
+  return VICTORIAN_PUBS.includes(pub) && !!week && week >= ELECTION_START_WEEK;
+}
+
+// week defaults to the dashboard's currently-loaded WEEK so all the existing
+// call sites (which only ever cared about "the week on screen") keep working
+// unchanged. Pass an explicit week (e.g. a row's own week_of) when checking
+// historical rows spanning multiple weeks, like the Election/Impact lists do.
+function getStoryDefs(pub, week) {
+  if (week === undefined) week = WEEK;
   const isNat = pub && pub.toLowerCase().includes('national');
   if (isNat) {
     // National Account: 12 distinct slots reflecting the full weekly remit
@@ -758,6 +798,7 @@ function getStoryDefs(pub) {
     ];
   }
   // Local mastheads: 10 distinct, separately-trackable slots
+  const electionWeek = isVictorianElectionWeek(pub, week);
   return [
     {n:'01',t:'vidfirst',lbl:'Video-first'},
     {n:'02',t:'vidfirst',lbl:'Video-first'},
@@ -766,12 +807,12 @@ function getStoryDefs(pub) {
     {n:'05',t:'std',lbl:'Story'},
     {n:'06',t:'std',lbl:'Story'},
     {n:'07',t:'std',lbl:'Story'},
-    {n:'08',t:'std',lbl:'Story'},
+    {n:'08', t: electionWeek ? 'election' : 'std', lbl: electionWeek ? 'Election' : 'Story'},
     {n:'09',t:'imp',lbl:'Impact'},
     {n:'10',t:'life',lbl:'Lifestyle / Culture'},
   ];
 }
-const STORY_DEFS = getStoryDefs(null);
+const STORY_DEFS = getStoryDefs(null, '');
 
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
 const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
@@ -1035,6 +1076,7 @@ async function refreshData() {
   renderEditorCalendar();
   renderGrid();
   initProgress();
+  initNotes();
 }
 
 // Quiet background refresh — no loading spinner, preserves open drilldown
@@ -1970,6 +2012,105 @@ async function initProgress() {
   renderProgressSection(data);
 }
 
+// ── Notes section: reporters' own to-do/admin notes, with the items they've
+// checked off — same data as the "To-do" rollup button, but shown inline
+// below Reporter Progress as a collapsible dropdown (same shell, same
+// collapsed-state persistence pattern) so it doesn't need a separate click
+// to see what's outstanding across the network.
+async function loadNotesData() {
+  try {
+    const rows = await supaFetch('reporter_todos?select=reporter,publication,item,done,created_at&order=created_at.asc');
+    const byReporter = {};
+    REPORTERS.forEach(r => { byReporter[r.name] = { ...r, items: [] }; });
+    (rows || []).forEach(row => {
+      if (!byReporter[row.reporter]) byReporter[row.reporter] = { name: row.reporter, pub: row.publication, region: 'Other', items: [] };
+      byReporter[row.reporter].items.push(row);
+    });
+    return byReporter;
+  } catch(e) {
+    console.error('Notes data load failed:', e);
+    return null;
+  }
+}
+
+function isNotesCollapsed() {
+  try { return localStorage.getItem('gz_notes_collapsed') === '1'; }
+  catch(e) { return false; }
+}
+function setNotesCollapsed(collapsed) {
+  try { localStorage.setItem('gz_notes_collapsed', collapsed ? '1' : '0'); }
+  catch(e) {}
+}
+function toggleNotesSection() {
+  const section = document.getElementById('notes-section');
+  const grid = section ? section.querySelector('.notes-grid') : null;
+  const chev = section ? section.querySelector('.progress-chev') : null;
+  if (!section || !grid) return;
+  const collapsed = !grid.classList.contains('collapsed');
+  grid.classList.toggle('collapsed', collapsed);
+  if (chev) chev.classList.toggle('collapsed', collapsed);
+  section.classList.toggle('collapsed', collapsed);
+  setNotesCollapsed(collapsed);
+}
+
+function renderNotesSection(byReporter) {
+  let existing = document.getElementById('notes-section');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.id = 'notes-section';
+    existing.className = 'notes-section';
+    const mainView = document.getElementById('main-view');
+    if (mainView) mainView.appendChild(existing);
+  }
+  if (!byReporter) { existing.innerHTML = ''; return; }
+
+  const collapsed = isNotesCollapsed();
+  const totalOpen = REPORTERS.reduce((sum, r) => {
+    const items = (byReporter[r.name] && byReporter[r.name].items) || [];
+    return sum + items.filter(i => !i.done).length;
+  }, 0);
+
+  let html = '<div class="progress-title notes-title" onclick="toggleNotesSection()">Notes ' +
+    '<span style="font-size:11px;color:#888;font-weight:500">' + totalOpen + ' open across the network</span>' +
+    '<span class="progress-chev' + (collapsed ? ' collapsed' : '') + '">&#9662;</span></div>';
+  html += '<div class="notes-grid' + (collapsed ? ' collapsed' : '') + '">';
+
+  REGION_ORDER.forEach(region => {
+    const inRegion = REPORTERS.filter(r => r.region === region);
+    if (!inRegion.length) return;
+    html += '<div class="wr-section"><div class="wr-section-title">' + esc(region) + '</div>';
+    inRegion.forEach(r => {
+      const entry = byReporter[r.name];
+      const items = entry ? entry.items : [];
+      const openCount = items.filter(i => !i.done).length;
+      html += '<div class="rollup-reporter-block wr-reporter-card">';
+      html += '<div class="wr-reporter-name">' + esc(r.name) + ' <span style="font-weight:400;color:var(--grey-md);font-size:12px">(' + openCount + ' open)</span></div>';
+      html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
+      if (!items.length) {
+        html += '<div class="rollup-empty">Nothing on the list.</div>';
+      } else {
+        items.forEach(i => {
+          html += '<div class="rollup-todo-row">' +
+            '<span class="rollup-todo-dot ' + (i.done ? 'done' : 'open') + '"></span>' +
+            '<span class="rollup-todo-text' + (i.done ? ' done' : '') + '">' + esc(i.item) + '</span>' +
+            '</div>';
+        });
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '</div>';
+  existing.innerHTML = html;
+  existing.classList.toggle('collapsed', collapsed);
+}
+
+async function initNotes() {
+  const byReporter = await loadNotesData();
+  renderNotesSection(byReporter);
+}
+
 // ══════════════════════════════════════════
 //  FRIDAY CROSSWORD  +  GOLDEN GAZETTE BADGE
 //  (mirrors the Planner's implementation so editors see the same
@@ -2527,6 +2668,87 @@ async function loadImpactList() {
   } catch (err) {
     console.error('Impact list failed:', err);
     body.innerHTML = '<div class="wr-err">Something went wrong loading Impact stories: ' + esc(err.message || String(err)) + '</div>';
+  }
+}
+
+// ── Election stories list: every Election-slot story across Victoria,
+// every week (past and present) — both already filed and still sitting in
+// planners to be filed, exactly like the Impact list does for its slots.
+// Only Victorian mastheads ever carry an Election slot, and only from the
+// week of 3 Aug 2026 onward, so most historical rows for story_num 08 will
+// correctly fall out of this list as ordinary Story-slot rows.
+function openElectionList() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('election-view').style.display = 'block';
+  loadElectionList();
+}
+
+function closeElectionList() {
+  document.getElementById('election-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+
+async function loadElectionList() {
+  const body = document.getElementById('election-body');
+  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering every Election story across Victoria...</div>';
+  try {
+    // Election only ever lives in slot 08 today (see getStoryDefs), but we
+    // still confirm via getStoryDefs per-row below rather than trusting the
+    // slot number alone, in case that ever changes.
+    const rows = await supaFetch(
+      TABLE + '?story_num=eq.08' +
+      '&select=reporter,publication,week_of,story_num,headline,angle,notes,file_day,filed,updated_at' +
+      '&order=week_of.desc'
+    );
+
+    const pubByReporter = {};
+    REPORTERS.forEach(r => { pubByReporter[r.name] = r.pub; });
+
+    const electionRows = (rows || []).filter(row => {
+      const pub = pubByReporter[row.reporter] || row.publication;
+      const def = getStoryDefs(pub, row.week_of).find(d => d.n === row.story_num);
+      return def && def.t === 'election';
+    });
+
+    if (!electionRows.length) {
+      body.innerHTML = '<div class="wr-err">No Election stories found yet.</div>';
+      document.getElementById('election-sub').textContent = 'Every Election-slot story across Victoria — filed and still in planners';
+      return;
+    }
+
+    electionRows.forEach(row => { row._date = fileDateFor(row.week_of, row.file_day); });
+
+    // Soonest/most recent first; undated cards (no file day picked yet) sort last.
+    electionRows.sort((a, b) => {
+      if (!a._date && !b._date) return 0;
+      if (!a._date) return 1;
+      if (!b._date) return -1;
+      return b._date.localeCompare(a._date);
+    });
+
+    const filedCount = electionRows.filter(r => r.filed).length;
+    document.getElementById('election-sub').textContent =
+      electionRows.length + ' Election ' + (electionRows.length === 1 ? 'story' : 'stories') + ' across Victoria — ' +
+      filedCount + ' filed, ' + (electionRows.length - filedCount) + ' still in planners';
+
+    body.innerHTML = electionRows.map(row => {
+      const dateLabel = row._date ? formatImpactDate(row._date) : 'No day selected';
+      const headline = row.headline || row.angle || '(no headline or angle yet)';
+      const filedBadge = row.filed
+        ? '<span class="impact-badge impact-badge-filed">Filed</span>'
+        : '<span class="impact-badge impact-badge-open">Not filed</span>';
+      return '<div class="election-row">' +
+        '<div class="election-date">' + dateLabel + '</div>' +
+        '<div class="impact-main">' +
+          '<div class="impact-headline">' + esc(headline) + '</div>' +
+          '<div class="impact-meta">' + esc(row.reporter) + ' &middot; ' + esc(row.publication || pubByReporter[row.reporter] || '') + '</div>' +
+        '</div>' +
+        filedBadge +
+      '</div>';
+    }).join('');
+  } catch (err) {
+    console.error('Election list failed:', err);
+    body.innerHTML = '<div class="wr-err">Something went wrong loading Election stories: ' + esc(err.message || String(err)) + '</div>';
   }
 }
 
