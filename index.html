@@ -8,6 +8,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -125,6 +126,7 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .ppill-original{background:#E0E0E0;color:#333;border-color:#C4C4C4}
 .ppill-newsletter{background:#EEEEEE;color:#555;border-color:#DADADA}
 .ppill-poll{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
+.ppill-election{background:#2B2F77;color:#fff;border-color:#20235C}
 
 /* ── WEEK PICKER BANNER ── */
 .dupe-warning{background:#FFF4E5;border-bottom:1px solid #F0C36D;color:#7A4E00;padding:.75rem 2rem;font-size:13px;font-weight:600;text-align:center}
@@ -241,6 +243,7 @@ transition:background .35s ease, color .35s ease}
 .card-hdr.original{background:#EDEDED}
 .card-hdr.poll{background:#F4F5FB}
 .card-hdr.newsletter{background:#F4F4F4}
+.card-hdr.election{background:#ECEEF7}
 .card-hdr.std.has-content{background:#1C1C1C}
 .card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:#D9492E}
@@ -252,6 +255,7 @@ transition:background .35s ease, color .35s ease}
 .card-hdr.original.has-content{background:#3A3A3A}
 .card-hdr.newsletter.has-content{background:#787878}
 .card-hdr.poll.has-content{background:var(--blue)}
+.card-hdr.election.has-content{background:#2B2F77}
 
 .hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px;transition:color .35s ease}
 /* empty num colours (muted) */
@@ -267,11 +271,13 @@ transition:background .35s ease, color .35s ease}
 .hdr-num.poll{color:#B9C2E8}
 .hdr-num.newsletter{color:#CCC}
 .hdr-num.extra{color:#fff}
+.hdr-num.election{color:#AEB3E8}
 /* filled num colours */
 .card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.l2n,.card-hdr.has-content .hdr-num.vidfirst,.card-hdr.has-content .hdr-num.poll{color:#fff}
 .card-hdr.has-content .hdr-num.imp{color:#FFE0D6}
 .card-hdr.has-content .hdr-num.vidflip,.card-hdr.has-content .hdr-num.original,.card-hdr.has-content .hdr-num.newsletter{color:#fff}
 .card-hdr.has-content .hdr-num.life{color:#3A2E0F}
+.card-hdr.has-content .hdr-num.election{color:#D6D9F7}
 
 .hdr-info{flex:1;min-width:0}
 .hdr-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;transition:color .35s ease}
@@ -288,11 +294,13 @@ transition:background .35s ease, color .35s ease}
 .hdr-type.newsletter{color:#AAA}
 .hdr-type.poll{color:#A7B0D8}
 .hdr-type.extra{color:rgba(255,255,255,.7)}
+.hdr-type.election{color:#8085C4}
 .card-hdr.has-content .hdr-type.std,.card-hdr.has-content .hdr-type.l2n,.card-hdr.has-content .hdr-type.vidfirst{color:#999}
 .card-hdr.has-content .hdr-type.imp{color:#FFCCBB}
 .card-hdr.has-content .hdr-type.vidflip,.card-hdr.has-content .hdr-type.original,.card-hdr.has-content .hdr-type.newsletter{color:#DDD}
 .card-hdr.has-content .hdr-type.life{color:#5C4A18}
 .card-hdr.has-content .hdr-type.poll{color:#AABBFF}
+.card-hdr.has-content .hdr-type.election{color:#C0C3F0}
 
 .hdr-preview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;transition:color .35s ease}
 /* empty preview colours */
@@ -308,11 +316,13 @@ transition:background .35s ease, color .35s ease}
 .hdr-preview.newsletter{color:#999}
 .hdr-preview.poll{color:#9AA5D0}
 .hdr-preview.extra{color:rgba(255,255,255,.55)}
+.hdr-preview.election{color:#9296D0}
 .card-hdr.has-content .hdr-preview.std,.card-hdr.has-content .hdr-preview.l2n,.card-hdr.has-content .hdr-preview.vidfirst{color:#999}
 .card-hdr.has-content .hdr-preview.imp{color:#F5D0C4}
 .card-hdr.has-content .hdr-preview.vidflip,.card-hdr.has-content .hdr-preview.original,.card-hdr.has-content .hdr-preview.newsletter{color:#CCC}
 .card-hdr.has-content .hdr-preview.life{color:#5C4A18}
 .card-hdr.has-content .hdr-preview.poll{color:#CCDDFF}
+.card-hdr.has-content .hdr-preview.election{color:#D0D2F5}
 
 .hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .filed-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:none}
@@ -326,10 +336,11 @@ transition:background .35s ease, color .35s ease}
 .filed-pill.newsletter{background:rgba(255,255,255,.15);color:#aaa}
 .filed-pill.poll{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.extra{background:rgba(255,255,255,.2);color:#fff}
+.filed-pill.election{background:rgba(255,255,255,.22);color:#fff}
 .filed-pill.show{display:block}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
-.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.extra{color:rgba(255,255,255,.6)}
+.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.extra,.hdr-chev.election{color:rgba(255,255,255,.6)}
 .hdr-chev.life{color:rgba(58,46,15,.55)}
 .hdr-chev.open{transform:rotate(180deg)}
 
@@ -883,6 +894,7 @@ padding:5px 12px;border-radius:999px}
 <span class="ppill ppill-newsletter" id="pill-newsletter" style="display:none">0 / 3 newsletter</span>
 <span class="ppill ppill-poll" id="pill-poll" style="display:none">0 / 3 audience poll</span>
 <span class="ppill ppill-std" id="pill-std">0 / 5 standard</span>
+<span class="ppill ppill-election" id="pill-election" style="display:none">0 / 1 election</span>
 <span class="ppill ppill-imp" id="pill-imp">0 / 1 impact</span>
 <span class="ppill ppill-life" id="pill-life">0 / 2 lifestyle</span>
 <div class="badges-row" id="badges-row"></div>
@@ -1081,7 +1093,18 @@ const PUB_TO_BRAND = {
 const CALENDAR_MOMENTS = [{"timeframe": "early June", "brands": ["WVB", "GM"], "moment": "VicGrid finalises REZs", "why": "Regional communities get certainty, can start framing a conversation towards benefits"}, {"timeframe": "15 June 2026", "brands": ["WVB", "GM"], "moment": "VicGrid releases community engagement and social value guidelines", "why": "Meant to make engagement better and streamline community benefits"}, {"timeframe": "Unknown but in early winter", "brands": ["WVB", "GM", "EM"], "moment": "BoM declares El Nino", "why": "El Nino is a natural phenomenon, but climate change amplifies the effects of El Nino weather patterns - longer droughts, extreme heat and heatwaves, chance of fire and less snow"}, {"timeframe": "11 June 2026", "brands": ["WVB", "GM", "EM", "NA"], "moment": "Electoral Further Amendment Bill 2026", "why": "Parliament has passed new electoral laws in an effort to restore political donation limits and transparency, after a High Court decision left the state without any regulatory framework governing campaign finance just months out from the next election."}, {"timeframe": "End of June", "brands": ["NA", "WVB", "GM"], "moment": "AEMO finalises ISP", "why": "The Integrated Systems Plan is the national roadmap we have for transitioning our energy grid from fossil fuels to renewables. It gets reviewed every couple of years given how fast tech and data demand is changing."}, {"timeframe": "W/C 15 June", "brands": ["WVB", "GM"], "moment": "National solar recycling scheme pilot", "why": "National pilot being announced this week after WA kicked off last week. For regions where large scale renewables are being built and the issue of recycling is used to protest against, this is important."}, {"timeframe": "July sometime", "brands": ["WVB", "GM"], "moment": "Victorian Access Regime", "why": "These are the new rules that developers will have to meet to be able to get access to the grid."}, {"timeframe": "Date TBC", "brands": ["NA", "WVB", "GM"], "moment": "Energy and Climate Ministers Meeting", "why": "Data centre rules advice being considered by AEMC"}, {"timeframe": "12 August 2026", "brands": ["GM", "WVB"], "moment": "National Renewables in Agriculture Conference", "why": "Loads of farming and renewables case studies all in the one place - Orange, NSW"}, {"timeframe": "18-19 August", "brands": ["GM"], "moment": "Gippsland New Energy Conference", "why": "Community-led event"}, {"timeframe": "18-20 August", "brands": ["WVB"], "moment": "First Nations Clean Energy Symposium", "why": ""}, {"timeframe": "October", "brands": ["WVB", "GM", "EM"], "moment": "Victorian bushfire season begins", "why": "Local bushfire impact reporting"}, {"timeframe": "10 November 2026", "brands": ["WVB", "GM", "EM"], "moment": "Deadline for enrolling to vote in the VIC election", "why": ""}, {"timeframe": "12 November 2026", "brands": ["WVB", "GM", "EM"], "moment": "Nominations close for political candidates", "why": "Note this is the final cut off, most candidates will nominate much earlier. Local impact reporting - who is running in your local area and what are they campaigning for?"}, {"timeframe": "18 November 2026", "brands": ["WVB", "GM", "EM"], "moment": "Early voting opens", "why": ""}, {"timeframe": "28 November 2026", "brands": ["NA", "WVB", "GM", "EM"], "moment": "Victorian state election", "why": "Vic Labor has been in office for more than a decade. Polling suggests it will be a very tight race with chance of a hung parliament. Seats will be won or lost on local issues."}, {"timeframe": "December", "brands": ["WVB"], "moment": "Western Renewables Link construction commences", "why": "Given construction of WRL is likely to commence soon after the election, expect a lot of protest against the project in the lead up. Nats and Libs and PHON have all said they will pause or scrap the project (and VNI West). The project is crucial for the renewables transition."}, {"timeframe": "Unknown 'late 2026'", "brands": ["WVB", "GM"], "moment": "VNI West EES public exhibition and review", "why": "VNI West needs to be built across western Vic to connect renewable projects to the grid. Public hearings on the 'environmental effects statement' will take place during this process."}];
 const LS_KEY = 'gz_planner_user';
 
-function getStoryDefs(pub) {
+// Victorian mastheads get one "Story" slot relabelled to "Election" from
+// the week of Monday 3 August 2026 onward (state election coverage ramp-up).
+// Permanent from that week forward — not a one-off swap — so it's keyed off
+// WEEK rather than a manual flag. National Account is never Victorian-flagged
+// here even though it covers Vic content nationally.
+const ELECTION_START_WEEK = '2026-08-03';
+const VICTORIAN_PUBS = ['West Vic Brolga — Wannon', 'West Vic Brolga — Ballarat', 'Gippsland Monitor', 'Eastern Melburnian'];
+function isVictorianElectionWeek(pub, week) {
+return VICTORIAN_PUBS.includes(pub) && !!week && week >= ELECTION_START_WEEK;
+}
+
+function getStoryDefs(pub, week) {
 const isNat = pub && pub.toLowerCase().includes('national');
 if (isNat) {
 // National Account: 12 distinct slots reflecting the full weekly remit
@@ -1103,6 +1126,7 @@ return [
 }
 // Local mastheads: 10 distinct, separately-trackable slots — itemised so
 // nothing (especially the video flips) can quietly slip through.
+const electionWeek = isVictorianElectionWeek(pub, week);
 return [
 {n:'01',t:'vidfirst',lbl:'Video-first'},
 {n:'02',t:'vidfirst',lbl:'Video-first'},
@@ -1111,12 +1135,12 @@ return [
 {n:'05',t:'std',lbl:'Story'},
 {n:'06',t:'std',lbl:'Story'},
 {n:'07',t:'std',lbl:'Story'},
-{n:'08',t:'std',lbl:'Story'},
+{n:'08', t: electionWeek ? 'election' : 'std', lbl: electionWeek ? 'Election' : 'Story'},
 {n:'09',t:'imp',lbl:'Impact'},
 {n:'10',t:'life',lbl:'Lifestyle / Culture'},
 ];
 }
-let STORIES = getStoryDefs(null);
+let STORIES = getStoryDefs(null, '');
 
 // ── Card sort (Slot order / By day / By type) ──
 let CARD_SORT = localStorage.getItem('gz_card_sort') || 'default';
@@ -1374,7 +1398,7 @@ document.getElementById('app').style.display = 'block';
 document.getElementById('hdr-reporter').textContent = USER.name;
 document.getElementById('hdr-pub').textContent = USER.pub;
 document.getElementById('hdr-week').textContent = formatWeek(WEEK);
-STORIES = getStoryDefs(USER.pub);
+STORIES = getStoryDefs(USER.pub, WEEK);
 // Push state so back button doesn't sign out
 if (history.state !== 'app') {
 history.pushState('app', '', window.location.pathname);
@@ -1446,6 +1470,10 @@ toggleWeekBanner();
 async function loadStories() {
 const container = document.getElementById('stories-container');
 container.innerHTML = `<div class="loading-screen"><div class="loading-spinner"></div><div class="loading-text">Loading your stories...</div></div>`;
+// Recompute STORIES here too (not just at login) — WEEK can change via the
+// arrow nav / week banner without a fresh showApp() call, and the Election
+// slot depends on which week is active.
+STORIES = getStoryDefs(USER.pub, WEEK);
 try {
 const rows = await supaFetch('GET',
 `${TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=*`
@@ -2844,6 +2872,7 @@ const vfIdx   = typeIdx('vidfirst');
 const flipIdx = typeIdx('vidflip');
 const stdIdx  = typeIdx('std');
 const impIdx  = typeIdx('imp');
+const electIdx = typeIdx('election');
 const lifeIdx = typeIdx('life');
 const l2nIdx  = typeIdx('l2n');
 const origIdx = typeIdx('original');
@@ -2853,6 +2882,7 @@ const vf    = vfIdx.filter(i => stories[i].filed).length;
 const flip  = flipIdx.filter(i => stories[i].filed).length;
 const std   = stdIdx.filter(i => stories[i].filed).length;
 const imp   = impIdx.filter(i => stories[i].filed).length;
+const elect = electIdx.filter(i => stories[i].filed).length;
 const life  = lifeIdx.filter(i => stories[i].filed).length;
 const l2n   = l2nIdx.filter(i => stories[i].filed).length;
 const orig  = origIdx.filter(i => stories[i].filed).length;
@@ -2920,6 +2950,11 @@ const pillImp = document.getElementById('pill-imp');
 if (pillImp) {
 pillImp.style.display = impIdx.length ? 'inline-flex' : 'none';
 pillImp.textContent = imp + ' / ' + impIdx.length + ' impact';
+}
+const pillElection = document.getElementById('pill-election');
+if (pillElection) {
+pillElection.style.display = electIdx.length ? 'inline-flex' : 'none';
+pillElection.textContent = elect + ' / ' + electIdx.length + ' election';
 }
 const lifeLabel = (USER && USER.pub && USER.pub.toLowerCase().includes('national')) ? 'youtube / podcast' : 'lifestyle';
 const pillLife = document.getElementById('pill-life');
