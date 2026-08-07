@@ -9,6 +9,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,6 +128,7 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .ppill-newsletter{background:#EEEEEE;color:#555;border-color:#DADADA}
 .ppill-poll{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
 .ppill-election{background:#2B2F77;color:#fff;border-color:#20235C}
+.ppill-editorial{background:#E9F2EC;color:#1E7A46;border-color:#B5D9C1}
 
 /* ── WEEK PICKER BANNER ── */
 .dupe-warning{background:#FFF4E5;border-bottom:1px solid #F0C36D;color:#7A4E00;padding:.75rem 2rem;font-size:13px;font-weight:600;text-align:center}
@@ -147,6 +149,11 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .sort-btn.active{background:var(--blue,#0000EE);border-color:var(--blue,#0000EE);color:#fff}
 
 /* ── To-do panel ── */
+.positioning-banner{max-width:1400px;margin:1.25rem auto 0;padding:0 2rem}
+.positioning-inner{background:var(--ink,#111);border-radius:14px;padding:20px 24px;border-left:4px solid #1E7A46}
+.positioning-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#7FBF97;margin-bottom:9px}
+.positioning-copy{font-size:17px;line-height:1.5;font-weight:500;color:#F4F4F2;margin:0;max-width:70ch}
+@media(max-width:600px){.positioning-copy{font-size:15px}.positioning-inner{padding:16px 18px}}
 .todo-panel{max-width:1400px;margin:.75rem auto 0;padding:0 2rem}
 .todo-panel-inner{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
 .todo-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none}
@@ -244,6 +251,7 @@ transition:background .35s ease, color .35s ease}
 .card-hdr.poll{background:#F4F5FB}
 .card-hdr.newsletter{background:#F4F4F4}
 .card-hdr.election{background:#ECEEF7}
+.card-hdr.editorial{background:#E9F2EC}
 .card-hdr.std.has-content{background:#1C1C1C}
 .card-hdr.std.has-content{background:var(--blue)}
 .card-hdr.imp.has-content{background:#D9492E}
@@ -256,6 +264,7 @@ transition:background .35s ease, color .35s ease}
 .card-hdr.newsletter.has-content{background:#787878}
 .card-hdr.poll.has-content{background:var(--blue)}
 .card-hdr.election.has-content{background:#2B2F77}
+.card-hdr.editorial.has-content{background:#1E7A46}
 
 .hdr-num{font-size:32px;font-weight:600;line-height:1;min-width:42px;transition:color .35s ease}
 /* empty num colours (muted) */
@@ -272,12 +281,14 @@ transition:background .35s ease, color .35s ease}
 .hdr-num.newsletter{color:#CCC}
 .hdr-num.extra{color:#fff}
 .hdr-num.election{color:#AEB3E8}
+.hdr-num.editorial{color:#8FBFA0}
 /* filled num colours */
 .card-hdr.has-content .hdr-num.std,.card-hdr.has-content .hdr-num.l2n,.card-hdr.has-content .hdr-num.vidfirst,.card-hdr.has-content .hdr-num.poll{color:#fff}
 .card-hdr.has-content .hdr-num.imp{color:#FFE0D6}
 .card-hdr.has-content .hdr-num.vidflip,.card-hdr.has-content .hdr-num.original,.card-hdr.has-content .hdr-num.newsletter{color:#fff}
 .card-hdr.has-content .hdr-num.life{color:#3A2E0F}
 .card-hdr.has-content .hdr-num.election{color:#D6D9F7}
+.card-hdr.has-content .hdr-num.editorial{color:#D6EEDD}
 
 .hdr-info{flex:1;min-width:0}
 .hdr-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;transition:color .35s ease}
@@ -295,12 +306,14 @@ transition:background .35s ease, color .35s ease}
 .hdr-type.poll{color:#A7B0D8}
 .hdr-type.extra{color:rgba(255,255,255,.7)}
 .hdr-type.election{color:#8085C4}
+.hdr-type.editorial{color:#3E9B62}
 .card-hdr.has-content .hdr-type.std,.card-hdr.has-content .hdr-type.l2n,.card-hdr.has-content .hdr-type.vidfirst{color:#999}
 .card-hdr.has-content .hdr-type.imp{color:#FFCCBB}
 .card-hdr.has-content .hdr-type.vidflip,.card-hdr.has-content .hdr-type.original,.card-hdr.has-content .hdr-type.newsletter{color:#DDD}
 .card-hdr.has-content .hdr-type.life{color:#5C4A18}
 .card-hdr.has-content .hdr-type.poll{color:#AABBFF}
 .card-hdr.has-content .hdr-type.election{color:#C0C3F0}
+.card-hdr.has-content .hdr-type.editorial{color:#BFE6CC}
 
 .hdr-preview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;transition:color .35s ease}
 /* empty preview colours */
@@ -317,12 +330,14 @@ transition:background .35s ease, color .35s ease}
 .hdr-preview.poll{color:#9AA5D0}
 .hdr-preview.extra{color:rgba(255,255,255,.55)}
 .hdr-preview.election{color:#9296D0}
+.hdr-preview.editorial{color:#5FA97E}
 .card-hdr.has-content .hdr-preview.std,.card-hdr.has-content .hdr-preview.l2n,.card-hdr.has-content .hdr-preview.vidfirst{color:#999}
 .card-hdr.has-content .hdr-preview.imp{color:#F5D0C4}
 .card-hdr.has-content .hdr-preview.vidflip,.card-hdr.has-content .hdr-preview.original,.card-hdr.has-content .hdr-preview.newsletter{color:#CCC}
 .card-hdr.has-content .hdr-preview.life{color:#5C4A18}
 .card-hdr.has-content .hdr-preview.poll{color:#CCDDFF}
 .card-hdr.has-content .hdr-preview.election{color:#D0D2F5}
+.card-hdr.has-content .hdr-preview.editorial{color:#C8EAD3}
 
 .hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .filed-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:none}
@@ -337,10 +352,11 @@ transition:background .35s ease, color .35s ease}
 .filed-pill.poll{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.extra{background:rgba(255,255,255,.2);color:#fff}
 .filed-pill.election{background:rgba(255,255,255,.22);color:#fff}
+.filed-pill.editorial{background:rgba(255,255,255,.22);color:#fff}
 .filed-pill.show{display:block}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
-.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.extra,.hdr-chev.election{color:rgba(255,255,255,.6)}
+.hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.extra,.hdr-chev.election,.hdr-chev.editorial{color:rgba(255,255,255,.6)}
 .hdr-chev.life{color:rgba(58,46,15,.55)}
 .hdr-chev.open{transform:rotate(180deg)}
 
@@ -890,7 +906,8 @@ padding:5px 12px;border-radius:999px}
 <span class="ppill ppill-vidfirst" id="pill-vidfirst" style="display:none">0 / 2 video-first</span>
 <span class="ppill ppill-vidflip" id="pill-vidflip" style="display:none">0 / 2 video flip</span>
 <span class="ppill ppill-l2n" id="pill-l2n" style="display:none">0 / 1 local to national</span>
-<span class="ppill ppill-original" id="pill-original" style="display:none">0 / 1 original</span>
+<span class="ppill ppill-editorial" id="pill-editorial" style="display:none">0 / 1 editorial focus</span>
+<span class="ppill ppill-original" id="pill-original" style="display:none">0 / 3 original</span>
 <span class="ppill ppill-newsletter" id="pill-newsletter" style="display:none">0 / 3 newsletter</span>
 <span class="ppill ppill-poll" id="pill-poll" style="display:none">0 / 3 audience poll</span>
 <span class="ppill ppill-std" id="pill-std">0 / 5 standard</span>
@@ -913,6 +930,12 @@ padding:5px 12px;border-radius:999px}
 ⚠️ Two stories are sharing the same slot number — one may be hidden. Contact Chef so this can be fixed in Supabase before either card is edited further.
 </div>
 <div id="stories-view">
+<div class="positioning-banner" id="positioning-banner" style="display:none">
+<div class="positioning-inner">
+<div class="positioning-eyebrow">The National Account — who this is for</div>
+<p class="positioning-copy">The National Account is for people who feel ripped off or like the system is broken. It&rsquo;s not heavily political, it&rsquo;s not for news nerds, and it has a voice that speaks to the fucked up things in the country.</p>
+</div>
+</div>
 <div class="todo-panel" id="todo-panel">
 <div class="todo-panel-inner">
 <div class="todo-panel-hdr" onclick="toggleTodoPanel()">
@@ -1107,21 +1130,20 @@ return VICTORIAN_PUBS.includes(pub) && !!week && week >= ELECTION_START_WEEK;
 function getStoryDefs(pub, week) {
 const isNat = pub && pub.toLowerCase().includes('national');
 if (isNat) {
-// National Account: 12 distinct slots reflecting the full weekly remit
-// across verticals, video, newsletters and audience polls.
+// National Account: 10 distinct slots reflecting the weekly remit —
+// two YouTube, an editorial focus, three originals, an impact story
+// and three audience-poll questions.
 return [
-{n:'01',t:'l2n',lbl:'Local to National'},
-{n:'02',t:'original',lbl:'Original'},
-{n:'03',t:'imp',lbl:'Impact'},
-{n:'04',t:'imp',lbl:'Impact'},
-{n:'05',t:'life',lbl:'YouTube / Podcast'},
-{n:'06',t:'life',lbl:'YouTube / Podcast'},
-{n:'07',t:'newsletter',lbl:'Newsletter'},
-{n:'08',t:'newsletter',lbl:'Newsletter'},
-{n:'09',t:'newsletter',lbl:'Newsletter'},
-{n:'10',t:'poll',lbl:'Audience Poll'},
-{n:'11',t:'poll',lbl:'Audience Poll'},
-{n:'12',t:'poll',lbl:'Audience Poll'},
+{n:'01',t:'life',lbl:'YouTube'},
+{n:'02',t:'life',lbl:'YouTube'},
+{n:'03',t:'editorial',lbl:'Editorial focus'},
+{n:'04',t:'original',lbl:'Original'},
+{n:'05',t:'original',lbl:'Original'},
+{n:'06',t:'original',lbl:'Original'},
+{n:'07',t:'imp',lbl:'Impact'},
+{n:'08',t:'poll',lbl:'Poll Question 1'},
+{n:'09',t:'poll',lbl:'Poll Question 2'},
+{n:'10',t:'poll',lbl:'Poll Question 3'},
 ];
 }
 // Local mastheads: 10 distinct, separately-trackable slots — itemised so
@@ -1929,7 +1951,14 @@ function renderGrid() {
 const container = document.getElementById('stories-container');
 container.innerHTML = '';
 
-// Base 8 story cards
+// Positioning banner — National Account only
+const posBanner = document.getElementById('positioning-banner');
+if (posBanner) {
+const isNat = USER && USER.pub && USER.pub.toLowerCase().includes('national');
+posBanner.style.display = isNat ? 'block' : 'none';
+}
+
+// Base story cards
 const grid = document.createElement('div');
 grid.className = 'stories-grid';
 sortStoryDefs(STORIES).forEach((s,i) => {
@@ -2875,6 +2904,7 @@ const impIdx  = typeIdx('imp');
 const electIdx = typeIdx('election');
 const lifeIdx = typeIdx('life');
 const l2nIdx  = typeIdx('l2n');
+const editIdx = typeIdx('editorial');
 const origIdx = typeIdx('original');
 const nlIdx   = typeIdx('newsletter');
 const pollIdx = typeIdx('poll');
@@ -2885,6 +2915,7 @@ const imp   = impIdx.filter(i => stories[i].filed).length;
 const elect = electIdx.filter(i => stories[i].filed).length;
 const life  = lifeIdx.filter(i => stories[i].filed).length;
 const l2n   = l2nIdx.filter(i => stories[i].filed).length;
+const edit  = editIdx.filter(i => stories[i].filed).length;
 const orig  = origIdx.filter(i => stories[i].filed).length;
 const nl    = nlIdx.filter(i => stories[i].filed).length;
 const poll  = pollIdx.filter(i => stories[i].filed).length;
@@ -2922,12 +2953,17 @@ pillFlip.textContent = flip + ' / ' + flipIdx.length + ' video flip';
 }
 // National Account's pills — only show when those types exist for this pub
 const pillL2n = document.getElementById('pill-l2n');
+const pillEdit = document.getElementById('pill-editorial');
 const pillOrig = document.getElementById('pill-original');
 const pillNl = document.getElementById('pill-newsletter');
 const pillPoll = document.getElementById('pill-poll');
 if (pillL2n) {
 pillL2n.style.display = l2nIdx.length ? 'inline-flex' : 'none';
 pillL2n.textContent = l2n + ' / ' + l2nIdx.length + ' local to national';
+}
+if (pillEdit) {
+pillEdit.style.display = editIdx.length ? 'inline-flex' : 'none';
+pillEdit.textContent = edit + ' / ' + editIdx.length + ' editorial focus';
 }
 if (pillOrig) {
 pillOrig.style.display = origIdx.length ? 'inline-flex' : 'none';
@@ -2956,7 +2992,7 @@ if (pillElection) {
 pillElection.style.display = electIdx.length ? 'inline-flex' : 'none';
 pillElection.textContent = elect + ' / ' + electIdx.length + ' election';
 }
-const lifeLabel = (USER && USER.pub && USER.pub.toLowerCase().includes('national')) ? 'youtube / podcast' : 'lifestyle';
+const lifeLabel = (USER && USER.pub && USER.pub.toLowerCase().includes('national')) ? 'youtube' : 'lifestyle';
 const pillLife = document.getElementById('pill-life');
 if (pillLife) {
 pillLife.style.display = lifeIdx.length ? 'inline-flex' : 'none';
