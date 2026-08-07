@@ -9,6 +9,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,6 +132,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rpill-original{background:#E0E0E0;color:#333;border-color:#C4C4C4}
 .rpill-newsletter{background:#EEEEEE;color:#555;border-color:#DADADA}
 .rpill-poll{background:var(--blue-lt);color:var(--blue-dk);border-color:#AABBEE}
+.rpill-editorial{background:#E9F2EC;color:#1E7A46;border-color:#B5D9C1}
 .rep-stories{padding:0}
 .story-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:0.5px solid var(--border)}
 .story-row:last-child{border-bottom:none}
@@ -146,6 +148,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dot-newsletter{background:#787878}
 .dot-poll{background:var(--blue)}
 .dot-election{background:#2B2F77}
+.dot-editorial{background:#1E7A46}
 .story-headline{font-size:13px;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-headline.empty{color:var(--grey-md);font-style:italic}
 .story-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -236,8 +239,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-card-hdr.original{background:#3A3A3A}
 .drill-card-hdr.newsletter{background:#787878}
 .drill-card-hdr.election{background:#2B2F77}
+.drill-card-hdr.editorial{background:#1E7A46}
 .drill-num{font-size:24px;font-weight:600;min-width:34px}
 .drill-num.std,.drill-num.imp,.drill-num.l2n,.drill-num.vidfirst,.drill-num.life,.drill-num.vidflip,.drill-num.original,.drill-num.newsletter,.drill-num.poll,.drill-num.election{color:#fff}
+.drill-num.editorial{color:#fff}
 .drill-type{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
 .drill-type.l2n,.drill-type.vidfirst{color:#999}
 .drill-type.std,.drill-type.poll{color:#AABBFF}
@@ -246,8 +251,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-type.vidflip{color:#D8DBFF}
 .drill-type.original,.drill-type.newsletter{color:#DDD}
 .drill-type.election{color:#C0C3F0}
+.drill-type.editorial{color:#BFE6CC}
 .drill-headline-hdr{font-size:13px;font-weight:500}
 .drill-headline-hdr.std,.drill-headline-hdr.imp,.drill-headline-hdr.l2n,.drill-headline-hdr.vidfirst,.drill-headline-hdr.life,.drill-headline-hdr.vidflip,.drill-headline-hdr.original,.drill-headline-hdr.newsletter,.drill-headline-hdr.poll,.drill-headline-hdr.election{color:#fff}
+.drill-headline-hdr.editorial{color:#fff}
 .drill-headline-hdr.empty{opacity:.4;font-style:italic;font-weight:400}
 .drill-filed-badge{margin-left:auto;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
 .drill-filed-badge.l2n,.drill-filed-badge.vidfirst{background:rgba(255,255,255,.15);color:#aaa}
@@ -256,6 +263,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-filed-badge.vidflip{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.original,.drill-filed-badge.newsletter{background:rgba(255,255,255,.15);color:#aaa}
 .drill-filed-badge.std,.drill-filed-badge.poll{background:rgba(255,255,255,.2);color:#fff}
+.drill-filed-badge.editorial{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.election{background:rgba(255,255,255,.22);color:#fff}
 .note-form{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
 .note-form textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical;min-height:64px;outline:none}
@@ -780,21 +788,20 @@ function getStoryDefs(pub, week) {
   if (week === undefined) week = WEEK;
   const isNat = pub && pub.toLowerCase().includes('national');
   if (isNat) {
-    // National Account: 12 distinct slots reflecting the full weekly remit
-    // across verticals, video, newsletters and audience polls.
+    // National Account: 10 distinct slots reflecting the weekly remit —
+    // two YouTube, an editorial focus, three originals, an impact story
+    // and three audience-poll questions.
     return [
-      {n:'01',t:'l2n',lbl:'Local to National'},
-      {n:'02',t:'original',lbl:'Original'},
-      {n:'03',t:'imp',lbl:'Impact'},
-      {n:'04',t:'imp',lbl:'Impact'},
-      {n:'05',t:'life',lbl:'YouTube / Podcast'},
-      {n:'06',t:'life',lbl:'YouTube / Podcast'},
-      {n:'07',t:'newsletter',lbl:'Newsletter'},
-      {n:'08',t:'newsletter',lbl:'Newsletter'},
-      {n:'09',t:'newsletter',lbl:'Newsletter'},
-      {n:'10',t:'poll',lbl:'Audience Poll'},
-      {n:'11',t:'poll',lbl:'Audience Poll'},
-      {n:'12',t:'poll',lbl:'Audience Poll'},
+      {n:'01',t:'life',lbl:'YouTube'},
+      {n:'02',t:'life',lbl:'YouTube'},
+      {n:'03',t:'editorial',lbl:'Editorial focus'},
+      {n:'04',t:'original',lbl:'Original'},
+      {n:'05',t:'original',lbl:'Original'},
+      {n:'06',t:'original',lbl:'Original'},
+      {n:'07',t:'imp',lbl:'Impact'},
+      {n:'08',t:'poll',lbl:'Poll Question 1'},
+      {n:'09',t:'poll',lbl:'Poll Question 2'},
+      {n:'10',t:'poll',lbl:'Poll Question 3'},
     ];
   }
   // Local mastheads: 10 distinct, separately-trackable slots
@@ -1322,7 +1329,7 @@ function buildRepCard(r) {
   const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
   const isFiledAt = i => !!(data[repDefs[i].n] && data[repDefs[i].n].filed);
   const vfIdx = typeIdx('vidfirst'), flipIdx = typeIdx('vidflip'), stdIdx = typeIdx('std'), impIdx = typeIdx('imp'), lifeIdx = typeIdx('life');
-  const l2nIdx = typeIdx('l2n'), origIdx = typeIdx('original'), nlIdx = typeIdx('newsletter'), pollIdx = typeIdx('poll');
+  const l2nIdx = typeIdx('l2n'), origIdx = typeIdx('original'), nlIdx = typeIdx('newsletter'), pollIdx = typeIdx('poll'), editIdx = typeIdx('editorial');
   const vf   = vfIdx.filter(isFiledAt).length;
   const flip = flipIdx.filter(isFiledAt).length;
   const std  = stdIdx.filter(isFiledAt).length;
@@ -1332,6 +1339,7 @@ function buildRepCard(r) {
   const orig = origIdx.filter(isFiledAt).length;
   const nl   = nlIdx.filter(isFiledAt).length;
   const poll = pollIdx.filter(isFiledAt).length;
+  const edit = editIdx.filter(isFiledAt).length;
 
   const card = document.createElement('div');
   card.className = 'rep-card';
@@ -1354,9 +1362,10 @@ function buildRepCard(r) {
       </div>`;
   }).join('');
 
-  const lifeLabel = r.pub.toLowerCase().includes('national') ? 'youtube/podcast' : 'lifestyle';
+  const lifeLabel = r.pub.toLowerCase().includes('national') ? 'youtube' : 'lifestyle';
   const pillsHtml = [
     l2nIdx.length  ? `<span class="rpill rpill-l2n">${l2n}/${l2nIdx.length} local to nat'l</span>` : '',
+    editIdx.length ? `<span class="rpill rpill-editorial">${edit}/${editIdx.length} editorial focus</span>` : '',
     origIdx.length ? `<span class="rpill rpill-original">${orig}/${origIdx.length} original</span>` : '',
     vfIdx.length   ? `<span class="rpill rpill-vidfirst">${vf}/${vfIdx.length} video-first</span>` : '',
     flipIdx.length ? `<span class="rpill rpill-vidflip">${flip}/${flipIdx.length} video flip</span>` : '',
