@@ -11,6 +11,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,6 +159,16 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .positioning-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#7FBF97;margin-bottom:9px}
 .positioning-copy{font-size:17px;line-height:1.5;font-weight:500;color:#F4F4F2;margin:0;max-width:70ch}
 @media(max-width:600px){.positioning-copy{font-size:15px}.positioning-inner{padding:16px 18px}}
+.storycheck-banner{max-width:1400px;margin:1.25rem auto 0;padding:0 2rem}
+.storycheck-inner{background:var(--ink,#111);border-radius:14px;padding:22px 26px 24px;border-left:4px solid #1E7A46}
+.storycheck-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#7FBF97;margin-bottom:9px}
+.storycheck-lead{font-size:17px;line-height:1.45;font-weight:600;color:#F4F4F2;margin:0 0 16px;max-width:70ch}
+.storycheck-list{list-style:none;margin:0;padding:0;display:grid;gap:11px;max-width:78ch}
+.storycheck-item{display:flex;gap:13px;align-items:baseline}
+.storycheck-num{flex:0 0 20px;font-weight:800;color:#7FBF97;font-variant-numeric:tabular-nums;font-size:15px}
+.storycheck-text{font-size:15px;line-height:1.5;color:#F4F4F2}
+.storycheck-term{font-weight:700;color:#FFFFFF}
+@media(max-width:600px){.storycheck-inner{padding:16px 18px}.storycheck-lead{font-size:15px}.storycheck-text{font-size:14px}}
 .todo-panel{max-width:1400px;margin:.75rem auto 0;padding:0 2rem}
 .todo-panel-inner{background:#fff;border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
 .todo-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none}
@@ -940,6 +951,21 @@ padding:5px 12px;border-radius:999px}
 <div class="positioning-inner">
 <div class="positioning-eyebrow">The National Account — who this is for</div>
 <p class="positioning-copy">The National Account is for people who feel ripped off or like the system is broken. It&rsquo;s not heavily political, it&rsquo;s not for news nerds, and it has a voice that speaks to the fucked up things in the country.</p>
+</div>
+</div>
+<div class="storycheck-banner" id="storycheck-banner" style="display:none">
+<div class="storycheck-inner">
+<div class="storycheck-eyebrow">Eastern Melburnian — Story check</div>
+<p class="storycheck-lead">Two or more of these criteria, you&rsquo;re onto something.</p>
+<ol class="storycheck-list">
+<li class="storycheck-item"><span class="storycheck-num">1</span><span class="storycheck-text"><span class="storycheck-term">Timeliness</span> &mdash; it&rsquo;s new, or newly known. Something happened, changed, or was just revealed.</span></li>
+<li class="storycheck-item"><span class="storycheck-num">2</span><span class="storycheck-text"><span class="storycheck-term">Impact</span> &mdash; it affects people. The more people, or the bigger the effect on them, the stronger.</span></li>
+<li class="storycheck-item"><span class="storycheck-num">3</span><span class="storycheck-text"><span class="storycheck-term">Proximity</span> &mdash; it&rsquo;s close to your readers, by place or by connection.</span></li>
+<li class="storycheck-item"><span class="storycheck-num">4</span><span class="storycheck-text"><span class="storycheck-term">Prominence</span> &mdash; it involves someone or something well-known.</span></li>
+<li class="storycheck-item"><span class="storycheck-num">5</span><span class="storycheck-text"><span class="storycheck-term">Conflict</span> &mdash; there&rsquo;s a disagreement, a fight, a tension, two sides.</span></li>
+<li class="storycheck-item"><span class="storycheck-num">6</span><span class="storycheck-text"><span class="storycheck-term">Novelty</span> &mdash; it&rsquo;s unusual, rare, surprising, or weird.</span></li>
+<li class="storycheck-item"><span class="storycheck-num">7</span><span class="storycheck-text"><span class="storycheck-term">Human interest</span> &mdash; there&rsquo;s a real person at the centre that readers can feel something about.</span></li>
+</ol>
 </div>
 </div>
 <div class="todo-panel" id="todo-panel">
@@ -1962,6 +1988,13 @@ const posBanner = document.getElementById('positioning-banner');
 if (posBanner) {
 const isNat = USER && USER.pub && USER.pub.toLowerCase().includes('national');
 posBanner.style.display = isNat ? 'block' : 'none';
+}
+
+// Story-check banner — Eastern Melburnian only
+const scBanner = document.getElementById('storycheck-banner');
+if (scBanner) {
+const isEM = USER && USER.pub === 'Eastern Melburnian';
+scBanner.style.display = isEM ? 'block' : 'none';
 }
 
 // Base story cards
