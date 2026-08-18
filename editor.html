@@ -11,6 +11,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -211,25 +212,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .wr-loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:3rem 0;color:var(--grey-md);font-size:14px}
 .wr-spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:wrspin 0.8s linear infinite}
 @keyframes wrspin{to{transform:rotate(360deg)}}
-.wr-section{background:#fff;border:0.5px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem}
-.wr-section-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--grey-md);margin-bottom:10px}
-.wr-network-summary{font-size:14px;line-height:1.6;color:var(--ink)}
+.wr-err{background:#FBEEEA;border:0.5px solid #F0C0A8;border-radius:10px;padding:1rem;color:#B8391F;font-size:13px}
+
+/* ── Weekly Review: network summary card ── */
+.wr-net-card{background:#fff;border:0.5px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.wr-net-stats{display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1rem;padding-bottom:1rem;border-bottom:0.5px solid var(--border)}
+.wr-net-stat{display:flex;flex-direction:column;gap:2px}
+.wr-net-stat-num{font-size:22px;font-weight:700;color:var(--ink);line-height:1}
+.wr-net-stat-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--grey-md)}
+.wr-net-divider{width:1px;background:var(--border);align-self:stretch}
+.wr-section-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-md);margin-bottom:10px}
 .wr-bullets{margin:0;padding-left:1.1rem;list-style:disc}
 .wr-bullets li{font-size:13.5px;line-height:1.5;color:var(--ink);margin-bottom:6px}
 .wr-bullets li:last-child{margin-bottom:0}
-.wr-reporter-card{border-bottom:0.5px solid var(--border);padding:14px 0}
-.wr-reporter-card:last-child{border-bottom:none}
-.wr-reporter-name{font-size:15px;font-weight:700;color:var(--ink)}
-.wr-reporter-pub{font-size:12px;color:var(--grey-md);margin-bottom:6px}
-.wr-reporter-note{font-size:13.5px;line-height:1.55;color:var(--ink)}
-.wr-reporter-card .wr-bullets{margin-top:6px}
-.wr-gari-count{font-size:11px;color:var(--grey-md);margin-top:6px}
-.wr-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-right:6px;margin-bottom:6px}
+
+/* ── Weekly Review: reporter grid ── */
+.wr-reporter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-bottom:1rem}
+.wr-rep-card{background:#fff;border:0.5px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:0}
+.wr-rep-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.wr-rep-name{font-size:14px;font-weight:700;color:var(--ink)}
+.wr-rep-pub{font-size:11px;color:var(--grey-md);margin-top:1px}
+.wr-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;flex-shrink:0}
 .wr-tag-up{background:#E0F0E0;color:#2C6B2C}
 .wr-tag-down{background:#FBEEEA;color:#B8552F}
 .wr-tag-steady{background:var(--grey-lt);color:var(--grey-dk)}
 .wr-tag-quiet{background:#EEEEEE;color:#888}
-.wr-err{background:#FBEEEA;border:0.5px solid #F0C0A8;border-radius:10px;padding:1rem;color:#B8391F;font-size:13px}
+
+/* Sparkline: 4 week squares */
+.wr-spark{display:flex;align-items:center;gap:3px;margin-bottom:10px}
+.wr-spark-week{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;position:relative;cursor:default}
+.wr-spark-week.full{background:var(--blue);color:#fff}
+.wr-spark-week.partial{background:var(--blue-lt);color:var(--blue-dk)}
+.wr-spark-week.zero{background:var(--grey-lt);color:var(--grey-md)}
+.wr-spark-week.current{outline:2px solid var(--ink);outline-offset:1px}
+.wr-spark-label{font-size:10px;color:var(--grey-md);margin-left:6px}
+
+/* Filing rate inline */
+.wr-rate-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.wr-rate-bar-wrap{flex:1;height:5px;background:var(--grey-lt);border-radius:3px;overflow:hidden}
+.wr-rate-bar{height:100%;border-radius:3px;background:var(--blue)}
+.wr-rate-pct{font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap}
+
+/* Coverage bullets */
+.wr-rep-bullets{margin:0;padding-left:1rem;list-style:disc}
+.wr-rep-bullets li{font-size:12.5px;line-height:1.5;color:var(--ink);margin-bottom:5px}
+.wr-rep-bullets li:last-child{margin-bottom:0}
+
+/* GARI sub-section */
+.wr-gari-block{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)}
+.wr-gari-head{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-md);margin-bottom:6px}
+.wr-gari-modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.wr-gari-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--blue-lt);color:var(--blue-dk);white-space:nowrap}
+.wr-gari-pill.zero{background:var(--grey-lt);color:var(--grey-md)}
+.wr-gari-rate{font-size:11px;color:var(--ink);margin-bottom:5px}
+.wr-gari-rate span{font-weight:700}
+.wr-gari-flag{font-size:12px;color:#7A3800;background:#FFF4E0;border-left:3px solid #F0A030;border-radius:0 6px 6px 0;padding:5px 9px;line-height:1.45;margin-top:4px}
+
+/* Type gap flags */
+.wr-type-gaps{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.wr-type-gap-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;background:#FFF4E0;color:#7A3800;border:0.5px solid #F0C878}
 .drill-name{font-size:24px;font-weight:600;color:var(--ink)}
 .drill-pub{font-size:14px;color:var(--grey-md);margin-top:2px}
 .drill-stories{display:flex;flex-direction:column;gap:10px}
@@ -2823,9 +2864,10 @@ async function generateWeeklyReview() {
     // with enough text to make this worthwhile).
     const themePromises = reporterStats.map(async stat => {
       const gariSessions = gariByReporter[normaliseName(stat.name)] || [];
-      if (stat.totalFiled < 2 && gariSessions.length === 0) return { ...stat, themes: null, gariSessions };
+      const gariStats = computeGariStats(gariSessions);
+      if (stat.totalFiled < 2 && gariSessions.length === 0) return { ...stat, themes: null, gariSessions, gariStats };
       const themes = await extractThemes(stat, gariSessions);
-      return { ...stat, themes, gariSessions };
+      return { ...stat, themes, gariSessions, gariStats };
     });
     const statsWithThemes = await Promise.all(themePromises);
 
@@ -2940,7 +2982,46 @@ function computeReporterStats(reporterData, weeks) {
     selfTotal: selfRows.length,
     selfFiled,
     textSamples,
+    // gariSessions injected later in generateWeeklyReview after fetch
   };
+}
+
+// Break down a reporter's GARI sessions (already fetched) into mode counts
+// and publishable rate. Called after gariByReporter is available.
+function computeGariStats(gariSessions) {
+  const sessions = gariSessions || [];
+  const modeCounts = { feedback: 0, scriptfeedback: 0, quotes: 0, ideas: 0, expert: 0, other: 0 };
+  const modeLabels = { feedback: 'Draft feedback', scriptfeedback: 'Script feedback', quotes: 'Quote selector', ideas: 'Story ideas', expert: 'Find an expert', other: 'Other' };
+
+  sessions.forEach(s => {
+    const m = (s.mode || '').toLowerCase().trim();
+    if (m === 'feedback') modeCounts.feedback++;
+    else if (m === 'scriptfeedback') modeCounts.scriptfeedback++;
+    else if (m === 'quotes') modeCounts.quotes++;
+    else if (m === 'ideas' || m === 'storyideas') modeCounts.ideas++;
+    else if (m === 'expert' || m === 'findexpert') modeCounts.expert++;
+    else modeCounts.other++;
+  });
+
+  // Publishable rate: sessions with a parseable VERDICT line in their output.
+  // The GARI output format includes "VERDICT: Publishable" or "VERDICT: Not publishable".
+  const feedbackSessions = sessions.filter(s => {
+    const m = (s.mode || '').toLowerCase();
+    return m === 'feedback' || m === 'scriptfeedback';
+  });
+  let publishableCount = 0;
+  let verdictCount = 0;
+  feedbackSessions.forEach(s => {
+    const out = s.output || '';
+    const match = out.match(/VERDICT:\s*(publishable|not publishable)/i);
+    if (match) {
+      verdictCount++;
+      if (match[1].toLowerCase() === 'publishable') publishableCount++;
+    }
+  });
+  const publishableRate = verdictCount > 0 ? publishableCount / verdictCount : null;
+
+  return { modeCounts, modeLabels, publishableRate, verdictCount, totalSessions: sessions.length };
 }
 
 // Calls the Netlify Function proxy, which forwards to Claude with the
@@ -3042,20 +3123,26 @@ ${sampleText}
 GARI coaching sessions (feedback GARI gave this reporter on their drafts/scripts):
 ${gariText}
 
-Identify, in 3-5 short bullet points max:
-- Recurring themes or beats this reporter has been covering (e.g. "consistently covering local council planning disputes")
-- Any single story or topic that's dominated multiple weeks (this could be a legitimate ongoing investigation, not necessarily a problem — phrase it as an observation)
-- Any named sources, organisations, or people who appear repeatedly across stories (could indicate a strong beat contact OR over-reliance on one source — note it neutrally either way)
-- Any editorial weakness GARI has flagged MORE THAN ONCE across these sessions (e.g. missing local voices, over-reliance on institutional sources, headline/lede issues) — only mention something here if it genuinely recurs, not a single one-off note
-- Any editorial strength or improvement GARI has noted, especially if it shows up more than once (e.g. "lede instinct has clicked", consistently strong sourcing)
+Identify two things:
 
-Keep it factual and short. Do not speculate about the reporter's motivation, effort, or character — only describe what topics/sources/editorial patterns actually recur in the text. If nothing notable stands out in either source, say so briefly.
+1. COVERAGE_BULLETS (2-4 items): Factual observations about what this reporter has been covering and any notable sourcing patterns.
+   - Recurring themes or beats (e.g. "consistently covering local council planning disputes")
+   - Any single story dominating multiple weeks (observation only — could be a legitimate ongoing investigation)
+   - Any named sources or organisations appearing repeatedly across multiple stories (note neutrally: could be a strong contact OR over-reliance)
+   - Any editorial strength GARI has noted more than once (e.g. "lede instinct has clicked")
 
-Respond with plain bullet points only, no preamble, no markdown headers.`;
+2. RECURRING_FLAG (one short sentence, or null): The single most important editorial weakness GARI has flagged across MORE THAN ONE session. Only populate this if a genuine recurring gap is clearly present — do not invent one. If GARI has flagged nothing more than once, or has flagged nothing at all, return null. This appears as a distinct callout for the editor, so it must be specific (e.g. "Missing local voice — GARI flagged this in 3 of 4 sessions reviewed" not "could improve sourcing").
+
+Keep everything factual. Do not speculate about motivation, effort, or character.
+
+Respond in this exact JSON structure, no markdown fences:
+{ "coverage_bullets": ["...", "..."], "recurring_flag": "..." or null }`;
 
   try {
     const result = await callClaudeProxy('', prompt, 600);
-    return result.trim();
+    const cleaned = result.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    return { coverage_bullets: parsed.coverage_bullets || [], recurring_flag: parsed.recurring_flag || null };
   } catch (e) {
     console.warn('Theme extraction failed for', stat.name, e);
     return null;
@@ -3068,6 +3155,12 @@ async function synthesiseReview(statsWithThemes, oldest, latest, windowWeeks) {
       .map(([t, v]) => `${v.label}: ${v.filed}/${v.total * windowWeeks}`)
       .join(', ');
     const gariCount = (s.gariSessions || []).length;
+    const themesText = s.themes
+      ? (Array.isArray(s.themes.coverage_bullets)
+          ? s.themes.coverage_bullets.join(' | ')
+          : String(s.themes))
+      : 'not enough data to assess';
+    const recurringFlag = s.themes && s.themes.recurring_flag ? s.themes.recurring_flag : 'none identified';
     return `${s.name} (${s.pub})
 - This week: filed ${s.thisWeekFiled}/${s.thisWeekTotal} slots
 - Prior ${windowWeeks - 1} week(s) before that: averaged ${s.priorWeeksAvg.toFixed(1)} filed per week (${s.priorWeeksFiled} total)
@@ -3078,7 +3171,8 @@ async function synthesiseReview(statsWithThemes, oldest, latest, windowWeeks) {
 - GARI coaching sessions logged this period: ${gariCount}
 - By story type: ${typeLines}
 - Assigned stories filed: ${s.assignedFiled}/${s.assignedTotal}; self-initiated filed: ${s.selfFiled}/${s.selfTotal}
-- Themes in their coverage and editorial patterns (from Planner entries and GARI feedback): ${s.themes || 'not enough data to assess'}`;
+- Coverage themes and sourcing patterns: ${themesText}
+- Recurring GARI editorial flag (if any): ${recurringFlag}`;
   };
 
   const toneRules = `Important tone rules:
@@ -3157,34 +3251,191 @@ function renderWeeklyReview(wrData) {
   document.getElementById('wr-pdf-btn').disabled = false;
 
   const tagClass = { up: 'wr-tag-up', down: 'wr-tag-down', steady: 'wr-tag-steady', quiet: 'wr-tag-quiet' };
-  const tagLabel = { up: 'Trending up', down: 'Worth a check-in', steady: 'Steady', quiet: 'Not using planner' };
+  const tagIcon  = { up: '↑', down: '↓', steady: '→', quiet: '–' };
+  const tagLabel = { up: 'Up', down: 'Check in', steady: 'Steady', quiet: 'Quiet' };
+
+  // ── Network-level quick stats ──────────────────────────────────────
+  const stats = wrData.stats || [];
+  const totalFiled   = stats.reduce((a, s) => a + (s.thisWeekFiled || 0), 0);
+  const totalSlots   = stats.reduce((a, s) => a + (s.thisWeekTotal || 0), 0);
+  const networkRate  = totalSlots ? Math.round((totalFiled / totalSlots) * 100) : 0;
+  const totalGari    = stats.reduce((a, s) => a + ((s.gariSessions || []).length), 0);
+  // Impact filed/total: typeCounts.total is per-week slots, multiply by windowWeeks
+  const windowWeeks = (wrData.period && wrData.stats && wrData.stats[0] && wrData.stats[0].weeklyFiled)
+    ? wrData.stats[0].weeklyFiled.length : 4;
+  const totalImpact  = stats.reduce((a, s) => {
+    const tc = s.typeCounts || {};
+    return a + Object.values(tc).filter(v => v.label && v.label.toLowerCase().includes('impact')).reduce((x, v) => x + v.filed, 0);
+  }, 0);
+  const totalImpactSlots = stats.reduce((a, s) => {
+    const tc = s.typeCounts || {};
+    return a + Object.values(tc).filter(v => v.label && v.label.toLowerCase().includes('impact')).reduce((x, v) => x + v.total, 0);
+  }, 0) * windowWeeks;
+
+  const netStatHtml = `
+    <div class="wr-net-stats">
+      <div class="wr-net-stat">
+        <div class="wr-net-stat-num">${totalFiled}/${totalSlots}</div>
+        <div class="wr-net-stat-label">Filed this week</div>
+      </div>
+      <div class="wr-net-divider"></div>
+      <div class="wr-net-stat">
+        <div class="wr-net-stat-num">${networkRate}%</div>
+        <div class="wr-net-stat-label">Network rate</div>
+      </div>
+      <div class="wr-net-divider"></div>
+      <div class="wr-net-stat">
+        <div class="wr-net-stat-num">${totalGari}</div>
+        <div class="wr-net-stat-label">GARI sessions (4 wks)</div>
+      </div>
+      <div class="wr-net-divider"></div>
+      <div class="wr-net-stat">
+        <div class="wr-net-stat-num">${totalImpact}/${totalImpactSlots > 0 ? totalImpactSlots * (wrData.stats[0] ? 1 : 1) : '?'}</div>
+        <div class="wr-net-stat-label">Impact filed (4 wks)</div>
+      </div>
+    </div>`;
 
   const bulletList = (bullets) => `<ul class="wr-bullets">${(bullets || []).map(b => `<li>${esc(b)}</li>`).join('')}</ul>`;
 
+  // ── Per-reporter cards ─────────────────────────────────────────────
+  const weeks = getLastNWeeks(4);
   const reporterCards = (wrData.narrative.reporters || []).map(rep => {
     const cls = tagClass[rep.tag] || 'wr-tag-steady';
+    const ico = tagIcon[rep.tag]  || '→';
     const lbl = tagLabel[rep.tag] || 'Steady';
-    const stat = (wrData.stats || []).find(s => s.name === rep.name);
-    const gariCount = stat ? (stat.gariSessions || []).length : null;
-    const gariLine = gariCount !== null
-      ? `<div class="wr-gari-count">${gariCount} GARI coaching session${gariCount === 1 ? '' : 's'} logged this period</div>`
-      : '';
+    const stat = stats.find(s => s.name === rep.name);
+
+    // Sparkline: 4 squares, last one = this week
+    let sparkHtml = '';
+    if (stat && stat.weeklyFiled) {
+      const wf = stat.weeklyFiled;
+      const wt = stat.weeklyTotal || [];
+      sparkHtml = '<div class="wr-spark">';
+      wf.forEach((count, i) => {
+        const total = wt[i] || 0;
+        const isCurrent = i === wf.length - 1;
+        let cls2 = 'zero';
+        if (count > 0 && total > 0) {
+          cls2 = count >= total ? 'full' : 'partial';
+        }
+        const tip = weeks[i] ? `${weeks[i]}: ${count}/${total}` : `${count}/${total}`;
+        sparkHtml += `<div class="wr-spark-week ${cls2}${isCurrent ? ' current' : ''}" title="${esc(tip)}">${count}</div>`;
+      });
+      // Rate label after squares
+      const rate = stat.totalSlots ? Math.round(stat.overallRate * 100) : 0;
+      sparkHtml += `<span class="wr-spark-label">${rate}% (4 wk)</span>`;
+      sparkHtml += '</div>';
+    }
+
+    // This week's rate bar
+    let rateBarHtml = '';
+    if (stat) {
+      const tw = stat.thisWeekFiled || 0;
+      const tt = stat.thisWeekTotal || 1;
+      const pct = Math.round((tw / tt) * 100);
+      const barColor = pct >= 80 ? 'var(--blue)' : pct >= 50 ? '#F0A030' : '#CC3300';
+      rateBarHtml = `
+        <div class="wr-rate-row">
+          <div class="wr-rate-bar-wrap"><div class="wr-rate-bar" style="width:${pct}%;background:${barColor}"></div></div>
+          <div class="wr-rate-pct">${tw}/${tt} this week</div>
+        </div>`;
+    }
+
+    // Type gap flags: any slot type with 0 filed across the whole period
+    let typeGapsHtml = '';
+    if (stat && stat.typeCounts) {
+      const gaps = Object.values(stat.typeCounts)
+        .filter(v => v.total > 0 && v.filed === 0)
+        .map(v => v.label);
+      if (gaps.length) {
+        typeGapsHtml = '<div class="wr-type-gaps">' +
+          gaps.map(g => `<span class="wr-type-gap-pill">0 ${esc(g)}</span>`).join('') +
+          '</div>';
+      }
+    }
+
+    // Coverage bullets from themes
+    let coverageBulletsHtml = '';
+    if (rep.note_bullets && rep.note_bullets.length) {
+      coverageBulletsHtml = `<ul class="wr-rep-bullets">${rep.note_bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>`;
+    }
+
+    // GARI sub-section
+    let gariBlockHtml = '';
+    if (stat && stat.gariStats) {
+      const gs = stat.gariStats;
+      const modeOrder = ['feedback','scriptfeedback','quotes','ideas','expert','other'];
+      const modeShort = { feedback:'Draft FB', scriptfeedback:'Script FB', quotes:'Quote selector', ideas:'Story ideas', expert:'Find expert', other:'Other' };
+      const modePills = modeOrder
+        .filter(m => gs.modeCounts[m] > 0)
+        .map(m => `<span class="wr-gari-pill">${gs.modeCounts[m]} × ${modeShort[m]}</span>`)
+        .join('');
+      const noUsage = gs.totalSessions === 0;
+
+      let rateHtml = '';
+      if (gs.publishableRate !== null) {
+        const rPct = Math.round(gs.publishableRate * 100);
+        rateHtml = `<div class="wr-gari-rate">Publishable rate: <span>${rPct}%</span> (${gs.verdictCount} verdict${gs.verdictCount === 1 ? '' : 's'})</div>`;
+      }
+
+      // Recurring flag comes from themes object, not narrative
+      const themeStat = stats.find(s => s.name === rep.name);
+      const recurringFlag = themeStat && themeStat.themes && themeStat.themes.recurring_flag
+        ? themeStat.themes.recurring_flag : null;
+      const flagHtml = recurringFlag
+        ? `<div class="wr-gari-flag">⚑ ${esc(recurringFlag)}</div>` : '';
+
+      // Coverage bullets from themes (separate from note_bullets)
+      const coverageBullets = themeStat && themeStat.themes && themeStat.themes.coverage_bullets
+        ? themeStat.themes.coverage_bullets : [];
+
+      gariBlockHtml = `
+        <div class="wr-gari-block">
+          <div class="wr-gari-head">GARI — ${gs.totalSessions} session${gs.totalSessions === 1 ? '' : 's'} this period</div>
+          ${noUsage
+            ? '<div style="font-size:11px;color:var(--grey-md)">No sessions logged</div>'
+            : `<div class="wr-gari-modes">${modePills}</div>${rateHtml}${flagHtml}`}
+        </div>`;
+
+      // Coverage bullets block (from themes extraction)
+      if (coverageBullets.length) {
+        coverageBulletsHtml = `
+          <div style="margin-top:8px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--grey-md);margin-bottom:4px">Coverage patterns</div>
+          <ul class="wr-rep-bullets">${coverageBullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>`;
+      }
+    }
+
     return `
-      <div class="wr-reporter-card">
-        <div class="wr-reporter-name">${esc(rep.name)}</div>
-        <span class="wr-tag ${cls}">${esc(lbl)}</span>
-        ${bulletList(rep.note_bullets)}
-        ${gariLine}
+      <div class="wr-rep-card">
+        <div class="wr-rep-top">
+          <div>
+            <div class="wr-rep-name">${esc(rep.name)}</div>
+            <div class="wr-rep-pub">${esc(stat ? stat.pub : '')}</div>
+          </div>
+          <span class="wr-tag ${cls}">${ico} ${lbl}</span>
+        </div>
+        ${sparkHtml}
+        ${rateBarHtml}
+        ${coverageBulletsHtml}
+        ${typeGapsHtml}
+        ${gariBlockHtml}
       </div>`;
   }).join('');
 
+  // ── Impact this week callout (election slot awareness) ─────────────
+  const impactThisWeek = stats.filter(s => {
+    const tc = s.typeCounts || {};
+    return Object.values(tc).some(v => v.label && v.label.toLowerCase().includes('impact') && v.filed > 0);
+  }).map(s => s.name);
+
   document.getElementById('wr-body').innerHTML = `
-    <div class="wr-section">
-      <div class="wr-section-title">Network summary</div>
+    <div class="wr-net-card">
+      <div class="wr-section-title">Network this week</div>
+      ${netStatHtml}
       ${bulletList(wrData.narrative.network_summary_bullets)}
     </div>
-    <div class="wr-section">
-      <div class="wr-section-title">By reporter</div>
+    <div class="wr-section-title" style="margin-bottom:10px">By reporter</div>
+    <div class="wr-reporter-grid">
       ${reporterCards}
     </div>
   `;
@@ -3198,10 +3449,23 @@ function weeklyReviewToText(wrData) {
   out += `\nBY REPORTER\n\n`;
   (wrData.narrative.reporters || []).forEach(rep => {
     const stat = (wrData.stats || []).find(s => s.name === rep.name);
-    const gariCount = stat ? (stat.gariSessions || []).length : null;
-    out += `${rep.name} — ${rep.tag}\n`;
+    const gariStat = stat && stat.gariStats ? stat.gariStats : null;
+    const tagLabels = { up: 'Trending up', down: 'Worth a check-in', steady: 'Steady', quiet: 'Not using planner' };
+    out += `${rep.name} — ${tagLabels[rep.tag] || rep.tag}\n`;
+    if (stat) out += `Filed this week: ${stat.thisWeekFiled}/${stat.thisWeekTotal} | 4-week rate: ${Math.round(stat.overallRate * 100)}%\n`;
     (rep.note_bullets || []).forEach(b => { out += `• ${b}\n`; });
-    if (gariCount !== null) out += `(${gariCount} GARI coaching session${gariCount === 1 ? '' : 's'} logged this period)\n`;
+    if (stat && stat.themes && stat.themes.coverage_bullets) {
+      out += `Coverage patterns:\n`;
+      stat.themes.coverage_bullets.forEach(b => { out += `  – ${b}\n`; });
+    }
+    if (stat && stat.themes && stat.themes.recurring_flag) {
+      out += `Recurring GARI flag: ${stat.themes.recurring_flag}\n`;
+    }
+    if (gariStat) {
+      out += `GARI: ${gariStat.totalSessions} session${gariStat.totalSessions === 1 ? '' : 's'}`;
+      if (gariStat.publishableRate !== null) out += ` | Publishable rate: ${Math.round(gariStat.publishableRate * 100)}%`;
+      out += `\n`;
+    }
     out += `\n`;
   });
   return out;
