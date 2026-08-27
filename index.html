@@ -14,6 +14,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,6 +194,19 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .todo-empty{font-size:13px;color:var(--grey-md);padding:8px 4px}
 .todo-actions{margin-top:8px;text-align:right}
 .todo-clear-btn{background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:inherit}
+
+/* ── Home-page splash reminder (Tue/Fri) ── */
+.splash-card{display:flex;align-items:center;gap:12px;background:#fff;border:0.5px solid var(--border);border-left:3px solid var(--acid);border-radius:10px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.splash-icon{flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--acid);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.splash-icon svg{width:19px;height:19px}
+.splash-body{flex:1;min-width:0}
+.splash-title{font-size:13px;font-weight:600;color:var(--ink);line-height:1.3}
+.splash-sub{font-size:12px;color:var(--grey-md);margin-top:2px;line-height:1.4}
+.splash-btn{flex-shrink:0;background:var(--blue);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.splash-btn:hover{background:var(--blue-dk)}
+.splash-card-done{border-left-color:var(--success);background:var(--success-lt)}
+.splash-icon-done{background:var(--success);color:#fff;font-size:17px;font-weight:700}
+.splash-undo{background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:inherit;padding:0;text-decoration:underline}
 
 /* ── FOI builder ── */
 .foi-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
@@ -977,6 +991,7 @@ padding:5px 12px;border-radius:999px}
 <span class="todo-panel-chevron" id="todo-chevron">&#9662;</span>
 </div>
 <div class="todo-panel-body" id="todo-panel-body">
+<div id="splash-card-mount"></div>
 <div class="todo-add-row">
 <input type="text" id="todo-new-input" placeholder="Add a task — post to IG, call council, chase FOI..." onkeydown="if(event.key==='Enter')addTodoItem()">
 <button class="todo-add-btn" onclick="addTodoItem()">Add</button>
@@ -1667,12 +1682,14 @@ const list = document.getElementById('todo-list');
 const countEl = document.getElementById('todo-count');
 const actionsEl = document.getElementById('todo-actions');
 if (!list) return;
-const open = TODOS.filter(t => !t.done);
-const done = TODOS.filter(t => t.done);
-countEl.textContent = TODOS.length ? `(${open.length} open)` : '';
+const visible = TODOS.filter(t => !isSplash(t));
+const open = visible.filter(t => !t.done);
+const done = visible.filter(t => t.done);
+countEl.textContent = visible.length ? `(${open.length} open)` : '';
 actionsEl.style.display = done.length ? 'block' : 'none';
-if (!TODOS.length) {
+if (!visible.length) {
 list.innerHTML = '<div class="todo-empty">Nothing on the list — add admin tasks, IG posts, calls to make.</div>';
+renderSplashCard();
 return;
 }
 const row = t => `<div class="todo-item ${t.done ? 'todo-done' : ''}" data-id="${t.id}">
@@ -1681,6 +1698,7 @@ const row = t => `<div class="todo-item ${t.done ? 'todo-done' : ''}" data-id="$
 <button class="todo-del-btn" onclick="deleteTodoItem('${t.id}')" title="Remove">&times;</button>
 </div>`;
 list.innerHTML = open.map(row).join('') + done.map(row).join('');
+renderSplashCard();
 }
 
 async function addTodoItem() {
@@ -1721,8 +1739,8 @@ console.error('Could not delete to-do item:', e);
 }
 
 async function clearCompletedTodos() {
-const doneIds = TODOS.filter(t => t.done).map(t => t.id);
-TODOS = TODOS.filter(t => !t.done);
+const doneIds = TODOS.filter(t => t.done && !isSplash(t)).map(t => t.id);
+TODOS = TODOS.filter(t => !t.done || isSplash(t));
 renderTodos();
 for (const id of doneIds) {
 try { await supaFetch('DELETE', `reporter_todos?id=eq.${id}`); } catch(e) { console.error(e); }
@@ -1733,6 +1751,80 @@ function toggleTodoPanel() {
 todoPanelCollapsed = !todoPanelCollapsed;
 document.getElementById('todo-panel-body').style.display = todoPanelCollapsed ? 'none' : 'block';
 document.getElementById('todo-chevron').textContent = todoPanelCollapsed ? '\u25B8' : '\u25BE';
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOME-PAGE SPLASH — twice-weekly reminder card shown at the top of
+// the to-do panel on Tuesdays and Fridays only. Ticking it "done"
+// writes a normal reporter_todos row, so a completed (or missing)
+// splash shows up in the editor rollup like any other task. No new
+// table, no new plumbing — it reuses what the to-do list already has.
+// ══════════════════════════════════════════════════════════════
+const SPLASH_PREFIX = 'Home page splash';
+const SPLASH_DAYS = [2, 5]; // 0=Sun … 2=Tue, 5=Fri
+
+function splashLocalDate() {
+const d = new Date(), p = n => String(n).padStart(2, '0');
+return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function isSplashDay() { return SPLASH_DAYS.includes(new Date().getDay()); }
+function splashItemText() { return `${SPLASH_PREFIX} — ${splashLocalDate()}`; }
+function isSplash(t) { return t && typeof t.item === 'string' && t.item.startsWith(SPLASH_PREFIX); }
+function todaySplashRow() { return TODOS.find(t => t.item === splashItemText()); }
+
+function renderSplashCard() {
+const mount = document.getElementById('splash-card-mount');
+if (!mount) return;
+if (!isSplashDay()) { mount.innerHTML = ''; return; }
+const rowT = todaySplashRow();
+const done = !!(rowT && rowT.done);
+const dayName = new Date().toLocaleDateString('en-AU', { weekday: 'long' });
+const monitor = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+if (done) {
+const at = rowT.done_at ? new Date(rowT.done_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }) : '';
+mount.innerHTML = `<div class="splash-card splash-card-done">
+<div class="splash-icon splash-icon-done">&#10003;</div>
+<div class="splash-body">
+<div class="splash-title">Splash refreshed</div>
+<div class="splash-sub">Nice work${at ? ' — done at ' + at : ''}. <button class="splash-undo" onclick="toggleSplashDone(false)">Undo</button></div>
+</div>
+</div>`;
+} else {
+mount.innerHTML = `<div class="splash-card">
+<div class="splash-icon">${monitor}</div>
+<div class="splash-body">
+<div class="splash-title">Refresh the home page splash</div>
+<div class="splash-sub">It's ${dayName} — swap today's splash so the front page doesn't go stale.</div>
+</div>
+<button class="splash-btn" onclick="toggleSplashDone(true)">Mark done</button>
+</div>`;
+}
+}
+
+async function toggleSplashDone(done) {
+const rowT = todaySplashRow();
+if (done) {
+if (rowT) {
+rowT.done = true; rowT.done_at = new Date().toISOString();
+renderSplashCard();
+try { await supaFetch('PATCH', `reporter_todos?id=eq.${rowT.id}`, { done: true, done_at: rowT.done_at }); } catch(e) { console.error('Splash update failed:', e); }
+} else {
+renderSplashCard();
+try {
+const [created] = await supaFetch('POST', 'reporter_todos', {
+reporter: USER.name, publication: USER.pub, item: splashItemText(), done: true, done_at: new Date().toISOString()
+});
+if (created) TODOS.push(created);
+} catch(e) { console.error('Splash save failed:', e); }
+renderSplashCard();
+}
+} else if (rowT) {
+TODOS = TODOS.filter(t => t.id !== rowT.id);
+renderSplashCard();
+try { await supaFetch('DELETE', `reporter_todos?id=eq.${rowT.id}`); } catch(e) { console.error('Splash undo failed:', e); }
+} else {
+renderSplashCard();
+}
 }
 
 // ══════════════════════════════════════════════════════════════
