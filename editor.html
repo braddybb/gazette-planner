@@ -14,6 +14,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -175,6 +176,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #todo-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #foi-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 .rollup-reporter-block{margin-bottom:6px}
+.splash-lock-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;background:#E11900;color:#fff;font-size:11px;font-weight:700;border-radius:9px;vertical-align:middle}
+.splash-lock-banner{display:flex;align-items:center;gap:10px;background:#FEECEA;border:1px solid #F3B4AD;border-left:4px solid #E11900;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.splash-lock-banner-txt{flex:1;font-size:13px;color:#8A1A10;font-weight:600}
+.splash-lock-clear{flex-shrink:0;background:#E11900;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.splash-lock-clear:hover{background:#c31500}
+.splash-lock-cleared{flex-shrink:0;font-size:13px;color:var(--success,#15803D);font-weight:600}
 .rollup-todo-row{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:0.5px solid var(--border)}
 .rollup-todo-row:last-child{border-bottom:none}
 .rollup-todo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -1026,6 +1033,7 @@ async function checkLogin() {
   }
   refreshCrosswordNav();
   loadWeek();
+  refreshSplashBadge();
 }
 
 // Intercept back button — same fix as the reporter Planner
@@ -2581,6 +2589,59 @@ function closeImpactList() {
 // ── To-do rollup: read-only view of every reporter's admin list.
 // Editors can see what's outstanding but manage nothing here — the
 // to-do list is the reporter's own space, this is just visibility.
+// ── Splash lockout (editor side) ── mirror of the reporter logic:
+// a reporter is "locked" if the most recent splash day (Tue/Fri)
+// passed with no "Home page splash — DATE" done row and no
+// "Splash cleared — DATE" row. Clearing inserts that cleared row,
+// which lifts the stamp on the reporter's next load.
+const SPLASH_DAYS_ED = [2, 5];
+const SPLASH_ENFORCE_FROM_ED = '2026-08-31';
+function lastSplashDayBeforeEd(today) {
+  const p = n => String(n).padStart(2, '0');
+  for (let i = 1; i <= 7; i++) {
+    const c = new Date(today); c.setDate(today.getDate() - i);
+    if (SPLASH_DAYS_ED.includes(c.getDay())) return `${c.getFullYear()}-${p(c.getMonth()+1)}-${p(c.getDate())}`;
+  }
+  return null;
+}
+function reporterSplashLocked(rows, reporterName, day) {
+  if (!day || day < SPLASH_ENFORCE_FROM_ED) return false;
+  const mine = (rows || []).filter(x => x.reporter === reporterName);
+  const done = mine.some(x => x.item === `Home page splash — ${day}` && x.done);
+  const cleared = mine.some(x => x.item === `Splash cleared — ${day}`);
+  return !done && !cleared;
+}
+
+async function clearSplashStamp(reporter, pub) {
+  const day = lastSplashDayBeforeEd(new Date());
+  if (!day) return;
+  try {
+    const { error } = await supa.from('reporter_todos').insert({ reporter, publication: pub, item: `Splash cleared — ${day}`, done: true });
+    if (error) throw error;
+    loadTodoRollup();
+    refreshSplashBadge();
+  } catch(e) {
+    console.error('Could not clear splash stamp:', e);
+    alert('Could not clear the stamp. The editor account may not have permission to write reporter to-dos — check the reporter_todos policy.');
+  }
+}
+
+async function refreshSplashBadge() {
+  const btn = document.getElementById('todo-rollup-btn');
+  if (!btn) return;
+  try {
+    const rows = await supaFetch('reporter_todos?select=reporter,item,done&order=created_at.asc');
+    const day = lastSplashDayBeforeEd(new Date());
+    const n = REPORTERS.filter(r => reporterSplashLocked(rows, r.name, day)).length;
+    let b = document.getElementById('splash-lock-badge');
+    if (n > 0) {
+      if (!b) { b = document.createElement('span'); b.id = 'splash-lock-badge'; b.className = 'splash-lock-badge'; btn.appendChild(b); }
+      b.textContent = n;
+      btn.title = `${n} reporter${n > 1 ? 's' : ''} locked out — splash not changed`;
+    } else if (b) { b.remove(); }
+  } catch(e) { console.warn('Could not refresh splash badge:', e); }
+}
+
 function openTodoRollup() {
   document.getElementById('main-view').style.display = 'none';
   document.getElementById('todo-rollup-view').style.display = 'block';
@@ -2595,6 +2656,7 @@ async function loadTodoRollup() {
   body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering to-do lists across the network...</div>';
   try {
     const rows = await supaFetch('reporter_todos?select=reporter,publication,item,done,created_at&order=created_at.asc');
+    const splashDay = lastSplashDayBeforeEd(new Date());
     const byReporter = {};
     REPORTERS.forEach(r => { byReporter[r.name] = { ...r, items: [] }; });
     (rows || []).forEach(row => {
@@ -2613,6 +2675,12 @@ async function loadTodoRollup() {
         html += '<div class="rollup-reporter-block wr-reporter-card">';
         html += '<div class="wr-reporter-name">' + esc(r.name) + ' <span style="font-weight:400;color:var(--grey-md);font-size:12px">(' + openCount + ' open)</span></div>';
         html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
+        if (reporterSplashLocked(rows, r.name, splashDay)) {
+          html += '<div class="splash-lock-banner">' +
+            '<span class="splash-lock-banner-txt">&#9888; Splash lockout is ON — this reporter\'s planner is blocked until you clear it.</span>' +
+            '<button class="splash-lock-clear" onclick="clearSplashStamp(' + JSON.stringify(r.name) + ',' + JSON.stringify(r.pub) + ')">Clear stamp</button>' +
+            '</div>';
+        }
         if (!items.length) {
           html += '<div class="rollup-empty">Nothing on the list.</div>';
         } else {
