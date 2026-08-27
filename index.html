@@ -208,6 +208,14 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .splash-icon-done{background:var(--success);color:#fff;font-size:17px;font-weight:700}
 .splash-undo{background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:inherit;padding:0;text-decoration:underline}
 
+/* ── Splash lockout stamp (full-screen) ── */
+#splash-lockout{position:fixed;inset:0;z-index:99999;background:rgba(24,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.splash-lockout-inner{transform:rotate(-7deg)}
+.splash-lockout-stamp{font-weight:800;color:#E11900;border:8px solid #E11900;border-radius:14px;padding:18px 40px;font-size:clamp(32px,8vw,88px);letter-spacing:.03em;line-height:1.05;text-transform:uppercase;background:rgba(255,80,60,.08);box-shadow:0 0 0 4px rgba(225,25,0,.35)}
+.splash-lockout-msg{color:#fff;font-size:clamp(14px,2.3vw,19px);font-weight:500;margin-top:26px;max-width:620px;line-height:1.5}
+.splash-lockout-reload{margin-top:20px;background:#fff;color:#E11900;border:none;border-radius:8px;padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.splash-lockout-reload:hover{background:#ffe9e6}
+
 /* ── FOI builder ── */
 .foi-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 .foi-nav:hover{background:#222}
@@ -1675,6 +1683,7 @@ console.warn('Could not load to-do list:', e);
 TODOS = [];
 }
 renderTodos();
+checkSplashLockout();
 }
 
 function renderTodos() {
@@ -1682,7 +1691,7 @@ const list = document.getElementById('todo-list');
 const countEl = document.getElementById('todo-count');
 const actionsEl = document.getElementById('todo-actions');
 if (!list) return;
-const visible = TODOS.filter(t => !isSplash(t));
+const visible = TODOS.filter(t => !isSplashMeta(t));
 const open = visible.filter(t => !t.done);
 const done = visible.filter(t => t.done);
 countEl.textContent = visible.length ? `(${open.length} open)` : '';
@@ -1739,8 +1748,8 @@ console.error('Could not delete to-do item:', e);
 }
 
 async function clearCompletedTodos() {
-const doneIds = TODOS.filter(t => t.done && !isSplash(t)).map(t => t.id);
-TODOS = TODOS.filter(t => !t.done || isSplash(t));
+const doneIds = TODOS.filter(t => t.done && !isSplashMeta(t)).map(t => t.id);
+TODOS = TODOS.filter(t => !t.done || isSplashMeta(t));
 renderTodos();
 for (const id of doneIds) {
 try { await supaFetch('DELETE', `reporter_todos?id=eq.${id}`); } catch(e) { console.error(e); }
@@ -1825,6 +1834,48 @@ try { await supaFetch('DELETE', `reporter_todos?id=eq.${rowT.id}`); } catch(e) {
 } else {
 renderSplashCard();
 }
+}
+
+// ── Splash lockout: if the most recent splash day (Tue/Fri) passed
+// without a "done" tick and an editor hasn't cleared it, the whole
+// planner is covered by a red CHANGE YOUR SPLASH stamp the reporter
+// can't dismiss. Cleared by the editor writing a "Splash cleared"
+// marker row, which this reporter's next load picks up. Splash days
+// before SPLASH_ENFORCE_FROM are ignored so nobody is retroactively
+// locked out the day this ships. ─────────────────────────────────
+const SPLASH_ENFORCE_FROM = '2026-08-31'; // first splash day that can trigger a lockout
+function isSplashClearedRow(t) { return t && typeof t.item === 'string' && t.item.startsWith('Splash cleared —'); }
+function isSplashMeta(t) { return isSplash(t) || isSplashClearedRow(t); }
+
+function lastSplashDayBefore(today) {
+const p = n => String(n).padStart(2, '0');
+for (let i = 1; i <= 7; i++) {
+const c = new Date(today); c.setDate(today.getDate() - i);
+if (SPLASH_DAYS.includes(c.getDay())) return `${c.getFullYear()}-${p(c.getMonth()+1)}-${p(c.getDate())}`;
+}
+return null;
+}
+
+function checkSplashLockout() {
+const day = lastSplashDayBefore(new Date());
+let locked = false;
+if (day && day >= SPLASH_ENFORCE_FROM) {
+const done = TODOS.some(t => t.item === `${SPLASH_PREFIX} — ${day}` && t.done);
+const cleared = TODOS.some(t => t.item === `Splash cleared — ${day}`);
+locked = !done && !cleared;
+}
+renderSplashLockout(locked);
+}
+
+function renderSplashLockout(show) {
+let ov = document.getElementById('splash-lockout');
+if (!show) { if (ov) ov.remove(); return; }
+if (!ov) { ov = document.createElement('div'); ov.id = 'splash-lockout'; document.body.appendChild(ov); }
+ov.innerHTML = `<div class="splash-lockout-inner">
+<div class="splash-lockout-stamp">Change your splash</div>
+</div>
+<div class="splash-lockout-msg">You didn't refresh the home page splash on the last splash day. An editor has to clear this before you can keep working.</div>
+<button class="splash-lockout-reload" onclick="location.reload()">An editor has cleared me — reload</button>`;
 }
 
 // ══════════════════════════════════════════════════════════════
