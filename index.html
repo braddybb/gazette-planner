@@ -15,6 +15,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -822,6 +823,7 @@ box-shadow:0 30px 80px rgba(0,0,0,.4);animation:aabIn .5s cubic-bezier(.2,.7,.3,
 padding:5px 12px;border-radius:999px}
 .badge-chip.golden{background:#FFFBEB;border:0.5px solid #F0E0B0;color:#B8860B}
 .badge-chip.aab{background:#EEF0FF;border:0.5px solid #CCE;color:var(--blue-dk)}
+.badge-chip.gold-star{background:#FFF6D8;border:0.5px solid #E8CE7A;color:#8A6A00}
 .badge-chip .badge-ico{font-size:13px;line-height:1}
 
 </style>
@@ -3623,6 +3625,10 @@ function renderBadges() {
 const row = document.getElementById('badges-row');
 if (!row) return;
 let html = '';
+// Gold stars — permanent cumulative total (always shown once they have any)
+if (MY_GOLD_STARS >= 1) {
+html += '<span class="badge-chip gold-star" title="Cumulative gold stars — one for every week you file your full slate">&#11088; ' + MY_GOLD_STARS + ' gold star' + (MY_GOLD_STARS === 1 ? '' : 's') + '</span>';
+}
 // Golden Gazette
 if (typeof hasGoldenThisWeek === 'function' && hasGoldenThisWeek()) {
 const g = getGolden();
@@ -3693,6 +3699,7 @@ document.getElementById('aab-award').addEventListener('click', e => { if(e.targe
 // Golden Gazette/Above & Beyond badges which are weekly and per-browser.
 // Awarded once per week the first time a reporter files their full base
 // slate; `gold_star_weeks` is the server-side guard against double-counting.
+let MY_GOLD_STARS = 0;
 function goldStarTier(count){
 if (count >= 20) return 4;
 if (count >= 10) return 3;
@@ -3714,7 +3721,9 @@ try {
 const { data: { session } } = await supa.auth.getSession();
 if (!session) return;
 const { data: profile } = await supa.from('profiles').select('gold_star_count').eq('id', session.user.id).single();
-renderGoldStarHdr(profile ? (profile.gold_star_count || 0) : 0);
+MY_GOLD_STARS = profile ? (profile.gold_star_count || 0) : 0;
+renderGoldStarHdr(MY_GOLD_STARS);
+if (typeof renderBadges === 'function') renderBadges();
 } catch(e) { console.warn('Gold star load failed (non-critical):', e); }
 }
 async function awardGoldStar(){
@@ -3728,7 +3737,9 @@ if (weeks.indexOf(WEEK) !== -1) return; // already awarded for this week
 const newCount = (profile.gold_star_count || 0) + 1;
 const newWeeks = weeks.concat([WEEK]);
 await supa.from('profiles').update({ gold_star_count: newCount, gold_star_weeks: newWeeks }).eq('id', session.user.id);
+MY_GOLD_STARS = newCount;
 renderGoldStarHdr(newCount);
+if (typeof renderBadges === 'function') renderBadges();
 if (USER) notifySlack(':star: *' + USER.name + '* filed every story this week \u2014 gold star #' + newCount + ' on their profile!');
 } catch(e) { console.warn('Gold star award failed (non-critical):', e); }
 }
