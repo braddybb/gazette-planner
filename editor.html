@@ -16,6 +16,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2733,7 +2734,7 @@ async function loadTodoRollup() {
         if (reporterSplashLocked(rows, r.name, splashDay)) {
           html += '<div class="splash-lock-banner">' +
             '<span class="splash-lock-banner-txt">&#9888; Splash lockout is ON — this reporter\'s planner is blocked until you clear it.</span>' +
-            '<button class="splash-lock-clear" onclick="clearSplashStamp(' + JSON.stringify(r.name) + ',' + JSON.stringify(r.pub) + ')">Clear stamp</button>' +
+            '<button class="splash-lock-clear" onclick="clearSplashStamp(' + JSON.stringify(r.name).replace(/"/g,'&quot;') + ',' + JSON.stringify(r.pub).replace(/"/g,'&quot;') + ')">Clear stamp</button>' +
             '</div>';
         }
         if (!items.length) {
