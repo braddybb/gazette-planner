@@ -16,6 +16,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -397,6 +398,18 @@ transition:background .35s ease, color .35s ease}
 
 .hdr-chev{font-size:16px;transition:transform .2s}
 .hdr-chev.std,.hdr-chev.imp,.hdr-chev.vidfirst,.hdr-chev.vidflip,.hdr-chev.l2n,.hdr-chev.original,.hdr-chev.newsletter,.hdr-chev.poll,.hdr-chev.extra,.hdr-chev.election,.hdr-chev.editorial{color:rgba(255,255,255,.6)}
+/* Impact Video (vidimp) — violet, distinct from Impact (terracotta) and Video flip (indigo) */
+.ppill-vidimp{background:#F1EBFB;color:#6D28D9;border-color:#DBCBF5}
+.card-hdr.vidimp{background:#F3EEFB}
+.card-hdr.vidimp.has-content{background:#6D28D9}
+.hdr-num.vidimp{color:#CDB8F2}
+.card-hdr.has-content .hdr-num.vidimp{color:#fff}
+.hdr-type.vidimp{color:#A98FE0}
+.card-hdr.has-content .hdr-type.vidimp{color:#DDD}
+.hdr-preview.vidimp{color:#9C86D8}
+.card-hdr.has-content .hdr-preview.vidimp{color:#CCC}
+.filed-pill.vidimp{background:rgba(255,255,255,.15);color:#d8c8f0}
+.hdr-chev.vidimp{color:rgba(255,255,255,.6)}
 .hdr-chev.life{color:rgba(58,46,15,.55)}
 .hdr-chev.open{transform:rotate(180deg)}
 
@@ -947,7 +960,8 @@ padding:5px 12px;border-radius:999px}
 </div>
 <div class="prog-pills">
 <span class="ppill ppill-vidfirst" id="pill-vidfirst" style="display:none">0 / 2 video-first</span>
-<span class="ppill ppill-vidflip" id="pill-vidflip" style="display:none">0 / 2 video flip</span>
+<span class="ppill ppill-vidflip" id="pill-vidflip" style="display:none">0 / 1 video flip</span>
+<span class="ppill ppill-vidimp" id="pill-vidimp" style="display:none">0 / 1 impact video</span>
 <span class="ppill ppill-l2n" id="pill-l2n" style="display:none">0 / 1 local to national</span>
 <span class="ppill ppill-editorial" id="pill-editorial" style="display:none">0 / 1 editorial focus</span>
 <span class="ppill ppill-original" id="pill-original" style="display:none">0 / 3 original</span>
@@ -1262,7 +1276,7 @@ return [
 {n:'01',t:'vidfirst',lbl:'Video-first'},
 {n:'02',t:'vidfirst',lbl:'Video-first'},
 {n:'03',t:'vidflip', lbl:'Video flip'},
-{n:'04',t:'vidflip', lbl:'Video flip'},
+{n:'04',t:'vidimp',  lbl:'Impact Video'},
 {n:'05',t:'std',lbl:'Story'},
 {n:'06',t:'std',lbl:'Story'},
 {n:'07',t:'std',lbl:'Story'},
@@ -3135,6 +3149,7 @@ const baseTotal = stories.filter(s => s.filed).length;
 const typeIdx = t => STORIES.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
 const vfIdx   = typeIdx('vidfirst');
 const flipIdx = typeIdx('vidflip');
+const impvidIdx = typeIdx('vidimp');
 const stdIdx  = typeIdx('std');
 const impIdx  = typeIdx('imp');
 const electIdx = typeIdx('election');
@@ -3146,6 +3161,7 @@ const nlIdx   = typeIdx('newsletter');
 const pollIdx = typeIdx('poll');
 const vf    = vfIdx.filter(i => stories[i].filed).length;
 const flip  = flipIdx.filter(i => stories[i].filed).length;
+const impvid = impvidIdx.filter(i => stories[i].filed).length;
 const std   = stdIdx.filter(i => stories[i].filed).length;
 const imp   = impIdx.filter(i => stories[i].filed).length;
 const elect = electIdx.filter(i => stories[i].filed).length;
@@ -3186,6 +3202,11 @@ pillVf.textContent = vf + ' / ' + vfIdx.length + ' video-first';
 if (pillFlip) {
 pillFlip.style.display = flipIdx.length ? 'inline-flex' : 'none';
 pillFlip.textContent = flip + ' / ' + flipIdx.length + ' video flip';
+}
+const pillImpVid = document.getElementById('pill-vidimp');
+if (pillImpVid) {
+pillImpVid.style.display = impvidIdx.length ? 'inline-flex' : 'none';
+pillImpVid.textContent = impvid + ' / ' + impvidIdx.length + ' impact video';
 }
 // National Account's pills — only show when those types exist for this pub
 const pillL2n = document.getElementById('pill-l2n');
