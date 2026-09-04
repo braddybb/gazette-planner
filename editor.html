@@ -17,6 +17,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -327,6 +328,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .drill-filed-badge.imp{background:rgba(255,255,255,.25);color:#fff}
 .drill-filed-badge.life{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.vidflip{background:rgba(255,255,255,.2);color:#fff}
+/* Impact Video (vidimp) — violet */
+.rpill-vidimp{background:#F1EBFB;color:#6D28D9;border-color:#DBCBF5}
+.dot-vidimp{background:#6D28D9}
+.drill-card-hdr.vidimp{background:#6D28D9}
+.drill-num.vidimp{color:#fff}
+.drill-type.vidimp{color:#E0D5F5}
+.drill-headline-hdr.vidimp{color:#fff}
+.drill-filed-badge.vidimp{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.original,.drill-filed-badge.newsletter{background:rgba(255,255,255,.15);color:#aaa}
 .drill-filed-badge.std,.drill-filed-badge.poll{background:rgba(255,255,255,.2);color:#fff}
 .drill-filed-badge.editorial{background:rgba(255,255,255,.2);color:#fff}
@@ -940,7 +949,7 @@ function getStoryDefs(pub, week) {
     {n:'01',t:'vidfirst',lbl:'Video-first'},
     {n:'02',t:'vidfirst',lbl:'Video-first'},
     {n:'03',t:'vidflip', lbl:'Video flip'},
-    {n:'04',t:'vidflip', lbl:'Video flip'},
+    {n:'04',t:'vidimp',  lbl:'Impact Video'},
     {n:'05',t:'std',lbl:'Story'},
     {n:'06',t:'std',lbl:'Story'},
     {n:'07',t:'std',lbl:'Story'},
@@ -1460,9 +1469,11 @@ function buildRepCard(r) {
   const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
   const isFiledAt = i => !!(data[repDefs[i].n] && data[repDefs[i].n].filed);
   const vfIdx = typeIdx('vidfirst'), flipIdx = typeIdx('vidflip'), stdIdx = typeIdx('std'), impIdx = typeIdx('imp'), lifeIdx = typeIdx('life');
+  const impvidIdx = typeIdx('vidimp');
   const l2nIdx = typeIdx('l2n'), origIdx = typeIdx('original'), nlIdx = typeIdx('newsletter'), pollIdx = typeIdx('poll'), editIdx = typeIdx('editorial');
   const vf   = vfIdx.filter(isFiledAt).length;
   const flip = flipIdx.filter(isFiledAt).length;
+  const impvid = impvidIdx.filter(isFiledAt).length;
   const std  = stdIdx.filter(isFiledAt).length;
   const imp  = impIdx.filter(isFiledAt).length;
   const life = lifeIdx.filter(isFiledAt).length;
@@ -1500,6 +1511,7 @@ function buildRepCard(r) {
     origIdx.length ? `<span class="rpill rpill-original">${orig}/${origIdx.length} original</span>` : '',
     vfIdx.length   ? `<span class="rpill rpill-vidfirst">${vf}/${vfIdx.length} video-first</span>` : '',
     flipIdx.length ? `<span class="rpill rpill-vidflip">${flip}/${flipIdx.length} video flip</span>` : '',
+    impvidIdx.length ? `<span class="rpill rpill-vidimp">${impvid}/${impvidIdx.length} impact video</span>` : '',
     stdIdx.length  ? `<span class="rpill rpill-std">${std}/${stdIdx.length} standard</span>` : '',
     impIdx.length  ? `<span class="rpill rpill-imp">${imp}/${impIdx.length} impact</span>` : '',
     lifeIdx.length ? `<span class="rpill rpill-life">${life}/${lifeIdx.length} ${lifeLabel}</span>` : '',
