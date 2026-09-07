@@ -191,22 +191,24 @@ export default async (req) => {
 
   // (B) /assign slash command → open the modal
   if (params.get("command")) {
+    const who = params.get("user_name") || params.get("user_id") || "someone";
     try {
       const reporters = await listReporters();
       const r = await slack("views.open", { trigger_id: params.get("trigger_id"), view: buildModal(reporters) });
       if (!r.ok) {
-        console.error("views.open failed:", JSON.stringify(r));
         const msgs = r.response_metadata && r.response_metadata.messages ? " — " + r.response_metadata.messages.join("; ") : "";
+        await postChannel("`[/assign debug]` form did NOT open for *" + who + "*. Slack said: `" + (r.error || "unknown") + "`" + msgs).catch(() => {});
         return new Response(JSON.stringify({
           response_type: "ephemeral",
-          text: ":warning: Couldn't open the assign form. Slack said: `" + (r.error || "unknown") + "`" + msgs + "\nScreenshot this to Chef.",
+          text: ":warning: Couldn't open the assign form. Slack said: `" + (r.error || "unknown") + "`" + msgs,
         }), { status: 200, headers: { "Content-Type": "application/json" } });
       }
+      await postChannel("`[/assign debug]` form opened OK for *" + who + "* (" + reporters.length + " reporters loaded)").catch(() => {});
     } catch (e) {
-      console.error("open modal failed:", e);
+      await postChannel("`[/assign debug]` /assign errored for *" + who + "*: `" + String(e.message).slice(0, 200) + "`").catch(() => {});
       return new Response(JSON.stringify({
         response_type: "ephemeral",
-        text: ":warning: The /assign command hit an error: `" + String(e.message).slice(0, 200) + "`\nScreenshot this to Chef.",
+        text: ":warning: The /assign command hit an error: `" + String(e.message).slice(0, 200) + "`",
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
     return new Response("", { status: 200 });
