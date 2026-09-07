@@ -25,7 +25,20 @@ const SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const BOT_TOKEN      = process.env.SLACK_BOT_TOKEN;                 // xoxb-… (scopes: commands, chat:write)
 const SUPABASE_URL   = process.env.SUPABASE_URL || "https://asgyshkafnrqknnmkbfo.supabase.co";
 const SERVICE_KEY    = process.env.SUPABASE_SERVICE_ROLE_KEY;      // secret — server only
+const WEBHOOK_URL    = process.env.SLACK_WEBHOOK_URL;             // Incoming Webhook → #editorial (same one the Planner uses)
 const TABLE = "planner_stories";
+
+// Reporter → Slack member ID, mirrored from the Editor Dashboard so the ping @mentions them.
+const REPORTER_SLACK_IDS = {
+  "Zara Cuthbertson": "U08LY1YR6E8",
+  "Matthew Sims":     "U07SHH3RB46",
+  "Jacob Wallace":    "U08DG9R5A6R",
+  "Huw Bradshaw":     "U08P2C7862Z",
+  "Darcie Humphreys": "U0AFJML3A1G",
+  "Douglas Connor":   "U0B71KH9Y0K",
+  "Archie Milligan":  "U08DQ26CEE7",
+};
+function slackMention(name) { const id = REPORTER_SLACK_IDS[name]; return id ? "<@" + id + "> " : ""; }
 
 // ── pure helpers (unit-tested) ───────────────────────────────────────────────
 function verifySlack(rawBody, sig, ts, secret = SIGNING_SECRET) {
@@ -101,6 +114,12 @@ async function slack(method, payload) {
   return res.json();
 }
 
+// Posts to #editorial via the same Incoming Webhook the Planner uses.
+async function postChannel(text) {
+  if (!WEBHOOK_URL) return;
+  await fetch(WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+}
+
 function buildModal(reporters) {
   const options = reporters.slice(0, 100).map(r => ({
     text: { type: "plain_text", text: `${r.reporter} — ${r.publication}`.slice(0, 75) },
@@ -159,10 +178,8 @@ export default async (req) => {
           assignedBy: payload.user?.name || payload.user?.username || "Editor",
         });
         await supa("POST", TABLE, row, "return=minimal");
-        await slack("chat.postMessage", {
-          channel: payload.user.id,
-          text: `:white_check_mark: Assigned to *${sel.r}* — ${sel.p}, week of ${week}, extra slot ${num}.\n> ${row.headline || "(no headline yet)"}`,
-        }).catch(() => {});
+        // Ping #editorial, same format and webhook the Planner/Editor Dashboard use.
+        await postChannel(slackMention(sel.r) + ':clipboard: A story was assigned to *' + sel.r + '*: "' + (row.headline || "Untitled") + '"').catch(() => {});
         return new Response("", { status: 200 }); // empty 200 closes the modal
       } catch (e) {
         return new Response(JSON.stringify({ response_action: "errors", errors: { headline: "Couldn't save: " + String(e.message).slice(0, 140) } }),
@@ -177,8 +194,21 @@ export default async (req) => {
     try {
       const reporters = await listReporters();
       const r = await slack("views.open", { trigger_id: params.get("trigger_id"), view: buildModal(reporters) });
-      if (!r.ok) console.error("views.open failed:", r);
-    } catch (e) { console.error("open modal failed:", e); }
+      if (!r.ok) {
+        console.error("views.open failed:", JSON.stringify(r));
+        const msgs = r.response_metadata && r.response_metadata.messages ? " — " + r.response_metadata.messages.join("; ") : "";
+        return new Response(JSON.stringify({
+          response_type: "ephemeral",
+          text: ":warning: Couldn't open the assign form. Slack said: `" + (r.error || "unknown") + "`" + msgs + "\nScreenshot this to Chef.",
+        }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }
+    } catch (e) {
+      console.error("open modal failed:", e);
+      return new Response(JSON.stringify({
+        response_type: "ephemeral",
+        text: ":warning: The /assign command hit an error: `" + String(e.message).slice(0, 200) + "`\nScreenshot this to Chef.",
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
     return new Response("", { status: 200 });
   }
 
