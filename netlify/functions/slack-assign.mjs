@@ -173,7 +173,6 @@ export default async (req) => {
   if (params.get("payload")) {
     const payload = JSON.parse(params.get("payload"));
     if (payload.type === "view_submission" && payload.view.callback_id === "assign_story") {
-      await postChannel("`[/assign debug]` submission received — saving…").catch(() => {});
       try {
         const sel = JSON.parse(val(payload.view, "reporter"));
         const week = mondayOfNow();
@@ -187,12 +186,11 @@ export default async (req) => {
           assignedBy: payload.user?.name || payload.user?.username || "Editor",
         });
         await supa("POST", TABLE, row, "return=minimal");
-        await postChannel("`[/assign debug]` saved slot " + num + " for *" + sel.r + "* — mention " + (slackMention(sel.r) ? "resolved" : "NOT found")).catch(() => {});
         // Ping #editorial, same format and webhook the Planner/Editor Dashboard use.
         await postChannel(slackMention(sel.r) + ':clipboard: A story was assigned to *' + sel.r + '*: "' + (row.headline || "Untitled") + '"').catch(() => {});
         return new Response("", { status: 200 }); // empty 200 closes the modal
       } catch (e) {
-        await postChannel("`[/assign debug]` save FAILED: `" + String(e.message).slice(0, 200) + "`").catch(() => {});
+        console.error("save failed:", e);
         return new Response(JSON.stringify({ response_action: "errors", errors: { headline: "Couldn't save: " + String(e.message).slice(0, 140) } }),
           { status: 200, headers: { "Content-Type": "application/json" } });
       }
