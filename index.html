@@ -17,6 +17,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -415,6 +416,15 @@ transition:background .35s ease, color .35s ease}
 
 .card-body{display:none;padding:1rem}
 .card-body.open{display:block}
+.move-slot-wrap{margin:0 0 12px}
+.move-slot-btn{font-size:13px;font-weight:600;background:#fff;border:1px solid var(--border,#DDD);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--ink)}
+.move-slot-btn:hover{border-color:#999}
+.move-slot-picker{margin-top:8px;padding:10px 12px;background:rgba(255,255,255,.65);border:1px solid var(--border,#DDD);border-radius:8px}
+.move-slot-hint{font-size:12px;color:var(--grey-md);margin-bottom:8px}
+.move-slot-options{display:flex;flex-wrap:wrap;gap:6px}
+.move-slot-option{font-size:13px;background:#fff;border:1px solid var(--border,#DDD);border-radius:7px;padding:6px 10px;cursor:pointer;color:var(--ink)}
+.move-slot-option:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.move-slot-none{font-size:12px;color:var(--grey-md);font-style:italic}
 
 .cf{margin-bottom:12px}
 .cf:last-child{margin-bottom:0}
@@ -2312,6 +2322,86 @@ updateProgress();
 setTimeout(() => toggleCard(num), 100);
 }
 
+// ── Move an editor assignment into an open workload slot ──
+// Base slots (1..baseCount) that currently hold no story.
+function openBaseSlots() {
+return STORIES.filter(sd => !storyHasContent(getStory(sd.n)));
+}
+function buildMoveControl(fromNum) {
+const wrap = document.createElement('div');
+wrap.className = 'move-slot-wrap';
+const open = openBaseSlots();
+if (!open.length) {
+wrap.innerHTML = '<div class="move-slot-none">No open slots in your workload this week \u2014 free one up to move this in.</div>';
+return wrap;
+}
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'move-slot-btn';
+btn.textContent = 'Move to an open slot \u2192';
+btn.onclick = function(e){ e.stopPropagation(); toggleMovePicker(fromNum); };
+wrap.appendChild(btn);
+const picker = document.createElement('div');
+picker.className = 'move-slot-picker';
+picker.id = 'movepick-' + fromNum;
+picker.style.display = 'none';
+picker.innerHTML = '<div class="move-slot-hint">Move this into one of your open slots \u2014 it\u2019ll take on that slot\u2019s type and keep the editor\u2019s note.</div>';
+const opts = document.createElement('div');
+opts.className = 'move-slot-options';
+open.forEach(sd => {
+const o = document.createElement('button');
+o.type = 'button';
+o.className = 'move-slot-option';
+o.textContent = sd.n + ' \u00b7 ' + sd.lbl;
+o.onclick = function(e){ e.stopPropagation(); moveAssignmentToSlot(fromNum, sd.n); };
+opts.appendChild(o);
+});
+picker.appendChild(opts);
+wrap.appendChild(picker);
+return wrap;
+}
+function toggleMovePicker(num) {
+const p = document.getElementById('movepick-' + num);
+if (p) p.style.display = (p.style.display === 'none' ? 'block' : 'none');
+}
+async function moveAssignmentToSlot(fromNum, toNum) {
+const st = DATA[fromNum];
+if (!st) return;
+// Guard: only move into a genuinely empty slot (it may have filled since the picker opened).
+if (storyHasContent(getStory(toNum))) { alert('That slot has just been filled \u2014 pick another open slot.'); renderGrid(); return; }
+// Move the existing row in place: change only its story_num (preserves assigned_by,
+// the editor note, and every other field). Type is derived from the slot, so it
+// adopts the destination slot\u2019s type automatically.
+try {
+const { data: { session } } = await supa.auth.getSession();
+const token = session ? session.access_token : SUPA_KEY;
+const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE +
+'?reporter=eq.' + encodeURIComponent(USER.name) +
+'&publication=eq.' + encodeURIComponent(USER.pub) +
+'&week_of=eq.' + encodeURIComponent(WEEK) +
+'&story_num=eq.' + encodeURIComponent(fromNum), {
+method: 'PATCH',
+headers: {
+'apikey': SUPA_KEY,
+'Authorization': 'Bearer ' + token,
+'Content-Type': 'application/json',
+'Prefer': 'return=minimal',
+},
+body: JSON.stringify({ story_num: toNum, updated_at: new Date().toISOString() }),
+});
+if (!res.ok) { const t = await res.text(); throw new Error('PATCH ' + res.status + ': ' + t); }
+} catch (err) {
+alert('Could not move the story \u2014 ' + (err && err.message ? err.message : 'please try again') + '.');
+return;
+}
+st.story_num = toNum;
+DATA[toNum] = st;
+delete DATA[fromNum];
+renderGrid();
+updateProgress();
+setTimeout(() => toggleCard(toNum), 100);
+}
+
 // Varied, warm empty-state prompts
 const EMPTY_PROMPTS = [
 'What are you chasing this week?',
@@ -2374,6 +2464,11 @@ const albl = document.createElement('div');
 albl.className = 'assigned-label';
 albl.textContent = 'Assigned by ' + st.assigned_by;
 body.appendChild(albl);
+}
+
+// Editor-assigned extras can be promoted into an open workload slot
+if (st.assigned_by && isExtra) {
+body.appendChild(buildMoveControl(s.n));
 }
 
 // Editor note banners (if present) — each addressable independently as a checkable item
