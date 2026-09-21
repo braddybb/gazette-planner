@@ -18,6 +18,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -628,7 +629,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="weekly-review-btn" id="election-list-btn" onclick="openElectionList()" title="List every Election-slot story across Victoria — filed and still in planners">Election stories</button>
     <button class="weekly-review-btn" id="todo-rollup-btn" onclick="openTodoRollup()" title="See every reporter's to-do list">To-do</button>
     <button class="weekly-review-btn" id="foi-rollup-btn" onclick="openFOIRollup()" title="See every reporter's FOI requests">FOI</button>
-    <button class="weekly-review-btn" id="leaderboard-btn" onclick="openLeaderboard()" title="Gold star standings across the network">Gold stars</button>
+    <button class="weekly-review-btn" id="leaderboard-btn" onclick="openLeaderboard()" title="Everyone’s gold star tally — not a ranking">Gold stars</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
@@ -719,7 +720,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="back-btn" onclick="closeLeaderboard()">&#8592; Back to all reporters</button>
     <div class="wr-header">
       <div>
-        <div class="wr-title">Gold star leaderboard</div>
+        <div class="wr-title">Gold stars — the whole team</div>
         <div class="wr-sub">Cumulative gold stars per reporter — one earned each week they file their full slate</div>
       </div>
     </div>
@@ -851,16 +852,32 @@ function newNoteId() {
 let GOLD_STARS = {};
 async function loadGoldStars() {
   try {
-    // No role filter — match on whichever name column is populated, since
-    // we can't be sure reporter_name vs name is the one actually in use.
-    const rows = await supaFetch('profiles?select=name,reporter_name,gold_star_count');
-    GOLD_STARS = {};
-    (rows || []).forEach(p => {
-      const key = p.reporter_name || p.name;
-      if (key) GOLD_STARS[key] = p.gold_star_count || 0;
+    // Compute each reporter's all-time gold stars from the stories themselves —
+    // a gold star = a week they filed their full base slate (8 stories for the
+    // National Account, 10 for the local mastheads). Computed from planner_stories
+    // (which this dashboard already reads), so it needs no cross-profile reads
+    // and no database changes.
+    const rows = await supaFetch(TABLE + '?select=reporter,publication,week_of,story_num,filed&limit=100000');
+    const baseFor = pub => /^National Account/.test(pub || '') ? 8 : 10;
+    const acc = {}; // reporter -> { base, weeks: { week -> Set(filed base slot numbers) } }
+    (rows || []).forEach(r => {
+      const rep = r.reporter;
+      if (!rep) return;
+      if (!acc[rep]) acc[rep] = { base: baseFor(r.publication), weeks: {} };
+      if (!r.filed) return;
+      const n = parseInt(r.story_num, 10);
+      if (!(n >= 1 && n <= acc[rep].base)) return;
+      (acc[rep].weeks[r.week_of] = acc[rep].weeks[r.week_of] || new Set()).add(n);
     });
-    console.log('Gold stars loaded:', GOLD_STARS);
-  } catch(e) { console.warn('Gold star load failed (non-critical):', e); }
+    GOLD_STARS = {};
+    Object.keys(acc).forEach(rep => {
+      const info = acc[rep];
+      let stars = 0;
+      Object.keys(info.weeks).forEach(wk => { if (info.weeks[wk].size >= info.base) stars++; });
+      GOLD_STARS[rep] = stars;
+    });
+    console.log('Gold stars computed from stories:', GOLD_STARS);
+  } catch(e) { console.warn('Gold star compute failed (non-critical):', e); }
 }
 function goldStarTier(count) {
   if (count >= 20) return 4;
@@ -2692,18 +2709,12 @@ function closeLeaderboard() {
 }
 function renderLeaderboard() {
   const body = document.getElementById('leaderboard-body');
-  // Build a row per reporter, using the same GOLD_STARS map the cards use.
+  // Not a ranking — just a look at where everyone's at, listed alphabetically.
   const rows = REPORTERS.map(r => ({ name: r.name, pub: r.pub, count: GOLD_STARS[r.name] || 0 }));
-  // Highest first; ties fall back to alphabetical by name.
-  rows.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  const medal = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49']; // 1st, 2nd, 3rd
+  rows.sort((a, b) => a.name.localeCompare(b.name));
   let html = '';
-  rows.forEach((r, i) => {
-    const topClass = (r.count > 0 && i < 3) ? ' lb-top' : '';
-    const zeroClass = r.count === 0 ? ' lb-zero' : '';
-    const rank = (r.count > 0 && i < 3) ? medal[i] : (i + 1);
-    html += '<div class="lb-row' + topClass + zeroClass + '">' +
-      '<div class="lb-rank">' + rank + '</div>' +
+  rows.forEach(r => {
+    html += '<div class="lb-row">' +
       '<div class="lb-main"><div class="lb-name">' + r.name + '</div><div class="lb-pub">' + r.pub + '</div></div>' +
       '<div class="lb-stars">\u2B50 ' + r.count + '</div>' +
     '</div>';
