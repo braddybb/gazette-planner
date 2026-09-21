@@ -179,6 +179,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #election-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #todo-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #foi-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+#bank-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+.rollup-bank-row{border:1px solid #ECECEC;border-radius:8px;padding:8px 10px;margin-top:6px;background:#fff}
+.rollup-bank-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rollup-bank-title{font-weight:600;font-size:13.5px;flex:1}
+.rollup-bank-type{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#888;background:#F0F0F0;border-radius:5px;padding:1px 6px}
+.rollup-bank-ready{font-size:10.5px;font-weight:700;color:#2E6B4F}
+.rollup-bank-notes{font-size:12px;color:#666;margin-top:3px;white-space:pre-wrap}
+.bank-fill-tag{font-size:11px;font-weight:700;color:#B8860B;margin-left:6px}
 #leaderboard-view{display:none;padding:1.5rem 2rem;max-width:720px;margin:0 auto}
 .lb-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border:1px solid #ECECEC;border-radius:10px;margin-bottom:8px;background:#fff}
 .lb-row.lb-top{background:#FFF9E6;border-color:#F0DFA0}
@@ -630,6 +638,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="weekly-review-btn" id="todo-rollup-btn" onclick="openTodoRollup()" title="See every reporter's to-do list">To-do</button>
     <button class="weekly-review-btn" id="foi-rollup-btn" onclick="openFOIRollup()" title="See every reporter's FOI requests">FOI</button>
     <button class="weekly-review-btn" id="leaderboard-btn" onclick="openLeaderboard()" title="Everyone’s gold star tally — not a ranking">Gold stars</button>
+    <button class="weekly-review-btn" id="bank-rollup-btn" onclick="openBankRollup()" title="See every reporter's evergreen bank">Bank</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
@@ -714,6 +723,17 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       </div>
     </div>
     <div id="foi-rollup-body"></div>
+  </div>
+
+  <div id="bank-rollup-view">
+    <button class="back-btn" onclick="closeBankRollup()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">The Bank</div>
+        <div class="wr-sub">Each reporter's evergreen stories — ready to run if they're sick or away</div>
+      </div>
+    </div>
+    <div id="bank-rollup-body"></div>
   </div>
 
   <div id="leaderboard-view">
@@ -863,6 +883,7 @@ async function loadGoldStars() {
     (rows || []).forEach(r => {
       const rep = r.reporter;
       if (!rep) return;
+      if (r.week_of === 'bank') return; // evergreen bank rows aren't a week
       if (!acc[rep]) acc[rep] = { base: baseFor(r.publication), weeks: {} };
       if (!r.filed) return;
       const n = parseInt(r.story_num, 10);
@@ -2793,6 +2814,54 @@ function openFOIRollup() {
 function closeFOIRollup() {
   document.getElementById('foi-rollup-view').style.display = 'none';
   document.getElementById('main-view').style.display = 'block';
+}
+function openBankRollup() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('bank-rollup-view').style.display = 'block';
+  loadBankRollup();
+}
+function closeBankRollup() {
+  document.getElementById('bank-rollup-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+async function loadBankRollup() {
+  const body = document.getElementById('bank-rollup-body');
+  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering everyone\u2019s bank...</div>';
+  try {
+    const rows = await supaFetch(TABLE + '?week_of=eq.bank&select=reporter,publication,story_num,headline,format,notes,filed&order=story_num.asc');
+    const byReporter = {};
+    (rows || []).forEach(row => {
+      if (!(row.headline || '').trim()) return;
+      (byReporter[row.reporter] = byReporter[row.reporter] || []).push(row);
+    });
+    let html = '';
+    REGION_ORDER.forEach(region => {
+      const reportersInRegion = REPORTERS.filter(r => r.region === region);
+      if (!reportersInRegion.length) return;
+      if (!reportersInRegion.some(r => (byReporter[r.name] || []).length)) return;
+      html += '<div class="wr-section"><div class="wr-section-title">' + esc(region) + '</div>';
+      reportersInRegion.forEach(r => {
+        const items = byReporter[r.name] || [];
+        if (!items.length) return;
+        html += '<div class="rollup-reporter-block wr-reporter-card">';
+        html += '<div class="wr-reporter-name">' + esc(r.name) + '<span class="bank-fill-tag">' + items.length + '/3</span></div>';
+        html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
+        items.forEach(i => {
+          html += '<div class="rollup-bank-row"><div class="rollup-bank-top">' +
+            '<span class="rollup-bank-title">' + esc(i.headline) + '</span>' +
+            (i.format ? '<span class="rollup-bank-type">' + esc(i.format) + '</span>' : '') +
+            (i.filed ? '<span class="rollup-bank-ready">\u2713 Ready</span>' : '') +
+            '</div>' + (i.notes ? '<div class="rollup-bank-notes">' + esc(i.notes) + '</div>' : '') + '</div>';
+        });
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    body.innerHTML = html || '<div class="rollup-empty">No evergreen stories banked across the network yet.</div>';
+  } catch(e) {
+    console.error('Could not load bank rollup:', e);
+    body.innerHTML = '<div class="wr-err">Could not load the bank. Try refreshing.</div>';
+  }
 }
 function foiDaysUntil(dateStr) {
   const target = new Date(dateStr + 'T00:00:00');
