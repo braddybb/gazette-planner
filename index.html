@@ -18,6 +18,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -713,6 +714,43 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .gs-hdr.gs-tier4{background:linear-gradient(90deg,#ff4d4d,#ffb84d,#e8e84d,#4dd97a,#4dc3ff,#b366ff,#ff4d4d);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gsRainbowMove 3s linear infinite}
 @keyframes gsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
 @keyframes gsRainbowMove{to{background-position:200% center}}
+/* extra gold-star tiers */
+.gs-hdr.gs-tier5{color:#2b2b2b;text-shadow:0 0 5px rgba(120,120,140,.75);animation:gsPulse 2s ease-in-out infinite}
+.gs-hdr.gs-tier6{background:linear-gradient(135deg,#b9f2ff,#e6e6ff,#ffffff,#b9f2ff);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gsRainbowMove 3s linear infinite}
+/* Achievements & leaderboard */
+.ach-nav{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--border,#ddd);border-radius:8px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.ach-nav:hover{border-color:#999}
+.ach-overlay{position:fixed;inset:0;background:rgba(17,17,17,.55);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;z-index:300;overflow-y:auto}
+.ach-overlay.show{display:flex}
+.ach-modal{background:var(--bg,#f8f8f6);border-radius:18px;max-width:760px;width:100%;margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden}
+.ach-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border,#e2e2e2)}
+.ach-head h2{margin:0;font-size:17px}
+.ach-head-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--grey-md,#888);line-height:1}
+.ach-body{padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:1.3rem}
+.ach-sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-md,#888);margin-bottom:8px}
+.ach-standing{display:flex;align-items:center;gap:14px;padding:14px 16px;background:#FFFDF5;border:1px solid #E8CE7A;border-radius:12px}
+.ach-big-ico{font-size:34px;line-height:1}
+.ach-big-name{font-weight:800;font-size:17px}
+.ach-big-sub{font-size:12px;color:var(--grey-md,#888)}
+.ach-ladder{display:flex;flex-direction:column;gap:8px}
+.ach-tier{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border,#e2e2e2);border-radius:10px;background:#fff}
+.ach-tier.locked{opacity:.55}
+.ach-tier.reached{border-color:#E8CE7A;background:#FFFDF5}
+.ach-tier-ico{font-size:22px;width:28px;text-align:center;line-height:1}
+.ach-tier-body{flex:1}
+.ach-tier-name{font-weight:700;font-size:14px}
+.ach-tier-desc{font-size:12px;color:var(--grey-md,#888)}
+.ach-tier-status{font-size:11px;font-weight:700;white-space:nowrap}
+.ach-tier.reached .ach-tier-status{color:#B8860B}
+.ach-tier.locked .ach-tier-status{color:var(--grey-md,#999)}
+.lb-list{display:flex;flex-direction:column;gap:2px}
+.lb-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:14px}
+.lb-row.me{background:#FFF6D8;font-weight:700}
+.lb-rank{width:26px;font-weight:700;color:var(--grey-md,#888);text-align:center}
+.lb-name{flex:1}
+.lb-pub{font-size:11px;color:var(--grey-md,#999)}
+.lb-stars{font-weight:700;color:#B8860B;white-space:nowrap}
+.lb-loading{font-size:13px;color:var(--grey-md,#999);padding:8px}
 .golden-gazette-hdr{font-size:20px;line-height:1;filter:drop-shadow(0 0 4px rgba(255,200,0,.6));animation:ggPulse 2.6s ease-in-out infinite}
 @keyframes ggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
@@ -931,6 +969,9 @@ padding:5px 12px;border-radius:999px}
 <span class="gs-hdr" id="gs-hdr" style="display:none"></span>
 <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
+<button class="ach-nav" id="ach-nav" onclick="openAchievements()" title="Your star chart">
+<span>⭐</span><span>Star Chart</span>
+</button>
 <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="This week's crossword">
 <span class="cw-ico" id="cw-ico">&#128279;</span>
 <span class="cw-label" id="cw-label">Crossword</span>
@@ -982,6 +1023,16 @@ padding:5px 12px;border-radius:999px}
 <span class="ppill ppill-imp" id="pill-imp">0 / 1 impact</span>
 <span class="ppill ppill-life" id="pill-life">0 / 2 lifestyle</span>
 <div class="badges-row" id="badges-row"></div>
+</div>
+</div>
+<div class="ach-overlay" id="ach-overlay">
+<div class="ach-modal">
+<div class="ach-head"><h2>⭐ Your Star Chart</h2><button class="ach-head-close" onclick="closeAchievements()">&times;</button></div>
+<div class="ach-body">
+<div class="ach-standing" id="ach-standing"></div>
+<div><div class="ach-sec-title">Gold star tiers</div><div class="ach-ladder" id="ach-ladder"></div></div>
+<div><div class="ach-sec-title">Other badges</div><div class="ach-ladder" id="ach-other"></div></div>
+</div>
 </div>
 </div>
 <div id="celebrate-overlay"></div>
@@ -3817,6 +3868,8 @@ document.getElementById('aab-award').addEventListener('click', e => { if(e.targe
 // slate; `gold_star_weeks` is the server-side guard against double-counting.
 let MY_GOLD_STARS = 0;
 function goldStarTier(count){
+if (count >= 50) return 6;
+if (count >= 30) return 5;
 if (count >= 20) return 4;
 if (count >= 10) return 3;
 if (count >= 5) return 2;
@@ -3858,6 +3911,63 @@ renderGoldStarHdr(newCount);
 if (typeof renderBadges === 'function') renderBadges();
 if (USER) notifySlack(':star: *' + USER.name + '* filed every story this week \u2014 gold star #' + newCount + ' on their profile!');
 } catch(e) { console.warn('Gold star award failed (non-critical):', e); }
+}
+
+// ── Achievements & leaderboard ──
+const STAR_TIERS = [
+{ min:1,  ico:'⭐',            name:'Gold Star',    desc:'File every story in a week — your full slate.' },
+{ min:5,  ico:'✨',            name:'Pulsing Star', desc:'Reach 5 gold stars.' },
+{ min:10, ico:'🌟',        name:'Glowing Star', desc:'Reach 10 gold stars.' },
+{ min:20, ico:'🌈',        name:'Rainbow Star', desc:'Reach 20 gold stars.' },
+{ min:30, ico:'🖤',        name:'Onyx Star',    desc:'Reach 30 gold stars.' },
+{ min:50, ico:'💎',        name:'Diamond Star', desc:'Reach 50 gold stars.' },
+];
+function openAchievements(){ document.getElementById('ach-overlay').classList.add('show'); renderAchievements(); }
+function closeAchievements(){ document.getElementById('ach-overlay').classList.remove('show'); }
+function renderAchievements(){
+const count = MY_GOLD_STARS || 0;
+const cur = STAR_TIERS.slice().reverse().find(t => count >= t.min);
+const standing = document.getElementById('ach-standing');
+if (standing) {
+standing.innerHTML = cur
+? '<span class="ach-big-ico">' + cur.ico + '</span><div><div class="ach-big-name">' + cur.name + '</div><div class="ach-big-sub">' + count + ' gold star' + (count===1?'':'s') + ' — filed every story, every week</div></div>'
+: '<span class="ach-big-ico">⭐</span><div><div class="ach-big-name">No gold stars yet</div><div class="ach-big-sub">File your full slate this week to earn your first.</div></div>';
+}
+const ladder = document.getElementById('ach-ladder');
+if (ladder) {
+ladder.innerHTML = STAR_TIERS.map(t => {
+const reached = count >= t.min;
+const status = reached ? 'Unlocked' : ((t.min - count) + ' to go');
+return '<div class="ach-tier ' + (reached?'reached':'locked') + '"><span class="ach-tier-ico">' + t.ico + '</span><div class="ach-tier-body"><div class="ach-tier-name">' + t.name + '</div><div class="ach-tier-desc">' + t.desc + '</div></div><span class="ach-tier-status">' + status + '</span></div>';
+}).join('');
+}
+const other = document.getElementById('ach-other');
+if (other) {
+const hasGolden = (typeof hasGoldenThisWeek==='function' && hasGoldenThisWeek());
+const hasAab = (typeof hasAabThisWeek==='function' && hasAabThisWeek());
+other.innerHTML =
+'<div class="ach-tier ' + (hasGolden?'reached':'locked') + '"><span class="ach-tier-ico">🤩</span><div class="ach-tier-body"><div class="ach-tier-name">Golden Gazette</div><div class="ach-tier-desc">Solve the Friday crossword.</div></div><span class="ach-tier-status">' + (hasGolden?'Earned this week':'Weekly') + '</span></div>' +
+'<div class="ach-tier ' + (hasAab?'reached':'locked') + '"><span class="ach-tier-ico">⭐</span><div class="ach-tier-body"><div class="ach-tier-name">Above &amp; Beyond</div><div class="ach-tier-desc">File more than your weekly slate.</div></div><span class="ach-tier-status">' + (hasAab?'Earned this week':'Weekly') + '</span></div>';
+}
+}
+async function loadLeaderboard(){
+const el = document.getElementById('ach-leaderboard');
+if (!el) return;
+el.innerHTML = '<div class="lb-loading">Loading…</div>';
+try {
+const { data: rows } = await supa.from('profiles').select('name, reporter_name, publication, gold_star_count, role').order('gold_star_count', { ascending:false });
+const list = (rows||[]).filter(r => r.role !== 'editor');
+const meName = USER ? USER.name : '';
+const html = list.map((r, i) => {
+const nm = r.reporter_name || r.name || '—';
+const stars = r.gold_star_count || 0;
+const isMe = nm === meName;
+return '<div class="lb-row' + (isMe?' me':'') + '"><span class="lb-rank">' + (i+1) + '</span><span class="lb-name">' + esc(nm) + ' <span class="lb-pub">' + esc(r.publication||'') + '</span></span><span class="lb-stars">⭐ ' + stars + '</span></div>';
+}).join('');
+el.innerHTML = html || '<div class="lb-loading">No gold stars yet — be the first.</div>';
+} catch(e) {
+el.innerHTML = '<div class="lb-loading">Couldn’t load the leaderboard right now.</div>';
+}
 }
 
 // ══════════════════════════════════════════
@@ -4183,6 +4293,7 @@ function closeAward(){ document.getElementById('gg-award').classList.remove('sho
 
 // close overlays on backdrop / escape
 document.getElementById('cw-overlay').addEventListener('click', e=>{ if(e.target.id==='cw-overlay') closeCrossword(); });
+document.getElementById('ach-overlay').addEventListener('click', e=>{ if(e.target.id==='ach-overlay') closeAchievements(); });
 document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.id==='gg-award') closeAward(); });
 
 
