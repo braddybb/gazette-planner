@@ -243,6 +243,16 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .bank-field input,.bank-field select,.bank-field textarea{width:100%;box-sizing:border-box;font-family:inherit;font-size:13.5px;border:1px solid var(--border,#ddd);border-radius:8px;padding:8px 10px;background:#fff;color:var(--ink)}
 .bank-field textarea{resize:vertical;min-height:60px}
 .bank-back{background:none;border:none;color:var(--blue,#3A5BDF);font-size:14px;cursor:pointer;padding:0;margin-bottom:8px}
+.res-wrap{padding:1.75rem 2rem;max-width:800px;margin:0 auto}
+.res-intro{color:var(--grey-md,#888);font-size:13.5px;margin:0 0 16px;max-width:62ch}
+.res-group{margin-bottom:20px}
+.res-group-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-md,#888);margin-bottom:8px}
+.res-item{display:block;text-decoration:none;border:1px solid var(--border,#e2e2e2);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:#fff;transition:border-color .15s}
+.res-item:hover{border-color:#999}
+.res-item-title{font-weight:600;font-size:14px;color:var(--ink);display:flex;align-items:center;gap:6px}
+.res-item-title .res-ext{font-size:12px;color:var(--grey-md,#999)}
+.res-item-note{font-size:12.5px;color:var(--grey-md,#888);margin-top:3px}
+.res-empty{color:var(--grey-md,#999);font-size:13.5px;font-style:italic;padding:20px 0}
 .foi-wrap{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
 .foi-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .foi-title{font-size:22px;font-weight:600;color:var(--ink);margin:0}
@@ -998,6 +1008,9 @@ padding:5px 12px;border-radius:999px}
 <button class="bank-nav" id="bank-nav" onclick="showBankView()" title="Your evergreen bank — content ready for when you're away">
 <span>&#127974;</span><span id="bank-nav-label">Bank</span>
 </button>
+<button class="bank-nav" id="res-nav" onclick="showResourcesView()" title="Onboarding docs and resources">
+<span>&#128218;</span><span>Resources</span>
+</button>
 <button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
 <span>&#128196;</span><span>FOI</span>
 </button>
@@ -1136,6 +1149,14 @@ padding:5px 12px;border-radius:999px}
 <div class="bank-meter-label" id="bank-meter-label">0 / 3</div>
 </div>
 <div class="bank-slots" id="bank-slots"></div>
+</div>
+</div>
+<div id="resources-view" style="display:none">
+<div class="res-wrap">
+<button class="bank-back" onclick="showStoriesView()">&#8592; Back to my week</button>
+<h2 style="margin:0 0 6px">&#128218; Resources</h2>
+<p class="res-intro">Onboarding guides, style docs and handy links, kept here by your editors.</p>
+<div id="res-list"></div>
 </div>
 </div>
 <div id="foi-view" style="display:none">
@@ -2197,11 +2218,13 @@ function showStoriesView() {
 document.getElementById('stories-view').style.display = 'block';
 document.getElementById('foi-view').style.display = 'none';
 document.getElementById('bank-view').style.display = 'none';
+document.getElementById('resources-view').style.display = 'none';
 }
 function showFOIView() {
 document.getElementById('stories-view').style.display = 'none';
 document.getElementById('foi-view').style.display = 'block';
 document.getElementById('bank-view').style.display = 'none';
+document.getElementById('resources-view').style.display = 'none';
 loadFOIRequests();
 }
 
@@ -2242,9 +2265,39 @@ if (ml) ml.textContent = n>=3 ? '100% full' : (n+' / 3');
 function showBankView(){
 document.getElementById('stories-view').style.display='none';
 document.getElementById('foi-view').style.display='none';
+document.getElementById('resources-view').style.display='none';
 document.getElementById('bank-view').style.display='block';
 renderBankCards();
 loadBank();
+}
+
+// ── Resources (read-only list of editor-curated links, stored in system_flags) ──
+function showResourcesView(){
+document.getElementById('stories-view').style.display='none';
+document.getElementById('foi-view').style.display='none';
+document.getElementById('bank-view').style.display='none';
+document.getElementById('resources-view').style.display='block';
+loadResources();
+}
+async function loadResources(){
+try {
+const { data } = await supa.from('system_flags').select('value').eq('key','resources');
+const row = (data && data[0]) ? data[0] : null;
+const list = row && row.value ? JSON.parse(row.value) : [];
+renderResources(Array.isArray(list) ? list : []);
+} catch(e){ console.warn('Resources load failed (non-critical):', e); renderResources([]); }
+}
+function renderResources(list){
+const el = document.getElementById('res-list');
+if (!el) return;
+if (!list.length){ el.innerHTML = '<div class="res-empty">No resources have been added yet.</div>'; return; }
+const groups = {};
+list.forEach(r => { const c = ((r.category||'').trim()) || 'General'; (groups[c]=groups[c]||[]).push(r); });
+el.innerHTML = Object.keys(groups).map(cat =>
+'<div class="res-group"><div class="res-group-title">'+esc(cat)+'</div>'+
+groups[cat].map(r => '<a class="res-item" href="'+esc(r.url||'#')+'" target="_blank" rel="noopener noreferrer"><div class="res-item-title">'+esc(r.title||r.url||'Link')+' <span class="res-ext">&#8599;</span></div>'+(r.note?'<div class="res-item-note">'+esc(r.note)+'</div>':'')+'</a>').join('')+
+'</div>'
+).join('');
 }
 function renderBankCards(){
 const wrap = document.getElementById('bank-slots');
