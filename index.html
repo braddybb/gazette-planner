@@ -223,6 +223,26 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 /* ── FOI builder ── */
 .foi-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 .foi-nav:hover{background:#222}
+.bank-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.bank-nav:hover{background:#222}
+.bank-nav.full{border-color:#E8CE7A;color:#F0D890}
+.bank-wrap{padding:1.75rem 2rem;max-width:900px;margin:0 auto}
+.bank-intro{color:var(--grey-md,#888);font-size:13.5px;margin:0 0 4px;max-width:62ch}
+.bank-meter{display:flex;align-items:center;gap:10px;margin:14px 0 20px}
+.bank-meter-bar{flex:1;height:8px;background:#eee;border-radius:99px;overflow:hidden}
+.bank-meter-fill{height:100%;background:#E8CE7A;transition:width .3s}
+.bank-meter-label{font-size:12px;font-weight:700;color:var(--grey-md,#888);white-space:nowrap}
+.bank-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;align-items:start}
+.bank-card{border:1px solid var(--border,#e2e2e2);border-radius:12px;background:#fff;padding:14px}
+.bank-card.filled{border-color:#E8CE7A;background:#FFFDF5}
+.bank-card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.bank-card-num{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--grey-md,#999)}
+.bank-ready{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--grey-md,#888);cursor:pointer}
+.bank-field{margin-bottom:10px}
+.bank-field .cl{font-size:11px;font-weight:600;color:var(--grey-md,#888);margin-bottom:4px}
+.bank-field input,.bank-field select,.bank-field textarea{width:100%;box-sizing:border-box;font-family:inherit;font-size:13.5px;border:1px solid var(--border,#ddd);border-radius:8px;padding:8px 10px;background:#fff;color:var(--ink)}
+.bank-field textarea{resize:vertical;min-height:60px}
+.bank-back{background:none;border:none;color:var(--blue,#3A5BDF);font-size:14px;cursor:pointer;padding:0;margin-bottom:8px}
 .foi-wrap{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
 .foi-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .foi-title{font-size:22px;font-weight:600;color:var(--ink);margin:0}
@@ -976,6 +996,9 @@ padding:5px 12px;border-radius:999px}
 <span class="cw-ico" id="cw-ico">&#128279;</span>
 <span class="cw-label" id="cw-label">Crossword</span>
 </button>
+<button class="bank-nav" id="bank-nav" onclick="showBankView()" title="Your evergreen bank — content ready for when you're away">
+<span>&#127974;</span><span id="bank-nav-label">Bank</span>
+</button>
 <button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
 <span>&#128196;</span><span>FOI</span>
 </button>
@@ -1104,6 +1127,18 @@ padding:5px 12px;border-radius:999px}
 </div>
 
 <!-- FOI BUILDER VIEW -->
+<div id="bank-view" style="display:none">
+<div class="bank-wrap">
+<button class="bank-back" onclick="showStoriesView()">&#8592; Back to my week</button>
+<h2 style="margin:0 0 6px">&#127974; The Bank</h2>
+<p class="bank-intro">Evergreen stories — videos, articles, anything that isn’t time-sensitive — kept ready to run when you’re sick or away. Keep all three topped up.</p>
+<div class="bank-meter">
+<div class="bank-meter-bar"><div class="bank-meter-fill" id="bank-meter-fill" style="width:0%"></div></div>
+<div class="bank-meter-label" id="bank-meter-label">0 / 3</div>
+</div>
+<div class="bank-slots" id="bank-slots"></div>
+</div>
+</div>
 <div id="foi-view" style="display:none">
 <div class="foi-wrap">
 <div class="foi-header-row">
@@ -1614,6 +1649,7 @@ refreshCrosswordNav();
 renderBadges();
 refreshNextWeekBadges();
 loadGoldStar();
+loadBank();
 loadTodos();
 }
 
@@ -2161,11 +2197,84 @@ catch(e) { console.error('Could not update FOI status:', e); }
 function showStoriesView() {
 document.getElementById('stories-view').style.display = 'block';
 document.getElementById('foi-view').style.display = 'none';
+document.getElementById('bank-view').style.display = 'none';
 }
 function showFOIView() {
 document.getElementById('stories-view').style.display = 'none';
 document.getElementById('foi-view').style.display = 'block';
+document.getElementById('bank-view').style.display = 'none';
 loadFOIRequests();
+}
+
+// ── The Bank — up to 3 evergreen stories, stored as planner_stories rows under a 'bank' week ──
+const BANK_WEEK = 'bank';
+const BANK_SLOTS = ['01','02','03'];
+let BANK = {};
+function bankRowFor(num){ return BANK[num] || { reporter:USER.name, publication:USER.pub, week_of:BANK_WEEK, story_num:num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false }; }
+async function bankFetch(){
+const { data:{ session } } = await supa.auth.getSession();
+const token = session ? session.access_token : SUPA_KEY;
+const filter = 'reporter=eq.'+encodeURIComponent(USER.name)+'&publication=eq.'+encodeURIComponent(USER.pub)+'&week_of=eq.'+BANK_WEEK+'&select=*';
+const res = await fetch(SUPA_URL+'/rest/v1/'+TABLE+'?'+filter, { headers:{ 'apikey':SUPA_KEY, 'Authorization':'Bearer '+token } });
+const t = await res.text(); return t ? JSON.parse(t) : [];
+}
+async function loadBank(){
+try {
+if (!USER) return;
+const rows = await bankFetch();
+BANK = {};
+(rows||[]).forEach(r => { BANK[r.story_num] = r; });
+updateBankBadge();
+if (document.getElementById('bank-view').style.display === 'block') renderBankCards();
+} catch(e){ console.warn('Bank load failed (non-critical):', e); }
+}
+function bankFilledCount(){ return BANK_SLOTS.filter(n => BANK[n] && (BANK[n].headline||'').trim()).length; }
+function updateBankBadge(){
+const n = bankFilledCount();
+const label = document.getElementById('bank-nav-label');
+const nav = document.getElementById('bank-nav');
+if (label) label.textContent = n>=3 ? 'Bank full' : ('Bank '+n+'/3');
+if (nav) nav.classList.toggle('full', n>=3);
+const fill = document.getElementById('bank-meter-fill');
+const ml = document.getElementById('bank-meter-label');
+if (fill) fill.style.width = Math.round(n/3*100)+'%';
+if (ml) ml.textContent = n>=3 ? '100% full' : (n+' / 3');
+}
+function showBankView(){
+document.getElementById('stories-view').style.display='none';
+document.getElementById('foi-view').style.display='none';
+document.getElementById('bank-view').style.display='block';
+renderBankCards();
+loadBank();
+}
+function renderBankCards(){
+const wrap = document.getElementById('bank-slots');
+if (!wrap) return;
+const types = ['','Video','Article','Other'];
+wrap.innerHTML = BANK_SLOTS.map((num,i) => {
+const r = bankRowFor(num);
+const filled = (r.headline||'').trim() ? ' filled' : '';
+const opts = types.map(t => '<option value="'+t+'"'+(r.format===t?' selected':'')+'>'+(t||'Type…')+'</option>').join('');
+return '<div class="bank-card'+filled+'">'+
+'<div class="bank-card-hd"><span class="bank-card-num">Slot '+(i+1)+'</span>'+
+'<label class="bank-ready"><input type="checkbox" '+(r.filed?'checked':'')+' onchange="bankField(\''+num+'\',\'filed\',this.checked)"> Ready</label></div>'+
+'<div class="bank-field"><div class="cl">What is it?</div><input type="text" value="'+esc(r.headline||'')+'" placeholder="Headline / title" oninput="bankField(\''+num+'\',\'headline\',this.value)"></div>'+
+'<div class="bank-field"><div class="cl">Type</div><select onchange="bankField(\''+num+'\',\'format\',this.value)">'+opts+'</select></div>'+
+'<div class="bank-field"><div class="cl">Where it’s stored / details</div><textarea placeholder="Link, Drive folder, what’s left to do…" oninput="bankField(\''+num+'\',\'notes\',this.value)">'+esc(r.notes||'')+'</textarea></div>'+
+'</div>';
+}).join('');
+}
+let bankSaveTimers = {};
+function bankField(num, field, val){
+const r = bankRowFor(num);
+r[field] = val; BANK[num] = r;
+if (field==='headline'){ updateBankBadge(); const cards=document.querySelectorAll('.bank-card'); const c=cards[BANK_SLOTS.indexOf(num)]; if(c) c.classList.toggle('filled',(val||'').trim()!==''); }
+clearTimeout(bankSaveTimers[num]);
+bankSaveTimers[num] = setTimeout(()=>saveBankSlot(num), 600);
+}
+async function saveBankSlot(num){
+try { const r = bankRowFor(num); r.updated_at = new Date().toISOString(); await upsertRow(r); }
+catch(e){ console.warn('Bank save failed:', e); }
 }
 
 function renderCalendar() {
