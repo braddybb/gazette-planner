@@ -180,6 +180,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #todo-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #foi-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
 #bank-rollup-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+#resources-admin-view{display:none;padding:1.5rem 2rem;max-width:760px;margin:0 auto}
+.res-admin-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:18px;align-items:start}
+.res-admin-form input{font-family:inherit;font-size:13px;border:1px solid #ddd;background:#fff;color:#222;border-radius:8px;padding:8px 10px}
+#res-new-title{grid-column:1;grid-row:1}
+#res-new-url{grid-column:2;grid-row:1}
+#res-new-cat{grid-column:1;grid-row:2}
+#res-new-note{grid-column:2;grid-row:2}
+.res-admin-form button{grid-column:3;grid-row:1 / 3;font-family:inherit;font-weight:600;background:#3A5BDF;color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer}
+.res-admin-row{display:flex;align-items:flex-start;gap:10px;border:1px solid #ECECEC;border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff}
+.res-admin-main{flex:1;min-width:0}
+.res-admin-title{font-weight:600;font-size:13.5px}
+.res-admin-cat{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#888;background:#F0F0F0;border-radius:5px;padding:1px 6px;margin-left:4px}
+.res-admin-url{font-size:12px;color:#3A5BDF;word-break:break-all;text-decoration:none;display:block}
+.res-admin-note{font-size:12px;color:#666;margin-top:2px}
+.res-admin-del{background:none;border:none;font-size:20px;color:#bbb;cursor:pointer;line-height:1}
+.res-admin-del:hover{color:#c0392b}
 .rollup-bank-row{border:1px solid #ECECEC;border-radius:8px;padding:8px 10px;margin-top:6px;background:#fff}
 .rollup-bank-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .rollup-bank-title{font-weight:600;font-size:13.5px;flex:1}
@@ -639,6 +655,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="weekly-review-btn" id="foi-rollup-btn" onclick="openFOIRollup()" title="See every reporter's FOI requests">FOI</button>
     <button class="weekly-review-btn" id="leaderboard-btn" onclick="openLeaderboard()" title="Everyone’s gold star tally — not a ranking">Gold stars</button>
     <button class="weekly-review-btn" id="bank-rollup-btn" onclick="openBankRollup()" title="See every reporter's evergreen bank">Bank</button>
+    <button class="weekly-review-btn" id="resources-btn" onclick="openResourcesAdmin()" title="Manage onboarding docs & links for reporters">Resources</button>
     <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
     <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
       <span class="cw-ico" id="cw-ico">&#128279;</span>
@@ -734,6 +751,24 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       </div>
     </div>
     <div id="bank-rollup-body"></div>
+  </div>
+
+  <div id="resources-admin-view">
+    <button class="back-btn" onclick="closeResourcesAdmin()">&#8592; Back to all reporters</button>
+    <div class="wr-header">
+      <div>
+        <div class="wr-title">Resources</div>
+        <div class="wr-sub">Onboarding docs and links — reporters see these in their planner</div>
+      </div>
+    </div>
+    <div class="res-admin-form">
+      <input id="res-new-title" placeholder="Title (e.g. Style guide)">
+      <input id="res-new-url" placeholder="Link (https://…)">
+      <input id="res-new-cat" placeholder="Category (optional)">
+      <input id="res-new-note" placeholder="Short note (optional)">
+      <button onclick="addResource()">Add</button>
+    </div>
+    <div id="res-admin-list"></div>
   </div>
 
   <div id="leaderboard-view">
@@ -2862,6 +2897,67 @@ async function loadBankRollup() {
     console.error('Could not load bank rollup:', e);
     body.innerHTML = '<div class="wr-err">Could not load the bank. Try refreshing.</div>';
   }
+}
+
+// ── Resources — curated links for reporters, stored as one JSON row in system_flags ──
+let RESOURCES = [];
+function openResourcesAdmin() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('resources-admin-view').style.display = 'block';
+  loadResourcesAdmin();
+}
+function closeResourcesAdmin() {
+  document.getElementById('resources-admin-view').style.display = 'none';
+  document.getElementById('main-view').style.display = 'block';
+}
+async function loadResourcesAdmin() {
+  const body = document.getElementById('res-admin-list');
+  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Loading resources...</div>';
+  try {
+    const { data } = await supa.from('system_flags').select('value').eq('key', 'resources');
+    const row = (data && data[0]) ? data[0] : null;
+    RESOURCES = (row && row.value) ? JSON.parse(row.value) : [];
+    if (!Array.isArray(RESOURCES)) RESOURCES = [];
+  } catch(e) { RESOURCES = []; }
+  renderResourcesAdmin();
+}
+function renderResourcesAdmin() {
+  const body = document.getElementById('res-admin-list');
+  if (!RESOURCES.length) { body.innerHTML = '<div class="rollup-empty">No resources yet — add one above.</div>'; return; }
+  body.innerHTML = RESOURCES.map(r =>
+    '<div class="res-admin-row"><div class="res-admin-main">' +
+      '<div class="res-admin-title">' + esc(r.title || r.url) + (r.category ? ' <span class="res-admin-cat">' + esc(r.category) + '</span>' : '') + '</div>' +
+      '<a class="res-admin-url" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url) + '</a>' +
+      (r.note ? '<div class="res-admin-note">' + esc(r.note) + '</div>' : '') +
+    '</div><button class="res-admin-del" onclick="removeResource(\'' + r.id + '\')" title="Remove">&times;</button></div>'
+  ).join('');
+}
+async function addResource() {
+  const title = document.getElementById('res-new-title').value.trim();
+  let url = document.getElementById('res-new-url').value.trim();
+  const category = document.getElementById('res-new-cat').value.trim();
+  const note = document.getElementById('res-new-note').value.trim();
+  if (!title || !url) { alert('Give it a title and a link.'); return; }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  RESOURCES.push({ id: Date.now().toString(36), title, url, category, note });
+  const ok = await saveResourcesList();
+  if (ok) {
+    ['res-new-title','res-new-url','res-new-cat','res-new-note'].forEach(i => document.getElementById(i).value = '');
+    renderResourcesAdmin();
+  } else { RESOURCES.pop(); alert('Could not save the resource. Try again.'); }
+}
+async function removeResource(id) {
+  const prev = RESOURCES.slice();
+  RESOURCES = RESOURCES.filter(r => r.id !== id);
+  const ok = await saveResourcesList();
+  if (ok) renderResourcesAdmin(); else { RESOURCES = prev; alert('Could not remove. Try again.'); }
+}
+async function saveResourcesList() {
+  try {
+    const { error } = await supa.from('system_flags').upsert({ key: 'resources', value: JSON.stringify(RESOURCES) }, { onConflict: 'key' });
+    if (error) { console.error('Resources save error:', error); return false; }
+    return true;
+  } catch(e) { console.error('Resources save failed:', e); return false; }
 }
 function foiDaysUntil(dateStr) {
   const target = new Date(dateStr + 'T00:00:00');
