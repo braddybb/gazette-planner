@@ -129,18 +129,21 @@ async function postChannel(text) {
 }
 
 function buildModal(reporters) {
-  const options = reporters.slice(0, 100).map(r => ({
-    text: { type: "plain_text", text: `${r.reporter} — ${r.publication}`.slice(0, 75) },
-    value: JSON.stringify({ r: r.reporter, p: r.publication }).slice(0, 150),
-  }));
+  const options = [
+    { text: { type: "plain_text", text: "\uD83C\uDF10 Everyone \u2014 all reporters", emoji: true }, value: JSON.stringify({ all: true }) },
+    ...reporters.slice(0, 99).map(r => ({
+      text: { type: "plain_text", text: `${r.reporter} \u2014 ${r.publication}`.slice(0, 75) },
+      value: JSON.stringify({ r: r.reporter, p: r.publication }).slice(0, 75),
+    })),
+  ];
   return {
     type: "modal", callback_id: "assign_story",
     title: { type: "plain_text", text: "Assign a story" },
     submit: { type: "plain_text", text: "Assign" },
     close: { type: "plain_text", text: "Cancel" },
     blocks: [
-      { type: "input", block_id: "reporter", label: { type: "plain_text", text: "Reporter" },
-        element: { type: "static_select", action_id: "v", placeholder: { type: "plain_text", text: "Choose a reporter" }, options } },
+      { type: "input", block_id: "reporter", label: { type: "plain_text", text: "Reporter(s)" },
+        element: { type: "multi_static_select", action_id: "v", placeholder: { type: "plain_text", text: "Choose one, several, or everyone" }, options } },
       { type: "input", block_id: "headline", label: { type: "plain_text", text: "Headline / working title" },
         element: { type: "plain_text_input", action_id: "v" } },
       { type: "input", block_id: "angle", optional: true, label: { type: "plain_text", text: "Angle" },
@@ -174,20 +177,34 @@ export default async (req) => {
     const payload = JSON.parse(params.get("payload"));
     if (payload.type === "view_submission" && payload.view.callback_id === "assign_story") {
       try {
-        const sel = JSON.parse(val(payload.view, "reporter"));
+        // Reporters — a multi-select; "Everyone" expands to the whole list.
+        const rblock = payload.view.state.values.reporter;
+        const selected = (rblock && rblock.v && rblock.v.selected_options) || [];
+        let targets;
+        if (selected.some(o => { try { return JSON.parse(o.value).all; } catch { return false; } })) {
+          targets = await listReporters(); // [{ reporter, publication }]
+        } else {
+          targets = selected.map(o => { const x = JSON.parse(o.value); return { reporter: x.r, publication: x.p }; });
+        }
+        if (!targets.length) {
+          return new Response(JSON.stringify({ response_action: "errors", errors: { reporter: "Pick at least one reporter (or Everyone)." } }),
+            { status: 200, headers: { "Content-Type": "application/json" } });
+        }
         const week = mondayOfNow();
-        const num = await nextExtraNum(sel.r, sel.p, week);
-        const row = buildRow({
-          reporter: sel.r, pub: sel.p, week, num,
-          headline: val(payload.view, "headline"),
-          angle: val(payload.view, "angle"),
-          notes: val(payload.view, "notes"),
-          editorNote: val(payload.view, "editor_note"),
-          assignedBy: payload.user?.name || payload.user?.username || "Editor",
-        });
-        await supa("POST", TABLE, row, "return=minimal");
-        // Ping #editorial, same format and webhook the Planner/Editor Dashboard use.
-        await postChannel(slackMention(sel.r) + ':clipboard: A story was assigned to *' + sel.r + '*: "' + (row.headline || "Untitled") + '"').catch(() => {});
+        const headline = val(payload.view, "headline");
+        const angle = val(payload.view, "angle");
+        const notes = val(payload.view, "notes");
+        const editorNote = val(payload.view, "editor_note");
+        const assignedBy = payload.user?.name || payload.user?.username || "Editor";
+        // Give each reporter their own pre-filled card in their own next extra slot (in parallel).
+        await Promise.all(targets.map(async t => {
+          const num = await nextExtraNum(t.reporter, t.publication, week);
+          const row = buildRow({ reporter: t.reporter, pub: t.publication, week, num, headline, angle, notes, editorNote, assignedBy });
+          await supa("POST", TABLE, row, "return=minimal");
+        }));
+        // One #editorial ping tagging everyone assigned.
+        const who = targets.map(t => { const m = slackMention(t.reporter).trim(); return m || ("*" + t.reporter + "*"); });
+        await postChannel(":clipboard: A story was assigned to " + who.join(", ") + ': "' + (headline || "Untitled") + '"').catch(() => {});
         return new Response("", { status: 200 }); // empty 200 closes the modal
       } catch (e) {
         console.error("save failed:", e);
