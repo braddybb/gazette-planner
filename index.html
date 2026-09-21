@@ -728,6 +728,8 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
    10+: glowing "different" star
    20+: rainbow star */
 .gs-hdr{display:inline-flex;align-items:center;font-size:20px;line-height:1;color:#D4A017;position:relative}
+.gs-hdr.gs-empty{opacity:.4}
+.gs-hdr[onclick]{margin-left:2px}
 .gs-hdr .gs-count{font-size:10px;font-weight:800;color:#8A6A00;vertical-align:super;margin-left:1px}
 .gs-hdr.gs-tier2{animation:gsPulse 1.7s ease-in-out infinite}
 .gs-hdr.gs-tier3{color:#B8860B;text-shadow:0 0 6px rgba(255,200,0,.85);animation:gsPulse 2.2s ease-in-out infinite}
@@ -976,6 +978,7 @@ padding:5px 12px;border-radius:999px}
 <a class="perf-nav-link" href="https://analytics.gazettenews.au/" target="_blank" rel="noopener noreferrer" title="Open the Performance Dashboard">Performance Dashboard <span class="perf-ext">&#8599;</span></a>
 <div class="app-divider"></div>
 <span class="app-reporter" id="hdr-reporter"></span>
+<span class="gs-hdr" id="gs-hdr" onclick="openAchievements()" title="Your star chart" style="cursor:pointer;display:none"></span>
 <div class="app-divider"></div>
 <span class="app-pub" id="hdr-pub"></span>
 <div class="header-spacer"></div>
@@ -986,12 +989,8 @@ padding:5px 12px;border-radius:999px}
 <button class="week-arrow" id="week-next" onclick="shiftWeek(1)" title="Next week">&#8250;</button>
 </div>
 <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
-<span class="gs-hdr" id="gs-hdr" style="display:none"></span>
 <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
-<button class="ach-nav" id="ach-nav" onclick="openAchievements()" title="Your star chart">
-<span>⭐</span><span>Star Chart</span>
-</button>
 <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="This week's crossword">
 <span class="cw-ico" id="cw-ico">&#128279;</span>
 <span class="cw-label" id="cw-label">Crossword</span>
@@ -3987,19 +3986,33 @@ return 1;
 function renderGoldStarHdr(count){
 const el = document.getElementById('gs-hdr');
 if (!el) return;
-if (!count || count < 1) { el.style.display = 'none'; return; }
-const tier = goldStarTier(count);
-el.className = 'gs-hdr gs-tier' + tier;
-el.innerHTML = '\u2605' + (count > 1 ? '<span class="gs-count">' + count + '</span>' : '');
-el.title = count + ' gold star' + (count===1?'':'s') + ' \u2014 filed every story, every week';
+const c = count || 0;
+el.className = 'gs-hdr gs-tier' + (c < 1 ? '1 gs-empty' : goldStarTier(c));
+el.innerHTML = '\u2605' + (c > 1 ? '<span class="gs-count">' + c + '</span>' : '');
+el.title = c < 1 ? 'Your star chart \u2014 no gold stars yet' : (c + ' gold star' + (c===1?'':'s') + ' \u2014 filed every story, every week');
 el.style.display = 'inline-flex';
 }
 async function loadGoldStar(){
 try {
+if (!USER) return;
 const { data: { session } } = await supa.auth.getSession();
-if (!session) return;
-const { data: profile } = await supa.from('profiles').select('gold_star_count').eq('id', session.user.id).single();
-MY_GOLD_STARS = profile ? (profile.gold_star_count || 0) : 0;
+const token = session ? session.access_token : SUPA_KEY;
+// Compute from the reporter's own stories (a gold star = a week they filed
+// their full base slate), so it matches the editor and can't fall out of sync.
+const base = /^National Account/.test(USER.pub || '') ? 8 : 10;
+const filter = 'reporter=eq.'+encodeURIComponent(USER.name)+'&publication=eq.'+encodeURIComponent(USER.pub)+'&select=week_of,story_num,filed&limit=100000';
+const res = await fetch(SUPA_URL+'/rest/v1/'+TABLE+'?'+filter, { headers:{ 'apikey':SUPA_KEY, 'Authorization':'Bearer '+token } });
+const rows = res.ok ? await res.json() : [];
+const weeks = {};
+rows.forEach(r => {
+if (r.week_of === 'bank' || !r.filed) return;
+const nn = parseInt(r.story_num, 10);
+if (!(nn >= 1 && nn <= base)) return;
+(weeks[r.week_of] = weeks[r.week_of] || new Set()).add(nn);
+});
+let stars = 0;
+Object.keys(weeks).forEach(wk => { if (weeks[wk].size >= base) stars++; });
+MY_GOLD_STARS = stars;
 renderGoldStarHdr(MY_GOLD_STARS);
 if (typeof renderBadges === 'function') renderBadges();
 } catch(e) { console.warn('Gold star load failed (non-critical):', e); }
@@ -4015,10 +4028,10 @@ if (weeks.indexOf(WEEK) !== -1) return; // already awarded for this week
 const newCount = (profile.gold_star_count || 0) + 1;
 const newWeeks = weeks.concat([WEEK]);
 await supa.from('profiles').update({ gold_star_count: newCount, gold_star_weeks: newWeeks }).eq('id', session.user.id);
-MY_GOLD_STARS = newCount;
-renderGoldStarHdr(newCount);
+MY_GOLD_STARS = (MY_GOLD_STARS || 0) + 1;
+renderGoldStarHdr(MY_GOLD_STARS);
 if (typeof renderBadges === 'function') renderBadges();
-if (USER) notifySlack(':star: *' + USER.name + '* filed every story this week \u2014 gold star #' + newCount + ' on their profile!');
+if (USER) notifySlack(':star: *' + USER.name + '* filed every story this week \u2014 gold star #' + MY_GOLD_STARS + ' on their profile!');
 } catch(e) { console.warn('Gold star award failed (non-critical):', e); }
 }
 
