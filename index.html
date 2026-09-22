@@ -2275,7 +2275,7 @@ loadResources();
 }
 async function loadResources(){
 try {
-const { data } = await supa.from('system_flags').select('value').eq('key','resources');
+const { data } = await supa.from('system_flags').select('value').like('key','resources%').order('key', { ascending: false }).limit(1);
 const row = (data && data[0]) ? data[0] : null;
 const list = row && row.value ? JSON.parse(row.value) : [];
 renderResources(Array.isArray(list) ? list : []);
