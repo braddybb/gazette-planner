@@ -89,6 +89,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .refresh-btn:hover{border-color:#555;color:#888}
 .weekly-review-btn{font-size:12px;color:#fff;background:var(--blue);border:0.5px solid var(--blue);border-radius:6px;padding:4px 12px;cursor:pointer;font-family:inherit}
 .weekly-review-btn:hover{opacity:.88}
+.seg{display:inline-flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);border-radius:9px;padding:3px}
+.seg-btn{background:transparent;border:none;color:#c7c7c2;font-family:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.seg-btn:hover{background:rgba(255,255,255,.13);color:#fff}
+.tool{position:relative;width:32px;height:32px;display:inline-grid;place-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:9px;color:#e9e9e6;font-size:15px;cursor:pointer;font-family:inherit;padding:0}
+.tool:hover{background:rgba(255,255,255,.15)}
+.tool-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;background:#ff3b30;border:1.5px solid var(--ink);border-radius:50%;display:none}
+.tool-dot.show{display:block}
 .signout-btn{font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
 .signout-btn:hover{color:#888}
 
@@ -648,19 +655,16 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       <button class="week-arrow" id="week-next" onclick="shiftEditorWeek(1)" title="Next week">&#8250;</button>
     </div>
     <button class="refresh-btn" onclick="loadWeek()">&#8635; Refresh</button>
-    <button class="weekly-review-btn" onclick="openWeeklyReview()">Weekly Review</button>
-    <button class="weekly-review-btn" id="impact-list-btn" onclick="openImpactList()" title="List every Impact-slot story across the network, past and present">Impact stories</button>
-    <button class="weekly-review-btn" id="election-list-btn" onclick="openElectionList()" title="List every Election-slot story across Victoria — filed and still in planners">Election stories</button>
-    <button class="weekly-review-btn" id="todo-rollup-btn" onclick="openTodoRollup()" title="See every reporter's to-do list">To-do</button>
-    <button class="weekly-review-btn" id="foi-rollup-btn" onclick="openFOIRollup()" title="See every reporter's FOI requests">FOI</button>
-    <button class="weekly-review-btn" id="leaderboard-btn" onclick="openLeaderboard()" title="Everyone’s gold star tally — not a ranking">Gold stars</button>
-    <button class="weekly-review-btn" id="bank-rollup-btn" onclick="openBankRollup()" title="See every reporter's evergreen bank">Bank</button>
-    <button class="weekly-review-btn" id="resources-btn" onclick="openResourcesAdmin()" title="Manage onboarding docs & links for reporters">Resources</button>
-    <span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
-    <button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="Friday crossword">
-      <span class="cw-ico" id="cw-ico">&#128279;</span>
-      <span class="cw-label" id="cw-label">Crossword</span>
-    </button>
+    <div class="seg">
+      <button class="seg-btn" onclick="openWeeklyReview()">Weekly Review</button>
+      <button class="seg-btn" id="impact-list-btn" onclick="openImpactList()" title="Every Impact-slot story across the network">Impact</button>
+      <button class="seg-btn" id="election-list-btn" onclick="openElectionList()" title="Every Election-slot story across Victoria">Election</button>
+    </div>
+    <button class="tool" id="todo-rollup-btn" onclick="openTool('todo', openTodoRollup)" title="To-do — every reporter's admin list">&#9989;<span class="tool-dot" id="dot-todo"></span></button>
+    <button class="tool" id="foi-rollup-btn" onclick="openTool('foi', openFOIRollup)" title="FOI — requests across the network">&#128196;<span class="tool-dot" id="dot-foi"></span></button>
+    <button class="tool" id="bank-rollup-btn" onclick="openTool('bank', openBankRollup)" title="Bank — everyone's evergreen store">&#127974;<span class="tool-dot" id="dot-bank"></span></button>
+    <button class="tool" id="resources-btn" onclick="openResourcesAdmin()" title="Resources — manage onboarding docs & links">&#128218;</button>
+    <button class="tool" id="leaderboard-btn" onclick="openLeaderboard()" title="Gold stars — everyone's tally">&#11088;</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
   </div>
 
@@ -1137,7 +1141,7 @@ async function checkLogin() {
   if (history.state !== 'dashboard') {
     history.pushState('dashboard', '', window.location.pathname);
   }
-  refreshCrosswordNav();
+  
   loadWeek();
   refreshSplashBadge();
 }
@@ -1245,6 +1249,31 @@ function hideEditorDupeWarning() {
   if (el) el.style.display = 'none';
 }
 
+// ── Section update dots — red dot on a tool until the editor opens it ──
+const NOTIF_TOOLS = [
+  { key:'todo', dot:'dot-todo', q:"reporter_todos?select=created_at&order=created_at.desc.nullslast&limit=1", field:'created_at' },
+  { key:'foi',  dot:'dot-foi',  q:"foi_requests?select=date_sent&order=date_sent.desc.nullslast&limit=1", field:'date_sent' },
+  { key:'bank', dot:'dot-bank', q:"planner_stories?week_of=eq.bank&select=updated_at&order=updated_at.desc.nullslast&limit=1", field:'updated_at' },
+];
+async function checkNotifs(){
+  for (const t of NOTIF_TOOLS){
+    try {
+      const rows = await supaFetch(t.q);
+      const latest = (rows && rows[0]) ? rows[0][t.field] : null;
+      if (!latest) continue;
+      const seen = localStorage.getItem('gz_ed_seen_' + t.key);
+      if (!seen){ localStorage.setItem('gz_ed_seen_' + t.key, new Date().toISOString()); continue; }
+      if (new Date(latest) > new Date(seen)){
+        const el = document.getElementById(t.dot); if (el) el.classList.add('show');
+      }
+    } catch(e){ /* non-critical */ }
+  }
+}
+function openTool(key, fn){
+  localStorage.setItem('gz_ed_seen_' + key, new Date().toISOString());
+  const el = document.getElementById('dot-' + key); if (el) el.classList.remove('show');
+  fn();
+}
 async function loadWeek() {
   const inp = document.getElementById('week-inp');
   if (inp.value.trim()) WEEK = getMondayOf(inp.value.trim());
@@ -1257,6 +1286,7 @@ async function loadWeek() {
     await refreshData();
     await loadGoldStars();
     renderGrid();
+    checkNotifs();
     initEditorRealtime();
     // Polling fallback — refresh every 20s in case realtime is unavailable
     if (editorPollTimer) clearInterval(editorPollTimer);
@@ -1999,7 +2029,7 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
       if (history.state !== 'dashboard') {
         history.pushState('dashboard', '', window.location.pathname);
       }
-      refreshCrosswordNav();
+      
       loadWeek();
       return;
     }
@@ -2567,7 +2597,7 @@ function cwClear(){
 // ── Solved → award Golden Gazette ──
 function onCrosswordSolved(){
   const fresh = awardGolden();
-  refreshCrosswordNav();
+  
   if(fresh){
     try{
       const overlay = document.getElementById('celebrate-overlay');
@@ -2593,12 +2623,11 @@ function onCrosswordSolved(){
 function closeAward(){ document.getElementById('gg-award').classList.remove('show'); }
 
 // close overlays on backdrop / escape
-document.getElementById('cw-overlay').addEventListener('click', e=>{ if(e.target.id==='cw-overlay') closeCrossword(); });
 document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.id==='gg-award') closeAward(); });
 
 // Reflect lock/unlock + Golden Gazette state as soon as the script loads,
 // in case the editor's session restores straight into the dashboard.
-refreshCrosswordNav();
+
 
 </script>
 
