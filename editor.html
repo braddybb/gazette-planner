@@ -1873,7 +1873,7 @@ function renderDrillBody(r) {
 }
 
 function openDrill(r) {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('drilldown').style.display = 'block';
   document.getElementById('drill-name').textContent = r.name;
   const drillStar = document.getElementById('drill-name-star');
@@ -2691,8 +2691,11 @@ document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.i
 
 let WR_DATA = null; // cached once generated, until the user navigates away
 
+function hideAllViews(){
+  ['main-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+}
 async function openWeeklyReview() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('drilldown').style.display = 'none';
   document.getElementById('weekly-review').style.display = 'block';
 
@@ -2714,7 +2717,7 @@ function closeWeeklyReview() {
 // 09, National Account uses 03 and 04 — so rows are filtered per-reporter
 // against getStoryDefs rather than assuming a fixed slot number network-wide.
 function openImpactList() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('impact-view').style.display = 'block';
   loadImpactList();
 }
@@ -2781,7 +2784,7 @@ async function refreshSplashBadge() {
 }
 
 async function openLeaderboard() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('leaderboard-view').style.display = 'block';
   const body = document.getElementById('leaderboard-body');
   body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Tallying gold stars across the network...</div>';
@@ -2807,7 +2810,7 @@ function renderLeaderboard() {
   body.innerHTML = html;
 }
 function openTodoRollup() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('todo-rollup-view').style.display = 'block';
   loadTodoRollup();
 }
@@ -2871,7 +2874,7 @@ async function loadTodoRollup() {
 // deadline doesn't get missed just because it's sitting in one
 // reporter's tab.
 function openFOIRollup() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('foi-rollup-view').style.display = 'block';
   loadFOIRollup();
 }
@@ -2880,7 +2883,7 @@ function closeFOIRollup() {
   document.getElementById('main-view').style.display = 'block';
 }
 function openBankRollup() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('bank-rollup-view').style.display = 'block';
   loadBankRollup();
 }
@@ -2931,7 +2934,7 @@ async function loadBankRollup() {
 // ── Resources — curated links for reporters, stored as one JSON row in system_flags ──
 let RESOURCES = [];
 function openResourcesAdmin() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('resources-admin-view').style.display = 'block';
   loadResourcesAdmin();
 }
@@ -3127,7 +3130,7 @@ async function loadImpactList() {
 // week of 3 Aug 2026 onward, so most historical rows for story_num 08 will
 // correctly fall out of this list as ordinary Story-slot rows.
 function openElectionList() {
-  document.getElementById('main-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('election-view').style.display = 'block';
   loadElectionList();
 }
