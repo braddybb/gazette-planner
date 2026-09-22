@@ -999,12 +999,7 @@ padding:5px 12px;border-radius:999px}
 <button class="week-arrow" id="week-next" onclick="shiftWeek(1)" title="Next week">&#8250;</button>
 </div>
 <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
-<span class="golden-gazette-hdr" id="gg-hdr" title="Golden Gazette — Friday crossword solved" style="display:none">&#129309;</span>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
-<button class="crossword-nav" id="crossword-nav" onclick="openCrossword()" title="This week's crossword">
-<span class="cw-ico" id="cw-ico">&#128279;</span>
-<span class="cw-label" id="cw-label">Crossword</span>
-</button>
 <button class="bank-nav" id="bank-nav" onclick="showBankView()" title="Your evergreen bank — content ready for when you're away">
 <span>&#127974;</span><span id="bank-nav-label">Bank</span>
 </button>
@@ -1665,7 +1660,6 @@ if (history.state !== 'app') {
 history.pushState('app', '', window.location.pathname);
 }
 loadStories();
-refreshCrosswordNav();
 renderBadges();
 refreshNextWeekBadges();
 loadGoldStar();
@@ -3957,11 +3951,6 @@ let html = '';
 if (MY_GOLD_STARS >= 1) {
 html += '<span class="badge-chip gold-star" title="Cumulative gold stars — one for every week you file your full slate">&#11088; ' + MY_GOLD_STARS + ' gold star' + (MY_GOLD_STARS === 1 ? '' : 's') + '</span>';
 }
-// Golden Gazette
-if (typeof hasGoldenThisWeek === 'function' && hasGoldenThisWeek()) {
-const g = getGolden();
-html += '<span class="badge-chip golden"><span class="badge-ico">&#129309;</span>Golden Gazette' + (g.streak > 1 ? ' x' + g.streak : '') + '</span>';
-}
 // Above & Beyond
 if (typeof hasAabThisWeek === 'function' && hasAabThisWeek()) {
 const a = getAab();
@@ -3969,8 +3958,6 @@ html += '<span class="badge-chip aab"><span class="badge-ico">&#11088;</span>Abo
 }
 row.innerHTML = html;
 // Also update header icons
-const ggHdr = document.getElementById('gg-hdr');
-if (ggHdr) ggHdr.style.display = (typeof hasGoldenThisWeek === 'function' && hasGoldenThisWeek()) ? 'inline-block' : 'none';
 const aabHdr = document.getElementById('aab-hdr');
 if (aabHdr) aabHdr.style.display = (typeof hasAabThisWeek === 'function' && hasAabThisWeek()) ? 'inline-block' : 'none';
 }
@@ -4118,10 +4105,8 @@ return '<div class="ach-tier ' + (reached?'reached':'locked') + '"><span class="
 }
 const other = document.getElementById('ach-other');
 if (other) {
-const hasGolden = (typeof hasGoldenThisWeek==='function' && hasGoldenThisWeek());
 const hasAab = (typeof hasAabThisWeek==='function' && hasAabThisWeek());
 other.innerHTML =
-'<div class="ach-tier ' + (hasGolden?'reached':'locked') + '"><span class="ach-tier-ico">🤩</span><div class="ach-tier-body"><div class="ach-tier-name">Golden Gazette</div><div class="ach-tier-desc">Solve the Friday crossword.</div></div><span class="ach-tier-status">' + (hasGolden?'Earned this week':'Weekly') + '</span></div>' +
 '<div class="ach-tier ' + (hasAab?'reached':'locked') + '"><span class="ach-tier-ico">⭐</span><div class="ach-tier-body"><div class="ach-tier-name">Above &amp; Beyond</div><div class="ach-tier-desc">File more than your weekly slate.</div></div><span class="ach-tier-status">' + (hasAab?'Earned this week':'Weekly') + '</span></div>';
 }
 }
@@ -4439,7 +4424,6 @@ cwSaveProgress();
 // ── Solved → award Golden Gazette ──
 function onCrosswordSolved(){
 const fresh = awardGolden();
-refreshCrosswordNav();
 if(fresh){
 // confetti burst (reuses the Planner's overlay + chime)
 try{
@@ -4467,7 +4451,6 @@ setTimeout(()=>{ document.getElementById('gg-award').classList.add('show'); }, 6
 function closeAward(){ document.getElementById('gg-award').classList.remove('show'); }
 
 // close overlays on backdrop / escape
-document.getElementById('cw-overlay').addEventListener('click', e=>{ if(e.target.id==='cw-overlay') closeCrossword(); });
 document.getElementById('ach-overlay').addEventListener('click', e=>{ if(e.target.id==='ach-overlay') closeAchievements(); });
 document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.id==='gg-award') closeAward(); });
 
