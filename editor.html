@@ -788,6 +788,9 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-lbl input[type=date],.vd-ne-add input[type=date]{font:inherit;font-size:12.5px;padding:5px 7px;border:1px solid #ddd;border-radius:5px;background:#fff}
 .vd-shootrow{display:flex;gap:10px;align-items:center;margin:10px 0 2px}
 .vd-serpick{font:inherit;font-size:12px;padding:5px 7px;border:1px solid #ddd;border-radius:5px;background:#fff;max-width:200px}
+.vd-perf-fill{height:6px;background:#1a1a1a;border-radius:4px}
+.vd-nudgeinfo{font-size:11.5px;color:#999;margin-left:6px;white-space:nowrap}
+.vd-nudgeinfo.ok{color:#2e7d4f}
 
 @media(max-width:700px){.vd-trend{display:none}.vd-rep-info{flex-basis:130px}.vd-prep-row{flex-direction:column;gap:0}.vd-prep-note{padding-left:0}}
 
@@ -3186,6 +3189,7 @@ var VD_PUB_OPEN = false;
 var VD_INFO = [];
 var VD_NUDGED = {};
 var VD_FLAGS_OPEN = false;
+var VD_NUDGELOG = [];   // persisted nudges: {reporter,pub,week,ts,slots:[{n,st}]}, newest first
 // Per-viewer convenience only (which sections are folded). Safe if storage is blocked.
 var VD_COLLAPSED = (function(){ try{ var v=JSON.parse(localStorage.getItem('vd_collapsed')||'null'); if(v&&typeof v==='object') return v; }catch(e){} return {record:true,perf:true}; })();
 function vdSaveCollapsed(){ try{ localStorage.setItem('vd_collapsed',JSON.stringify(VD_COLLAPSED)); }catch(e){} }
@@ -3286,6 +3290,28 @@ function vdShootWhen(p){
   return {d:d,text:vdDayLabel(p.shootDate)};
 }
 
+// Last nudge to a reporter this week, and what has happened to the nudged videos since.
+function vdNudgeInfo(rep){
+  var n=VD_NUDGELOG.filter(function(x){return x.reporter===rep.name&&x.pub===rep.pub&&x.week===WEEK;})[0];
+  if(!n) return null;
+  var cur=VD_OUTPUT[rep.name+'|'+rep.pub]||{};
+  var sorted=0;
+  (n.slots||[]).forEach(function(sl){ var row=cur[sl.n]; if(row&&(row.filed||(sl.st!=='overdue'&&row.headline))) sorted++; });
+  var total=(n.slots||[]).length;
+  return {ts:n.ts,sorted:sorted,total:total,recent:Date.now()-n.ts<4*3600*1000};
+}
+function vdAgo(ts){
+  var m=Math.floor((Date.now()-ts)/60000);
+  if(m<2) return 'just now'; if(m<60) return m+'m ago';
+  var h=Math.floor(m/60); if(h<24) return h+'h ago';
+  var d=Math.floor(h/24); return d+'d ago';
+}
+function vdNudgeTag(rep){
+  var ni=vdNudgeInfo(rep); if(!ni) return '';
+  var done=ni.total&&ni.sorted>=ni.total;
+  return '<span class="vd-nudgeinfo'+(done?' ok':'')+'">Nudged '+vdAgo(ni.ts)+(ni.total?(done?' · all sorted ✓':' · '+ni.sorted+' of '+ni.total+' sorted'):'')+'</span>';
+}
+
 function openVideoDesk(){ hideAllViews(); document.getElementById('video-desk-view').style.display='block'; loadVideoDesk(); }
 function closeVideoDesk(){ document.getElementById('video-desk-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
 
@@ -3317,6 +3343,10 @@ async function loadVideoDesk(){
     if(!VD.checklist||typeof VD.checklist!=='object')VD.checklist={};
   }catch(e){ VD={projects:[],checklist:{},series:[],myDesk:[]}; }
   await vdLoadTasks();
+  try{
+    var nr=await supa.from('system_flags').select('value').like('key','videonudge%').order('key',{ascending:false}).limit(300);
+    VD_NUDGELOG=(nr.data||[]).map(function(r){ try{return JSON.parse(r.value);}catch(e){return null;} }).filter(Boolean);
+  }catch(e){ VD_NUDGELOG=[]; }
   VD_DATA={}; VD_OUTPUT={};
   try{
     var start=vdAddDays(WEEK,-7*(VD_TREND_WEEKS-1));
@@ -3480,8 +3510,8 @@ function renderVideoDesk(){
     h+='<div class="vd-ne-group">Reporters</div>';
     var shownRows=VD_FLAGS_OPEN?needRows:needRows.slice(0,4);
     shownRows.forEach(function(r){
-      var rep=r.x.rep; var nk=rep.name+'|'+WEEK; var nudged=VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000);
-      h+='<div class="vd-ne-row" onclick="vdJump('+r.ri+')"><div class="vd-ne-who"><b>'+esc(rep.name)+'</b><span>'+esc(rep.pub)+'</span></div><div class="vd-ne-chips">'+r.issues.map(function(i){return '<span class="vd-iss '+i.cls+'">'+esc(i.text)+'</span>';}).join('')+'</div>';
+      var rep=r.x.rep; var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000))||(ni0&&ni0.recent);
+      h+='<div class="vd-ne-row" onclick="vdJump('+r.ri+')"><div class="vd-ne-who"><b>'+esc(rep.name)+'</b><span>'+esc(rep.pub)+'</span></div><div class="vd-ne-chips">'+r.issues.map(function(i){return '<span class="vd-iss '+i.cls+'">'+esc(i.text)+'</span>';}).join('')+vdNudgeTag(rep)+'</div>';
       if(r.x.problems.length) h+='<button class="vd-btn warn sm" data-nudge="'+r.ri+'"'+(nudged?' disabled':'')+' onclick="event.stopPropagation();vdNudge('+r.ri+')">'+(nudged?'Nudged ✓':'Nudge')+'</button>';
       h+='</div>';
     });
@@ -3543,8 +3573,8 @@ function renderVideoDesk(){
     h+='<textarea id="vdnote-text-'+ri+'" placeholder="Leave a note — pings '+esc(vdFirst(rep.name))+' in Slack"></textarea>';
     h+='<div><button class="vd-btn sm" id="vdnote-btn-'+ri+'" onclick="vdNote('+ri+')">Send note</button></div></div>';
     if(x.behind){
-      var nk=rep.name+'|'+WEEK; var nudged=VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000);
-      h+='<button class="vd-btn warn sm" data-nudge="'+ri+'"'+(nudged?' disabled':'')+' onclick="vdNudge('+ri+')">'+(nudged?'Nudged ✓':'Nudge: behind on video')+'</button>';
+      var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000))||(ni0&&ni0.recent);
+      h+=vdNudgeTag(rep)+'<button class="vd-btn warn sm" data-nudge="'+ri+'"'+(nudged?' disabled':'')+' onclick="vdNudge('+ri+')">'+(nudged?'Nudged ✓':'Nudge: behind on video')+'</button>';
     }
     h+='</div></div></div>';
   });
@@ -3554,7 +3584,7 @@ function renderVideoDesk(){
   var live=VD.projects.filter(function(p){return p.stage<4;});
   var published=VD.projects.filter(function(p){return p.stage>=4;}).sort(function(a,b){return (b.stageAt||b.created||0)-(a.stageAt||a.created||0);});
   h+='<div class="vd-sec" id="vd-sec-pipeline"><div class="vd-sec-head"><div class="vd-sec-t">Pipeline</div><div class="vd-sec-sum">Approved → Shot → Edited → Published</div></div>';
-  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name"><div class="vd-add-row"><select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+'</select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+' ('+sl.n+')</option>';}).join('')+'</select></div><div class="vd-add-row"><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
+  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name"><div class="vd-add-row"><select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+'</select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+' ('+sl.n+')</option>';}).join('')+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+VD_FORMATS.map(function(f){return '<option>'+esc(f)+'</option>';}).join('')+'</select><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
   var shoots=live.filter(function(p){return p.stage===0&&p.shootDate;}).map(function(p){return {p:p,w:vdShootWhen(p)};}).filter(function(x){return x.w.d>=-1&&x.w.d<=7;}).sort(function(a,b){return a.w.d-b.w.d;});
   if(shoots.length){
     h+='<div class="vd-shoots"><div class="vd-shoots-h">Shoots coming up</div>'+shoots.map(function(x){
@@ -3582,6 +3612,7 @@ function renderVideoDesk(){
     var gated=p.stage===0&&!vdPreshootDone(p);
     h+='<button class="vd-btn sm"'+(gated?' disabled title="Finish pre-shoot first"':'')+' onclick="vdAdvance(\''+p.id+'\')">Mark '+VD_STAGES[p.stage+1].replace('Published — ','Pub: ')+' →</button>';
     if(p.stage>0) h+='<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')">← Back</button>';
+    h+=vdFormatSelect(p);
     if(VD.series.length){
       h+='<select class="vd-serpick" onchange="vdSetSeries(\''+p.id+'\',this.value)" title="Part of a series?"><option value="">Series: none</option>'+VD.series.map(function(s){return '<option value="'+esc(s.id)+'"'+(p.seriesId===s.id?' selected':'')+'>'+esc(s.title)+' · '+esc(vdFirst(s.reporter))+'</option>';}).join('')+'</select>';
     }
@@ -3599,7 +3630,7 @@ function renderVideoDesk(){
         var okUrl=p.url&&/^https?:\/\//i.test(p.url);
         var ser=p.seriesId?VD.series.filter(function(s){return s.id===p.seriesId;})[0]:null;
         var who=(p.standalone?'Standalone':(p.reporter||''))+(ser?' · '+ser.title:'');
-        h+='<div class="vd-pubrow" data-text="'+esc((p.title+' '+who).toLowerCase())+'"><div class="vd-pub-main"><div class="vd-pub-title">'+esc(p.title)+'</div><div class="vd-pub-meta">'+esc(who)+'</div></div>'+(okUrl?'<a class="vd-link" href="'+esc(p.url)+'" target="_blank" rel="noopener">Watch ↗</a>':'<button class="vd-btn ghost sm" onclick="vdPromptUrl(\''+p.id+'\')">+ Add link</button>')+'<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')" title="Move back to the pipeline">Reopen</button><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
+        h+='<div class="vd-pubrow" data-text="'+esc((p.title+' '+who).toLowerCase())+'"><div class="vd-pub-main"><div class="vd-pub-title">'+esc(p.title)+'</div><div class="vd-pub-meta">'+esc(who)+'</div></div>'+vdFormatSelect(p)+(okUrl?'<a class="vd-link" href="'+esc(p.url)+'" target="_blank" rel="noopener">Watch ↗</a>':'<button class="vd-btn ghost sm" onclick="vdPromptUrl(\''+p.id+'\')">+ Add link</button>')+'<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')" title="Move back to the pipeline">Reopen</button><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
       });
     }
   }
@@ -3625,9 +3656,14 @@ function renderVideoDesk(){
   h+='</div></div>';
 
   // ---- performance placeholder ----
-  h+=vdSecOpen('perf','What’s winning — by format','avg watch-through');
-  h+='<div class="vd-perf-note">Lights up when analytics connects — watch-through &amp; engagement per format are not wired yet, so these are placeholders, not real numbers.</div>';
-  VD_FORMATS.forEach(function(fmt){ h+='<div class="vd-perf-row"><div class="vd-perf-name">'+esc(fmt)+'</div><div class="vd-perf-bar"></div><div class="vd-perf-val">—</div></div>'; });
+  h+=vdSecOpen('perf','What’s winning — by format','published, by format');
+  var pubd=VD.projects.filter(function(p){return p.stage>=3;});
+  var fcount={}; VD_FORMATS.forEach(function(f){fcount[f]=pubd.filter(function(p){return p.format===f;}).length;});
+  var untagged=pubd.filter(function(p){return !p.format;}).length;
+  var fmax=Math.max.apply(null,VD_FORMATS.map(function(f){return fcount[f];}).concat([1]));
+  h+='<div class="vd-perf-note">Counts are real — published videos by the format they were tagged with. Watch-through &amp; engagement aren’t wired yet, so there are no performance numbers.</div>';
+  VD_FORMATS.forEach(function(fmt){ h+='<div class="vd-perf-row"><div class="vd-perf-name">'+esc(fmt)+'</div><div class="vd-perf-bar"><div class="vd-perf-fill" style="width:'+Math.round(fcount[fmt]/fmax*100)+'%"></div></div><div class="vd-perf-val">'+fcount[fmt]+' published</div></div>'; });
+  if(untagged) h+='<div class="vd-sec-cap" style="margin-top:6px">'+untagged+' published video'+(untagged>1?'s':'')+' untagged — tag them in the Published list.</div>';
   h+='</div></div>';
 
   // ---- my desk ----
@@ -3668,11 +3704,17 @@ async function vdAddProject(){
   var t=document.getElementById('vd-new-title').value.trim(); if(!t){alert('Give the video a title.');return;}
   var rep=document.getElementById('vd-new-rep').value; var slot=document.getElementById('vd-new-slot').value;
   var dEl=document.getElementById('vd-new-date'); var sd=dEl&&/^\d{4}-\d{2}-\d{2}$/.test(dEl.value)?dEl.value:null;
+  var fmtEl=document.getElementById('vd-new-fmt'); var fmt=fmtEl?fmtEl.value:'';
   var prev=vdClone(); var now=Date.now(); var p={id:now.toString(36),title:t,stage:0,preshoot:{},created:now,stageAt:now};
   if(sd) p.shootDate=sd;
+  if(fmt) p.format=fmt;
   if(rep){var pa=rep.split('|');p.reporter=pa[0];p.pub=pa[1];p.slot=slot||null;p.standalone=false;}else p.standalone=true;
   VD.projects.push(p); await vdCommit(prev,'Could not add.');
 }
+function vdFormatSelect(p){
+  return '<select class="vd-serpick" onchange="vdSetFormat(\''+p.id+'\',this.value)" title="Format"><option value="">Format: untagged</option>'+VD_FORMATS.map(function(f){return '<option'+(p.format===f?' selected':'')+'>'+esc(f)+'</option>';}).join('')+'</select>';
+}
+async function vdSetFormat(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val) p.format=val; else delete p.format; await vdCommit(prev,'Could not save the format.'); }
 async function vdSetShoot(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val&&/^\d{4}-\d{2}-\d{2}$/.test(val)) p.shootDate=val; else delete p.shootDate; await vdCommit(prev,'Could not save the shoot date.'); }
 async function vdSetSeries(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val) p.seriesId=val; else delete p.seriesId; await vdCommit(prev,'Could not save the series.'); }
 async function vdRemoveProject(id){ if(!confirm('Remove this video from the pipeline?'))return; var prev=vdClone(); VD.projects=VD.projects.filter(function(p){return p.id!==id;}); await vdCommit(prev); }
@@ -3766,6 +3808,9 @@ function vdNudge(ri){
   });
   notifySlack(slackMention(x.rep.name)+':clapper: Nudge from the Video Desk — '+parts.join('; ')+". Shout if you're stuck.");
   VD_NUDGED[x.rep.name+'|'+WEEK]=Date.now();
+  var entry={reporter:x.rep.name,pub:x.rep.pub,week:WEEK,ts:Date.now(),slots:x.problems.map(function(p){return {n:p.n,st:p.st};})};
+  VD_NUDGELOG.unshift(entry);
+  try{ supa.from('system_flags').insert({key:'videonudge:'+entry.ts+'-'+Math.random().toString(36).slice(2,6),value:JSON.stringify(entry)}).then(function(r){ if(r&&r.error) console.error('nudge log',r.error); }); }catch(e){}
   document.querySelectorAll('[data-nudge="'+ri+'"]').forEach(function(b){ b.textContent='Nudged ✓'; b.disabled=true; });
 }
 
