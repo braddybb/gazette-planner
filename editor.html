@@ -579,94 +579,161 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 }
 
 /* ── Video Desk ───────────────────────────────────────────────── */
-#video-desk-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
-.vd-wrap{display:block}
-.vd-main{min-width:0}
-.vd-statrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1.5rem}
-.vd-stat{flex:1;min-width:150px;background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:14px 16px}
-.vd-stat.hero{background:var(--ink);border-color:var(--ink)}
-.vd-stat.hero .vd-stat-num,.vd-stat.hero .vd-stat-lbl,.vd-stat.hero .vd-stat-sub{color:#fff}
-.vd-stat-num{font-size:26px;font-weight:700;color:var(--ink);line-height:1.1}
-.vd-stat-lbl{font-size:12px;font-weight:600;color:var(--grey-dk);margin-top:4px}
-.vd-stat-sub{font-size:11px;color:var(--grey-md);margin-top:2px}
-.vd-stat.soon{background:var(--grey-lt);border-style:dashed}
-.vd-stat.soon .vd-stat-num{color:var(--grey-md);font-size:15px;font-weight:600}
-.vd-sec{margin-bottom:1.75rem}
-.vd-sec-h{font-size:13px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
-.vd-sec-h .vd-cad{font-size:10px;font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--grey-md);background:var(--grey-lt);border-radius:20px;padding:2px 8px}
-.vd-eye{background:var(--cream);border:0.5px solid #EADFA0;border-radius:12px;padding:14px 16px}
-.vd-eye-item{font-size:13px;color:var(--cream-dk);padding:5px 0;display:flex;gap:8px;align-items:flex-start}
-.vd-eye-item:before{content:"▸";color:#B8860B;flex:none}
-.vd-eye-ok{font-size:13px;color:var(--success);font-weight:500}
-.vd-check{display:flex;flex-direction:column;gap:6px}
-.vd-check-row{display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:var(--ink)}
-.vd-check-row:hover{border-color:var(--blue)}
-.vd-check-box{width:18px;height:18px;border:1.5px solid var(--grey-md);border-radius:5px;flex:none;display:grid;place-items:center;font-size:12px;color:#fff}
-.vd-check-row.done .vd-check-box{background:var(--success);border-color:var(--success)}
-.vd-check-row.done{color:var(--grey-md)}
-.vd-check-row.done .vd-check-lbl{text-decoration:line-through}
-.vd-check-cad{margin-left:auto;font-size:10px;font-weight:600;color:var(--grey-md);background:var(--grey-lt);border-radius:20px;padding:2px 8px}
-.vd-rep{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
-.vd-rep-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
-.vd-rep-name{font-size:14px;font-weight:600;color:var(--ink)}
-.vd-rep-pub{font-size:11px;color:var(--grey-md)}
-.vd-rep-tally{font-size:12px;font-weight:700}
-.vd-slots{display:flex;flex-direction:column;gap:6px}
-.vd-slot{display:flex;align-items:center;gap:10px;font-size:12px;padding:4px 0}
-.vd-slot-lbl{width:92px;flex:none;color:var(--grey-dk);font-weight:500}
-.vd-slot-head{flex:1;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vd-slot-head.empty{color:var(--grey-md);font-style:italic}
-.vd-filed{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex:none}
-.vd-filed.yes{background:var(--success-lt);color:var(--success)}
-.vd-filed.no{background:#FEF2F2;color:#B91C1C}
-.vd-pipe{display:flex;gap:4px;flex:none}
-.vd-dot{width:9px;height:9px;border-radius:50%;background:var(--border)}
+#video-desk-view{display:none;padding:1.25rem 2rem 3rem;max-width:860px;margin:0 auto;--vd-green:#2E6B4F;--vd-rust:#B4532A}
+.vd-head{background:var(--ink);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.vd-head-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:.2px}
+.vd-head-week{font-size:13px;color:#b9b9b4;font-weight:500}
+.vd-head-refresh{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:14px;font-family:inherit}
+.vd-head-refresh:hover{background:rgba(255,255,255,.2)}
+.vd-eye{background:var(--cream);border:1px solid #EADFA0;border-radius:12px;padding:12px 16px;margin-bottom:24px}
+.vd-eye-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8A6A00;margin-bottom:6px}
+.vd-eye-row{font-size:13px;color:#6B4400;padding:3px 0;display:flex;gap:8px}
+.vd-eye-row:before{content:"\25B8";color:#B8860B;flex:none}
+.vd-sec{margin-bottom:28px}
+.vd-sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.vd-sec-t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555}
+.vd-sec-sum{font-size:12px;color:#999;font-weight:500}
+.vd-check-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px dotted #DADADA;cursor:pointer}
+.vd-check-row:last-child{border-bottom:none}
+.vd-check-box{width:20px;height:20px;border:1.5px solid #C4C4C4;border-radius:6px;flex:none;display:grid;place-items:center;font-size:12px;color:#fff;transition:all .12s}
+.vd-check-row.done .vd-check-box{background:var(--vd-green);border-color:var(--vd-green)}
+.vd-check-lbl{font-size:14px;color:var(--ink);flex:1}
+.vd-check-row.done .vd-check-lbl{text-decoration:line-through;color:#A8A8A8}
+.vd-pill{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:20px;text-transform:uppercase;flex:none}
+.vd-pill.fri{background:#FBE6CE;color:#8A5A12}
+.vd-pill.fort{background:#EAE6FA;color:#5B4B9E}
+.vd-rep{border-bottom:1px dotted #DADADA}
+.vd-rep:last-child{border-bottom:none}
+.vd-rep-head{display:flex;align-items:center;gap:16px;padding:13px 2px;cursor:pointer}
+.vd-rep-info{flex:0 0 180px;min-width:0}
+.vd-rep-name{font-size:14px;font-weight:700;color:var(--ink)}
+.vd-rep-pub{font-size:11.5px;color:#999;margin-top:1px}
+.vd-bar{flex:1;height:7px;background:#ECEAE4;border-radius:4px;overflow:hidden}
+.vd-bar-fill{height:100%;border-radius:4px;background:var(--vd-green);transition:width .2s}
+.vd-bar-fill.behind{background:var(--vd-rust)}
+.vd-rep-tally{flex:0 0 40px;text-align:right;font-size:13px;font-weight:700;color:var(--vd-green)}
+.vd-rep-tally.behind{color:var(--vd-rust)}
+.vd-rep-caret{flex:0 0 12px;color:#BBB;font-size:11px;transition:transform .15s}
+.vd-rep.open .vd-rep-caret{transform:rotate(90deg)}
+.vd-rep-detail{padding:2px 2px 16px;display:none}
+.vd-rep.open .vd-rep-detail{display:block}
+.vd-slot{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:7px 11px;background:#FAFAF8;border-radius:7px;margin-bottom:5px}
+.vd-slot-lbl{flex:0 0 84px;color:#777;font-weight:600}
+.vd-slot-head{flex:1;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.vd-slot-head.empty{color:#AAA;font-style:italic}
+.vd-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;flex:none}
+.vd-badge.filed{background:#E3EFE8;color:var(--vd-green)}
+.vd-badge.open{background:#F6E3DA;color:var(--vd-rust)}
+.vd-badge.dist{background:#FBE6CE;color:#8A5A12}
+.vd-dots{display:flex;gap:3px;flex:none}
+.vd-dot{width:7px;height:7px;border-radius:50%;background:#D8D8D8}
 .vd-dot.on{background:var(--blue)}
-.vd-proj{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
-.vd-proj.standalone{border-left:3px solid var(--acid)}
-.vd-proj-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
-.vd-proj-title{font-size:14px;font-weight:600;color:var(--ink)}
-.vd-proj-meta{font-size:11px;color:var(--grey-md);margin-top:2px}
-.vd-stages{display:flex;align-items:center;gap:0;margin:10px 0 4px;flex-wrap:wrap}
-.vd-stage{font-size:10px;font-weight:600;padding:4px 9px;border-radius:20px;background:var(--grey-lt);color:var(--grey-md);white-space:nowrap}
-.vd-stage.done{background:var(--blue);color:#fff}
-.vd-stage.cur{background:var(--acid);color:var(--acid-dk);box-shadow:0 0 0 2px var(--ink)}
-.vd-arrow{color:var(--border);font-size:11px;padding:0 4px;flex:none}
-.vd-btn{font-family:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 14px;cursor:pointer;border:1px solid var(--blue);background:var(--blue);color:#fff}
+.vd-act{display:flex;gap:8px;align-items:flex-start;margin-top:10px;flex-wrap:wrap}
+.vd-note{flex:1;min-width:230px;display:flex;flex-direction:column;gap:6px}
+.vd-note-top{display:flex;gap:6px;flex-wrap:wrap}
+.vd-note select,.vd-note textarea,.vd-add input,.vd-add select,.vd-push select{font-family:inherit;font-size:12.5px;border:1px solid #DDD;border-radius:7px;padding:7px 9px;color:#222;background:#fff}
+.vd-note textarea{resize:vertical;min-height:36px;width:100%;box-sizing:border-box}
+.vd-btn{font-family:inherit;font-size:12px;font-weight:600;border-radius:7px;padding:7px 13px;cursor:pointer;border:1px solid var(--blue);background:var(--blue);color:#fff;white-space:nowrap}
 .vd-btn:hover{background:var(--blue-dk)}
 .vd-btn.ghost{background:#fff;color:var(--blue)}
 .vd-btn.ghost:hover{background:var(--blue-lt)}
-.vd-btn.sm{padding:5px 10px;font-size:11px}
-.vd-btn:disabled{opacity:.4;cursor:not-allowed}
-.vd-proj-act{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
-.vd-del{background:none;border:none;color:var(--grey-md);font-size:16px;cursor:pointer;line-height:1;padding:0 2px}
-.vd-del:hover{color:#B91C1C}
-.vd-preshoot{background:var(--grey-lt);border-radius:8px;padding:10px 12px;margin-top:8px}
-.vd-preshoot-h{font-size:11px;font-weight:700;color:var(--grey-dk);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
-.vd-pre-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:3px 0;cursor:pointer;color:var(--ink)}
-.vd-pre-box{width:15px;height:15px;border:1.5px solid var(--grey-md);border-radius:4px;flex:none;display:grid;place-items:center;font-size:10px;color:#fff}
-.vd-pre-row.on .vd-pre-box{background:var(--success);border-color:var(--success)}
-.vd-add{background:#fff;border:0.5px dashed var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
-.vd-add input,.vd-add select{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;width:100%;margin-bottom:8px;box-sizing:border-box}
-.vd-add-row{display:flex;gap:8px}
-.vd-add-row>*{flex:1}
-.vd-side{background:var(--ink);border-radius:14px;padding:18px;position:sticky;top:1rem}
-.vd-side-h{font-size:12px;font-weight:700;color:var(--acid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.vd-side-sub{font-size:11px;color:#9a9a96;margin-bottom:14px}
-.vd-side-flag{font-size:12px;color:#e9e9e6;padding:6px 0;border-top:0.5px solid rgba(255,255,255,.12);display:flex;gap:8px}
-.vd-side-flag:before{content:"●";color:var(--acid);flex:none;font-size:9px;margin-top:3px}
-.vd-side-flag.ok:before{color:var(--success)}
-.vd-side-notes{width:100%;box-sizing:border-box;font-family:inherit;font-size:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:8px;color:#fff;padding:8px 10px;margin-top:12px;resize:vertical;min-height:70px}
-.vd-side-save{margin-top:8px;width:100%;font-family:inherit;font-size:12px;font-weight:600;background:var(--acid);color:var(--acid-dk);border:none;border-radius:8px;padding:8px;cursor:pointer}
-.vd-series-row{display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:9px 13px;margin-bottom:7px;font-size:13px}
-.vd-series-rep{font-weight:600;color:var(--ink)}
-.vd-series-ct{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+.vd-btn.warn{border-color:var(--vd-rust);background:#fff;color:var(--vd-rust)}
+.vd-btn.warn:hover{background:#F6E3DA}
+.vd-btn.sm{padding:6px 11px;font-size:11px}
+.vd-btn:disabled{opacity:.5;cursor:default}
+.vd-proj{border:1px solid #ECECEC;border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff}
+.vd-proj.standalone{border-left:3px solid var(--acid)}
+.vd-proj.pushed{border-left:3px solid var(--vd-green)}
+.vd-proj-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.vd-proj-title{font-size:14px;font-weight:700;color:var(--ink)}
+.vd-proj-meta{font-size:11.5px;color:#999;margin-top:2px}
+.vd-stages{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin:12px 0 2px}
+.vd-stage{font-size:10px;font-weight:600;padding:4px 9px;border-radius:20px;background:#F0F0ED;color:#999;white-space:nowrap}
+.vd-stage.done{background:var(--vd-green);color:#fff}
+.vd-stage.cur{background:var(--acid);color:var(--acid-dk)}
+.vd-arrow{color:#CCC;font-size:10px;padding:0 1px}
+.vd-pre{background:#FAFAF8;border-radius:8px;padding:11px 13px;margin-top:10px}
+.vd-pre-h{font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.vd-pre-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:3px 0;cursor:pointer;color:var(--ink)}
+.vd-pre-box{width:16px;height:16px;border:1.5px solid #C4C4C4;border-radius:4px;flex:none;display:grid;place-items:center;font-size:10px;color:#fff}
+.vd-pre-row.on .vd-pre-box{background:var(--vd-green);border-color:var(--vd-green)}
+.vd-push{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:240px}
+.vd-del{background:none;border:none;color:#CBCBCB;font-size:18px;cursor:pointer;line-height:1;padding:0 2px}
+.vd-del:hover{color:var(--vd-rust)}
+.vd-add{background:#fff;border:1px dashed #D5D5D5;border-radius:12px;padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
+.vd-add-row{display:flex;gap:8px;flex-wrap:wrap}
+.vd-add-row>*{flex:1;min-width:120px}
+.vd-add input{width:100%;box-sizing:border-box}
+.vd-newbanner{font-size:12.5px;font-weight:600;padding:9px 13px;border-radius:9px;margin-bottom:12px}
+.vd-newbanner.ok{background:#E3EFE8;color:var(--vd-green)}
+.vd-newbanner.no{background:#F6E3DA;color:var(--vd-rust)}
+.vd-series-row{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px dotted #DADADA;flex-wrap:wrap}
+.vd-series-row:last-child{border-bottom:none}
+.vd-series-name{flex:0 0 150px;font-size:13.5px;font-weight:700;color:var(--ink)}
+.vd-chips{flex:1;display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.vd-chip{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:6px}
+.vd-chip.active{background:#E3EFE8;color:var(--vd-green)}
+.vd-chip.stalled{background:#F6E3DA;color:var(--vd-rust)}
+.vd-chip span[onclick]{cursor:pointer}
+.vd-chip .x{opacity:.5;font-weight:700;cursor:pointer}
+.vd-chip .x:hover{opacity:1}
+.vd-series-ct{flex:0 0 36px;text-align:right;font-size:12px;font-weight:700}
+.vd-series-empty{flex:1;font-size:12.5px;color:#AAA;font-style:italic}
+.vd-perf-note{font-size:12px;color:#999;margin-bottom:12px;background:#FAFAF8;border:1px dashed #DDD;border-radius:8px;padding:9px 12px;line-height:1.5}
+.vd-perf-row{display:flex;align-items:center;gap:14px;padding:9px 2px;border-bottom:1px dotted #DADADA}
+.vd-perf-row:last-child{border-bottom:none}
+.vd-perf-name{flex:0 0 170px;font-size:13px;color:#888}
+.vd-perf-bar{flex:1;height:6px;background:#EEE;border-radius:4px}
+.vd-perf-val{flex:0 0 40px;text-align:right;font-size:12px;color:#BBB;font-weight:600}
+.vd-desk-row{display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px dotted #DADADA}
+.vd-desk-row:last-child{border-bottom:none}
+.vd-desk-lbl{flex:1;font-size:13.5px;color:var(--ink)}
+.vd-desk-status{font-size:12px;color:#999}
+.vd-desk-status.done{color:var(--vd-green);font-weight:600}
+.vd-sec-cap{font-size:11.5px;color:#999;margin:-4px 0 8px}
+.vd-eye-task{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px;color:#6B4400}
+.vd-eye-task .vd-eye-txt{flex:1;min-width:0;word-break:break-word}
+.vd-eye-task.done .vd-eye-txt{text-decoration:line-through;color:#B0A57A}
+.vd-check-box.sm{width:17px;height:17px;border-radius:5px;flex:none;background:#fff;cursor:pointer}
+.vd-check-box.sm.on{background:var(--vd-green);border-color:var(--vd-green)}
+.vd-pill.task{background:#1F1F1F;color:var(--acid)}
+.vd-more{cursor:pointer;font-weight:700;color:#8A6A00}
+.vd-more:hover{text-decoration:underline}
+.vd-eye-ok{font-size:13px;color:var(--vd-green);font-weight:600;padding:3px 0}
+.vd-task-add{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed #E3D79A}
+.vd-task-add input{flex:1;min-width:0;font-family:inherit;font-size:12.5px;border:1px solid #E3D79A;background:#FFFEF4;border-radius:7px;padding:7px 10px;color:#222}
+.vd-showdone{font-size:11.5px;color:#8A6A00;cursor:pointer;margin-top:8px;font-weight:600}
+.vd-showdone:hover{text-decoration:underline}
+.vd-trend{flex:0 0 auto;display:flex;align-items:flex-end;gap:3px;height:24px;margin-left:2px}
+.vd-tb{width:7px;border-radius:2px;background:#D8D5CC}
+.vd-tb.full{background:var(--vd-green)}
+.vd-tb.part{background:#D9A58C}
+.vd-tb.cur{background:#9DA4E8}
+.vd-tb.na{height:3px;background:#E6E4DD}
+.vd-badge.due{background:#FBE6CE;color:#8A5A12}
+.vd-badge.plan{background:#EFEEE9;color:#8A8A84}
+.vd-prep{background:#FAFAF8;border-radius:9px;padding:11px 13px;margin:10px 0 4px}
+.vd-prep-h{font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.vd-prep-row{display:flex;gap:12px;font-size:12.5px;padding:3px 0}
+.vd-prep-row span{flex:0 0 130px;color:#999}
+.vd-prep-row b{font-weight:600;color:var(--ink);min-width:0}
+.vd-prep-note{font-size:12px;color:#666;padding:2px 0 2px 142px}
+.vd-tpls{display:flex;gap:5px;flex-wrap:wrap}
+.vd-tpl{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-lt);border-radius:20px;padding:3px 10px;cursor:pointer}
+.vd-tpl:hover{background:#DDE1FF}
+.vd-url{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.vd-url input{flex:1;min-width:200px;font-family:inherit;font-size:12.5px;border:1px solid #DDD;border-radius:7px;padding:7px 9px;color:#222}
+.vd-link{font-size:12px;font-weight:600;color:var(--blue);text-decoration:none;white-space:nowrap}
+.vd-link:hover{text-decoration:underline}
+.vd-pubhead{font-size:12px;font-weight:700;color:#777;cursor:pointer;margin:14px 0 8px;text-transform:uppercase;letter-spacing:.05em}
+.vd-pubhead:hover{color:var(--ink)}
+.vd-pubfilter{width:100%;box-sizing:border-box;font-family:inherit;font-size:12.5px;border:1px solid #DDD;border-radius:7px;padding:7px 10px;margin-bottom:8px}
+.vd-pubrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px dotted #DADADA}
+.vd-pub-main{flex:1;min-width:0}
+.vd-pub-title{font-size:13.5px;font-weight:600;color:var(--ink)}
+.vd-pub-meta{font-size:11.5px;color:#999}
+@media(max-width:700px){.vd-trend{display:none}.vd-rep-info{flex-basis:130px}.vd-prep-row{flex-direction:column;gap:0}.vd-prep-note{padding-left:0}}
 
-.vd-statrow{gap:10px}
-.vd-stat{border-color:#ECECEC;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.vd-sec-h{border-bottom:1px solid #ECECEC;padding-bottom:7px}
-.vd-rep,.vd-proj,.vd-add,.vd-check-row,.vd-series-row{border-color:#ECECEC}
-.vd-rep{box-shadow:0 1px 2px rgba(0,0,0,.03)}
 
 
 </style>
@@ -881,13 +948,6 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
   <div id="video-desk-view" style="display:none">
     <button class="back-btn" onclick="closeVideoDesk()">&#8592; Back to all reporters</button>
-    <div class="wr-header">
-      <div>
-        <div class="wr-title">Video Desk</div>
-        <div class="wr-sub">Nick's board for the six local mastheads &mdash; the weekly machine and the pipeline</div>
-      </div>
-      <button class="vd-btn ghost sm" onclick="loadVideoDesk()">&#8635; Refresh</button>
-    </div>
     <div id="video-desk-body"><div class="wr-loading"><div class="wr-spin"></div>Loading the desk&hellip;</div></div>
   </div>
 </div>
@@ -3037,318 +3097,449 @@ async function loadBankRollup() {
 }
 
 
-// ── Video Desk — Nick's board + Chef's rollup (six local mastheads) ──────────
-// Output (4-per-reporter) is read live from planner_stories card slots:
-//   slot 01,02 = Original (vidfirst) · 03 = Video flip (vidflip) · 04 = Impact (vidimp)
-// The pipeline, pre-shoot checklists, weekly checklist, series and Chef's
-// notes are Nick-managed and persist in system_flags as insert-only snapshots
-// (editors can INSERT but not UPDATE system_flags, same pattern as Resources).
-const VD_STAGES = ['Approved','Shot','Edited','Published — all platforms','Published — website'];
-const VD_SLOTS = [
-  {n:'01', lbl:'Original'},
-  {n:'02', lbl:'Original'},
-  {n:'03', lbl:'Video flip'},
-  {n:'04', lbl:'Impact video'},
+// ── Video Desk — Nick's board for the six local mastheads ────────────────────
+// Output reads live from planner_stories (slots 01,02 original · 03 flip · 04 impact).
+// The pipeline, pre-shoot, weekly checklist, series and standing jobs persist in
+// system_flags as insert-only snapshots (editors can INSERT not UPDATE it).
+// Desk tasks are stored one-row-each (videotask:*) with separate done markers
+// (videotaskdone:*) so a Slack-added task can never be overwritten by a snapshot.
+// Notes, nudges and "push to planner" reuse the dashboard's editorUpsert + Slack.
+var VD_STAGES = ['Approved','Shot','Edited','Published — all platforms','Published — website'];
+var VD_SLOTS = [{n:'01',lbl:'Original'},{n:'02',lbl:'Original'},{n:'03',lbl:'Video flip'},{n:'04',lbl:'Impact video'}];
+var VD_FORMATS = ['On-location explainer','Meet the local','The Number','Before / after'];
+var VD_TREND_WEEKS = 6;
+// Optional: set to the Monday the 4-video rule began (YYYY-MM-DD). Earlier weeks are
+// ignored by the trend strips and the "missed 4/4 three weeks running" flag.
+var VD_TREND_FROM = '';
+var VD_TEMPLATES = [
+  {t:'Not planned', x:"What's the plan for your {s}? It isn't on the planner yet."},
+  {t:'Overdue', x:"Your {s} is overdue — what's holding it up?"},
+  {t:'Pre-shoot', x:'Before you shoot your {s}: location, gear, talent and brief all sorted?'},
+  {t:'Vertical first', x:'Reminder: the vertical goes up before the dotcom story.'},
+  {t:'Nice work', x:'Nice work on your {s} — more like this.'}
 ];
-let VD = { projects:[], checklist:{}, series:[], nickNotes:'' };
-let VD_OUTPUT = {};   // keyed reporter|pub -> { '01': storyRow, ... }
+var VD = { projects:[], checklist:{}, series:[], myDesk:[] };
+var VD_DATA = {};      // reporter|pub -> week -> slot -> planner row (last 6 weeks, slots 01-04)
+var VD_OUTPUT = {};    // reporter|pub -> slot -> row, for the viewed week
+var VD_EXPAND = {};
+var VD_TASKS = [];
+var VD_SHOW_DONE = false;
+var VD_PUB_OPEN = false;
+var VD_INFO = [];
+var VD_NUDGED = {};
+var VD_FLAGS_OPEN = false;
 
 function vdLocalReporters(){ return REPORTERS.filter(function(r){ return r.region !== 'National'; }); }
+function vdWeekLabel(){ if(!WEEK) return ''; var d=new Date(WEEK+'T00:00:00'); var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear(); }
+function vdAddDays(ymd,n){ var p=ymd.split('-').map(Number); var d=new Date(Date.UTC(p[0],p[1]-1,p[2]+n)); return d.toISOString().slice(0,10); }
+function vdMondayOf(ymd){ var p=ymd.split('-').map(Number); var d=new Date(Date.UTC(p[0],p[1]-1,p[2])); var dow=d.getUTCDay(); d.setUTCDate(d.getUTCDate()+(dow===0?-6:1-dow)); return d.toISOString().slice(0,10); }
+function vdFortnightIndex(){ if(!WEEK) return 0; var p=WEEK.split('-').map(Number); return Math.floor(Date.UTC(p[0],p[1]-1,p[2])/86400000/7)%2; }
+function vdPreshootDone(p){ var ps=p.preshoot||{}; return !!(ps.location&&ps.gear&&ps.talent&&ps.brief); }
+function vdProjectFor(reporter,pub,slot){ return VD.projects.filter(function(p){ return !p.standalone&&p.reporter===reporter&&p.pub===pub&&p.slot===slot; })[0]||null; }
+function vdWeeksBetween(a,b){ if(!a||!b) return 0; var da=new Date(a+'T00:00:00'),db=new Date(b+'T00:00:00'); return Math.round((db-da)/86400000/7); }
+function vdFirst(name){ return (name||'').split(' ')[0]; }
+function vdSlotName(n){ return n==='01'?'Original 1':(n==='02'?'Original 2':(n==='03'?'Video flip':'Impact video')); }
+function vdAgeDays(p){ return Math.floor((Date.now()-(p.stageAt||p.created||Date.now()))/86400000); }
 
-function openVideoDesk(){
-  hideAllViews();
-  document.getElementById('video-desk-view').style.display = 'block';
-  loadVideoDesk();
+// Where "today" sits relative to the viewed week, in Sydney time.
+// idx: 0=Mon … 4=Fri, 5=weekend/after (everything is due). state: current | past | future.
+function vdDayState(){
+  var now=new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  var cur=vdMondayOf(now);
+  if(!WEEK) return {state:'current',idx:0};
+  if(WEEK<cur) return {state:'past',idx:5};
+  if(WEEK>cur) return {state:'future',idx:-1};
+  var p=now.split('-').map(Number); var dow=new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay();
+  var idx=dow===0?6:dow-1;
+  return {state:'current',idx:Math.min(idx,5)};
 }
-function closeVideoDesk(){
-  document.getElementById('video-desk-view').style.display = 'none';
-  document.getElementById('main-view').style.display = 'block';
+// filed | overdue | due | planned | late-unplanned | unplanned
+function vdSlotStatus(row,ds){
+  if(row&&row.filed) return 'filed';
+  if(!(row&&row.headline)) return ds.idx>=2?'late-unplanned':'unplanned';
+  var d=row.file_day?DAYS.indexOf(row.file_day):4; if(d<0) d=4;
+  if(ds.idx>d) return 'overdue';
+  if(ds.idx===d) return 'due';
+  return 'planned';
+}
+function vdBadge(st,row){
+  if(st==='filed') return '<span class="vd-badge filed">Filed</span>';
+  if(st==='overdue') return '<span class="vd-badge open">Overdue'+(row&&row.file_day?' · due '+esc(row.file_day):'')+'</span>';
+  if(st==='due') return '<span class="vd-badge due">Due today</span>';
+  if(st==='planned') return '<span class="vd-badge plan">'+(row&&row.file_day?'Due '+esc(row.file_day):'Planned')+'</span>';
+  if(st==='late-unplanned') return '<span class="vd-badge open">Not planned</span>';
+  return '<span class="vd-badge plan">Not planned yet</span>';
+}
+
+function openVideoDesk(){ hideAllViews(); document.getElementById('video-desk-view').style.display='block'; loadVideoDesk(); }
+function closeVideoDesk(){ document.getElementById('video-desk-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
+
+async function vdLoadTasks(){
+  try{
+    var r=await supa.from('system_flags').select('key,value').like('key','videotask%').order('key',{ascending:true}).limit(1000);
+    var rows=r.data||[]; var tasks={}, done={};
+    rows.forEach(function(row){
+      var v; try{ v=JSON.parse(row.value); }catch(e){ return; }
+      if(!v||!v.id) return;
+      if(row.key.indexOf('videotaskdone:')===0) done[v.id]=!!v.done;
+      else if(row.key.indexOf('videotask:')===0) tasks[v.id]=v;
+    });
+    VD_TASKS=Object.keys(tasks).map(function(id){ var t=tasks[id]; t.done=!!done[id]; return t; }).sort(function(a,b){ return String(a.created).localeCompare(String(b.created)); });
+  }catch(e){ VD_TASKS=[]; }
 }
 
 async function loadVideoDesk(){
-  var body = document.getElementById('video-desk-body');
-  body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Loading the desk&hellip;</div>';
-  // 1. Nick's board state
-  try {
-    var r = await supa.from('system_flags').select('value').like('key','videodesk%').order('key',{ascending:false}).limit(1);
-    var row = (r.data && r.data[0]) ? r.data[0] : null;
-    var parsed = (row && row.value) ? JSON.parse(row.value) : null;
-    VD = Object.assign({ projects:[], checklist:{}, series:[], nickNotes:'' }, parsed || {});
-    if (!Array.isArray(VD.projects)) VD.projects = [];
-    if (!Array.isArray(VD.series)) VD.series = [];
-    if (!VD.checklist || typeof VD.checklist !== 'object') VD.checklist = {};
-  } catch(e){ VD = { projects:[], checklist:{}, series:[], nickNotes:'' }; }
-  // 2. This week's output straight from planner_stories
-  VD_OUTPUT = {};
-  try {
-    var rows = await supaFetch(TABLE + '?week_of=eq.' + encodeURIComponent(WEEK) + '&select=reporter,publication,story_num,headline,filed,posted&order=reporter.asc');
-    rows.forEach(function(s){
-      var key = s.reporter + '|' + s.publication;
-      if (!VD_OUTPUT[key]) VD_OUTPUT[key] = {};
-      VD_OUTPUT[key][s.story_num] = s;
+  var body=document.getElementById('video-desk-body');
+  body.innerHTML='<div class="wr-loading"><div class="wr-spin"></div>Loading the desk…</div>';
+  try{
+    var r=await supa.from('system_flags').select('value').like('key','videodesk%').order('key',{ascending:false}).limit(1);
+    var row=(r.data&&r.data[0])?r.data[0]:null;
+    var parsed=(row&&row.value)?JSON.parse(row.value):null;
+    VD=Object.assign({projects:[],checklist:{},series:[],myDesk:[]},parsed||{});
+    if(!Array.isArray(VD.projects))VD.projects=[];
+    if(!Array.isArray(VD.series))VD.series=[];
+    if(!Array.isArray(VD.myDesk))VD.myDesk=[];
+    if(!VD.checklist||typeof VD.checklist!=='object')VD.checklist={};
+  }catch(e){ VD={projects:[],checklist:{},series:[],myDesk:[]}; }
+  await vdLoadTasks();
+  VD_DATA={}; VD_OUTPUT={};
+  try{
+    var start=vdAddDays(WEEK,-7*(VD_TREND_WEEKS-1));
+    var rows=await supaFetch(TABLE+'?week_of=gte.'+encodeURIComponent(start)+'&week_of=lte.'+encodeURIComponent(WEEK)+'&story_num=in.(01,02,03,04)&select=reporter,publication,week_of,story_num,headline,filed,file_day,posted,editor_note,editor_note_addressed&order=reporter.asc');
+    (rows||[]).forEach(function(s){
+      var k=s.reporter+'|'+s.publication;
+      if(!VD_DATA[k])VD_DATA[k]={};
+      if(!VD_DATA[k][s.week_of])VD_DATA[k][s.week_of]={};
+      VD_DATA[k][s.week_of][s.story_num]=s;
     });
-  } catch(e){ VD_OUTPUT = {}; }
+    Object.keys(VD_DATA).forEach(function(k){ VD_OUTPUT[k]=VD_DATA[k][WEEK]||{}; });
+  }catch(e){ VD_DATA={}; VD_OUTPUT={}; }
   renderVideoDesk();
 }
+async function saveVD(){ try{ var res=await supa.from('system_flags').insert({key:'videodesk:'+Date.now(),value:JSON.stringify(VD)}); if(res.error){console.error('VD save',res.error);return false;} return true; }catch(e){return false;} }
+function vdClone(){ return JSON.parse(JSON.stringify(VD)); }
+async function vdCommit(prev,msg){ var ok=await saveVD(); if(ok){renderVideoDesk();} else {VD=prev;renderVideoDesk();alert(msg||'Could not save. Try again.');} }
 
-async function saveVD(){
-  try {
-    var res = await supa.from('system_flags').insert({ key:'videodesk:' + Date.now(), value: JSON.stringify(VD) });
-    if (res.error){ console.error('Video Desk save error:', res.error); return false; }
-    return true;
-  } catch(e){ console.error('Video Desk save failed:', e); return false; }
-}
-
-// A video slot counts as "in motion" if it is filed OR has a pipeline project.
-function vdProjectFor(reporter, pub, slot){
-  return VD.projects.filter(function(p){ return !p.standalone && p.reporter===reporter && p.pub===pub && p.slot===slot; })[0] || null;
-}
-function vdFortnightIndex(){
-  if (!WEEK) return 0;
-  var d = new Date(WEEK + 'T00:00:00');
-  return Math.floor(d.getTime()/86400000/7) % 2;  // 0 or 1
-}
-function vdPreshootDone(p){
-  var ps = p.preshoot || {};
-  return !!(ps.location && ps.gear && ps.talent && ps.brief);
+function vdFeedbackPrep(x){
+  var rep=x.rep; var d=x.d; var wPrev=vdAddDays(WEEK,-7);
+  function filedIn(w){ var wd=d[w]||{}; return VD_SLOTS.filter(function(sl){return wd[sl.n]&&wd[sl.n].filed;}).length; }
+  var prevTxt=(VD_TREND_FROM&&wPrev<VD_TREND_FROM)?'—':(filedIn(wPrev)+'/4');
+  var notes=[], unposted=0;
+  [wPrev,WEEK].forEach(function(w){
+    VD_SLOTS.forEach(function(sl){
+      var row=(d[w]||{})[sl.n]; if(!row) return;
+      parseEditorNotes(row).forEach(function(n){ notes.push({slot:sl.n,text:n.text,addressed:!!n.addressed}); });
+      if(row.filed&&!(Array.isArray(row.posted)&&row.posted.length)) unposted++;
+    });
+  });
+  var addressed=notes.filter(function(n){return n.addressed;}).length;
+  var mine=VD.series.filter(function(s){return s.reporter===rep.name&&s.pub===rep.pub;});
+  var act=mine.filter(function(s){return s.status!=='stalled';}), stl=mine.filter(function(s){return s.status==='stalled';});
+  var inpipe=VD.projects.filter(function(p){return !p.standalone&&p.reporter===rep.name&&p.pub===rep.pub&&p.stage<4;});
+  var h='<div class="vd-prep"><div class="vd-prep-h">Feedback prep — last two weeks'+(vdFortnightIndex()===0?' <span class="vd-pill fort">Feedback week</span>':'')+'</div>';
+  h+='<div class="vd-prep-row"><span>Output</span><b>Last week '+prevTxt+' · this week '+x.filed+'/4</b></div>';
+  h+='<div class="vd-prep-row"><span>Distribution</span><b>'+(unposted?unposted+' filed video'+(unposted>1?'s':'')+' not posted anywhere':'Nothing filed is sitting unposted')+'</b></div>';
+  h+='<div class="vd-prep-row"><span>Series</span><b>'+(act.length?act.map(function(s){return esc(s.title);}).join(', '):'none running')+(stl.length?' · '+stl.length+' stalled':'')+'</b></div>';
+  h+='<div class="vd-prep-row"><span>In the pipeline</span><b>'+(inpipe.length?inpipe.map(function(p){return esc(p.title);}).join(', '):'nothing')+'</b></div>';
+  h+='<div class="vd-prep-row"><span>Notes on video slots</span><b>'+(notes.length?notes.length+' sent · '+addressed+' addressed':'none')+'</b></div>';
+  notes.slice(-4).forEach(function(n){ h+='<div class="vd-prep-note">'+(n.addressed?'✓ ':'• ')+esc(vdSlotName(n.slot))+': '+esc(n.text.length>110?n.text.slice(0,110)+'…':n.text)+'</div>'; });
+  h+='</div>';
+  return h;
 }
 
 function renderVideoDesk(){
-  var locals = vdLocalReporters();
-
-  // ---- output tally ----
-  var filedCount = 0, slotTotal = locals.length * 4;
-  locals.forEach(function(rep){
-    var slots = VD_OUTPUT[rep.name + '|' + rep.pub] || {};
-    VD_SLOTS.forEach(function(sl){ if (slots[sl.n] && slots[sl.n].filed) filedCount++; });
-  });
-  // ---- pipeline tally ----
-  var published = VD.projects.filter(function(p){ return p.stage >= 4; }).length;
-  var inFlight = VD.projects.filter(function(p){ return p.stage < 4; }).length;
-
-  // ---- auto-flags (needs your eye) ----
-  var flags = [];
-  locals.forEach(function(rep){
-    var slots = VD_OUTPUT[rep.name + '|' + rep.pub] || {};
-    var filed = VD_SLOTS.filter(function(sl){ return slots[sl.n] && slots[sl.n].filed; }).length;
-    if (filed < 4) flags.push(rep.name + ' is at ' + filed + '/4 video slots this week (' + rep.pub + ')');
-  });
-  VD.projects.forEach(function(p){
-    if (p.stage === 0 && !vdPreshootDone(p)) flags.push('&ldquo;' + esc(p.title) + '&rdquo; is approved but the pre-shoot checklist isn\'t done');
-  });
-  VD.projects.forEach(function(p){
-    if (p.stage === 1) flags.push('&ldquo;' + esc(p.title) + '&rdquo; is shot but not yet edited');
-  });
-
-  var h = '';
-
-  // ===== lead stat row =====
-  h += '<div class="vd-statrow">';
-  h += '<div class="vd-stat"><div class="vd-stat-num">' + filedCount + ' / ' + slotTotal + '</div><div class="vd-stat-lbl">Video slots filed this week</div><div class="vd-stat-sub">' + locals.length + ' reporters &times; 4 (2 original, 1 flip, 1 impact)</div></div>';
-  h += '<div class="vd-stat"><div class="vd-stat-num">' + inFlight + '</div><div class="vd-stat-lbl">In the pipeline</div><div class="vd-stat-sub">' + published + ' published this cycle</div></div>';
-  h += '<div class="vd-stat soon"><div class="vd-stat-num">Coming soon</div><div class="vd-stat-lbl">Watch-through &amp; engagement</div><div class="vd-stat-sub">Lights up when analytics connects</div></div>';
-  h += '</div>';
-
-  // ===== needs your eye =====
-  h += '<div class="vd-sec"><div class="vd-sec-h">Needs your eye today</div>';
-  if (flags.length){
-    h += '<div class="vd-eye">' + flags.map(function(f){ return '<div class="vd-eye-item">' + f + '</div>'; }).join('') + '</div>';
-  } else {
-    h += '<div class="vd-eye"><div class="vd-eye-ok">&#10003; Nothing flagged &mdash; every reporter is on slate and the pipeline is moving.</div></div>';
-  }
-  h += '</div>';
-
-  // ===== weekly checklist =====
-  var wk = VD.checklist[WEEK] || {};
-  var fort = vdFortnightIndex();
-  var checks = [
-    {k:'heat',    lbl:'Run HEAT review',                         cad:'Weekly'},
-    {k:'flag',    lbl:'Send Friday flag report to Chef',         cad:'Weekly'},
-    {k:'feedback',lbl:'Reporter video feedback round',           cad:'Fortnightly', active: fort===0},
-    {k:'brand',   lbl:'Brand-channel publishing review',         cad:'Fortnightly', active: fort===1},
-  ];
-  h += '<div class="vd-sec"><div class="vd-sec-h">This week &mdash; keep the machine moving</div><div class="vd-check">';
-  checks.forEach(function(c){
-    var due = (c.active === undefined) || c.active;
-    if (!due) return;
-    var done = !!wk[c.k];
-    h += '<div class="vd-check-row' + (done?' done':'') + '" onclick="vdToggleCheck(\'' + c.k + '\')">';
-    h += '<div class="vd-check-box">' + (done?'&#10003;':'') + '</div>';
-    h += '<div class="vd-check-lbl">' + c.lbl + '</div>';
-    h += '<div class="vd-check-cad">' + c.cad + '</div></div>';
-  });
-  h += '</div></div>';
-
-  // ===== this week's output per reporter =====
-  h += '<div class="vd-sec"><div class="vd-sec-h">This week&rsquo;s video output <span class="vd-cad">from the Planner</span></div>';
-  locals.forEach(function(rep){
-    var slots = VD_OUTPUT[rep.name + '|' + rep.pub] || {};
-    var filed = VD_SLOTS.filter(function(sl){ return slots[sl.n] && slots[sl.n].filed; }).length;
-    var col = filed===4 ? 'var(--success)' : (filed===0 ? '#B91C1C' : 'var(--cream-dk)');
-    h += '<div class="vd-rep"><div class="vd-rep-h"><div><span class="vd-rep-name">' + esc(rep.name) + '</span> <span class="vd-rep-pub">' + esc(rep.pub) + '</span></div>';
-    h += '<div class="vd-rep-tally" style="color:' + col + '">' + filed + '/4 filed</div></div><div class="vd-slots">';
+  var locals=vdLocalReporters();
+  var fort=vdFortnightIndex();
+  var ds=vdDayState();
+  var weeks=[]; for(var i=VD_TREND_WEEKS-1;i>=0;i--) weeks.push(vdAddDays(WEEK,-7*i));
+  var info=locals.map(function(rep){
+    var key=rep.name+'|'+rep.pub; var d=VD_DATA[key]||{}; var cur=d[WEEK]||{};
+    var filed=0, problems=[], st={};
     VD_SLOTS.forEach(function(sl){
-      var s = slots[sl.n];
-      var proj = vdProjectFor(rep.name, rep.pub, sl.n);
-      h += '<div class="vd-slot"><div class="vd-slot-lbl">' + sl.lbl + '</div>';
-      if (s && s.headline){
-        h += '<div class="vd-slot-head">' + esc(s.headline) + '</div>';
-      } else {
-        h += '<div class="vd-slot-head empty">not planned yet</div>';
+      var row=cur[sl.n]; var s=vdSlotStatus(row,ds); st[sl.n]=s;
+      if(s==='filed') filed++;
+      else if(s==='overdue'||s==='late-unplanned') problems.push({n:sl.n,st:s,row:row});
+    });
+    var trend=weeks.map(function(w){
+      if(VD_TREND_FROM&&w<VD_TREND_FROM) return {w:w,c:null};
+      var wd=d[w]||{}; return {w:w,c:VD_SLOTS.filter(function(sl){return wd[sl.n]&&wd[sl.n].filed;}).length};
+    });
+    var streak=false;
+    if(ds.state!=='future'){ var p3=trend.slice(trend.length-4,trend.length-1); streak=p3.length===3&&p3.every(function(t){return t.c!==null&&t.c<4;}); }
+    return {rep:rep,key:key,d:d,filed:filed,problems:problems,st:st,trend:trend,streak:streak,behind:problems.length>0};
+  });
+  VD_INFO=info;
+  var totalFiled=0; info.forEach(function(x){totalFiled+=x.filed;});
+  var slotTotal=locals.length*4;
+  function activeSeries(rep){ return VD.series.filter(function(s){return s.reporter===rep.name&&s.pub===rep.pub&&s.status!=='stalled';}); }
+  function allSeries(rep){ return VD.series.filter(function(s){return s.reporter===rep.name&&s.pub===rep.pub;}); }
+  var healthy=0; locals.forEach(function(r){ healthy+=Math.min(activeSeries(r).length,2); });
+  var seriesTarget=locals.length*2;
+  var newThisWeek=VD.series.filter(function(s){return s.started===WEEK;}).length;
+
+  // ---- auto-flags: day-aware, so Monday isn't a sea of red ----
+  var flags=[];
+  if(ds.state!=='future'){
+    info.forEach(function(x){
+      if(x.problems.length){
+        var parts=x.problems.map(function(p){ var nm=vdSlotName(p.n); return p.st==='overdue'?nm+' overdue'+(p.row&&p.row.file_day?' (was due '+esc(p.row.file_day)+')':''):nm+' not planned'; });
+        flags.push('<b>'+esc(x.rep.name)+'</b> — '+parts.join(', '));
       }
-      h += '<span class="vd-filed ' + (s && s.filed ? 'yes':'no') + '">' + (s && s.filed ? 'Filed':'Open') + '</span>';
-      // pipeline dots (stage reached, if Nick tracks it)
-      var st = proj ? proj.stage : -1;
-      h += '<div class="vd-pipe" title="' + (proj ? VD_STAGES[Math.min(st,4)] : 'Not in Nick\'s pipeline') + '">';
-      for (var i=0;i<5;i++){ h += '<div class="vd-dot' + (proj && st>=i ? ' on':'') + '"></div>'; }
-      h += '</div></div>';
+      if(x.streak) flags.push('<b>'+esc(x.rep.name)+'</b> has missed 4/4 three weeks running');
     });
-    h += '</div></div>';
-  });
-  h += '</div>';
-
-  // ===== pipeline =====
-  h += '<div class="vd-sec"><div class="vd-sec-h">Pipeline <span class="vd-cad">Nick-managed &mdash; Approved &rarr; Shot &rarr; Edited &rarr; Published</span></div>';
-  // add form
-  h += '<div class="vd-add">';
-  h += '<input id="vd-new-title" placeholder="Video title / working name">';
-  h += '<div class="vd-add-row">';
-  h += '<select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>' +
-       locals.map(function(rep){ return '<option value="' + esc(rep.name) + '|' + esc(rep.pub) + '">' + esc(rep.name) + ' &middot; ' + esc(rep.pub) + '</option>'; }).join('') + '</select>';
-  h += '<select id="vd-new-slot"><option value="">Slot (optional)</option>' +
-       VD_SLOTS.map(function(sl){ return '<option value="' + sl.n + '">' + sl.lbl + ' (' + sl.n + ')</option>'; }).join('') + '</select>';
-  h += '</div>';
-  h += '<button class="vd-btn sm" onclick="vdAddProject()">+ Add to pipeline</button>';
-  h += '</div>';
-  // project cards (standalone first, then reporter-linked)
-  var ordered = VD.projects.slice().sort(function(a,b){ return (b.standalone?1:0)-(a.standalone?1:0) || (a.created||0)-(b.created||0); });
-  if (!ordered.length){
-    h += '<div class="rollup-empty">No videos in the pipeline yet &mdash; add one above.</div>';
+    locals.forEach(function(r){ var a=activeSeries(r).length; if(a<2) flags.push('<b>'+esc(r.name)+'</b> has '+a+'/2 series running'); });
+    if(ds.state==='current'&&ds.idx>=3&&newThisWeek===0) flags.push('No new series started across the team this week');
   }
-  ordered.forEach(function(p){
-    h += '<div class="vd-proj' + (p.standalone?' standalone':'') + '">';
-    h += '<div class="vd-proj-h"><div><div class="vd-proj-title">' + esc(p.title) + '</div>';
-    h += '<div class="vd-proj-meta">' + (p.standalone ? 'Standalone project' : (esc(p.reporter) + ' &middot; ' + esc(p.pub) + (p.slot ? ' &middot; ' + (VD_SLOTS.filter(function(s){return s.n===p.slot;})[0]||{lbl:p.slot}).lbl : ''))) + '</div></div>';
-    h += '<button class="vd-del" onclick="vdRemoveProject(\'' + p.id + '\')" title="Remove">&times;</button></div>';
-    // stage track
-    h += '<div class="vd-stages">';
-    VD_STAGES.forEach(function(name, i){
-      var cls = i < p.stage ? 'done' : (i === p.stage ? 'cur' : '');
-      if (i>0) h += '<span class="vd-arrow">&rsaquo;</span>';
-      h += '<span class="vd-stage ' + cls + '">' + name + '</span>';
+  VD.projects.forEach(function(p){
+    var a=vdAgeDays(p);
+    if(p.stage===0&&!vdPreshootDone(p)&&a>=2) flags.push('“'+esc(p.title)+'” approved '+a+' days ago — pre-shoot not done');
+    else if(p.stage===1&&a>=2) flags.push('“'+esc(p.title)+'” shot '+a+' days ago — not edited yet');
+    else if(p.stage===2&&a>=3) flags.push('“'+esc(p.title)+'” edited '+a+' days ago — not published');
+    else if(p.stage===3&&a>=2) flags.push('“'+esc(p.title)+'” is on the platforms but not the website yet');
+  });
+
+  var h='';
+  h+='<div class="vd-head"><div class="vd-head-title">🎬 Video Desk</div><div style="display:flex;align-items:center;gap:14px"><div class="vd-head-week">Week of '+esc(vdWeekLabel())+'</div><button class="vd-head-refresh" onclick="loadVideoDesk()" title="Refresh">↻</button></div></div>';
+
+  // ---- needs your eye: tasks first, then auto-flags, then add-a-task ----
+  var openTasks=VD_TASKS.filter(function(t){return !t.done;});
+  var doneTasks=VD_TASKS.filter(function(t){return t.done;});
+  h+='<div class="vd-eye"><div class="vd-eye-h">Needs your eye</div>';
+  openTasks.forEach(function(t){
+    h+='<div class="vd-eye-task"><div class="vd-check-box sm" onclick="vdToggleTask(\''+esc(t.id)+'\',true)" title="Mark done"></div><span class="vd-pill task">Task</span><span class="vd-eye-txt">'+esc(t.text)+'</span></div>';
+  });
+  (VD_FLAGS_OPEN?flags:flags.slice(0,8)).forEach(function(f){ h+='<div class="vd-eye-row">'+f+'</div>'; });
+  if(flags.length>8) h+='<div class="vd-eye-row vd-more" onclick="vdToggleFlags()">'+(VD_FLAGS_OPEN?'Show fewer':'+'+(flags.length-8)+' more')+'</div>';
+  if(!openTasks.length&&!flags.length) h+='<div class="vd-eye-ok">✓ Nothing flagged — every reporter is on track</div>';
+  h+='<div class="vd-task-add"><input id="vd-task-in" placeholder="Add a task for the desk…" onkeydown="if(event.key===\'Enter\')vdAddTask()"><button class="vd-btn sm" onclick="vdAddTask()">Add task</button></div>';
+  if(doneTasks.length){
+    h+='<div class="vd-showdone" onclick="vdToggleShowDone()">'+(VD_SHOW_DONE?'Hide':'Show')+' completed ('+doneTasks.length+')</div>';
+    if(VD_SHOW_DONE) doneTasks.slice(-10).forEach(function(t){ h+='<div class="vd-eye-task done"><div class="vd-check-box sm on" onclick="vdToggleTask(\''+esc(t.id)+'\',false)" title="Reopen">✓</div><span class="vd-eye-txt">'+esc(t.text)+'</span></div>'; });
+  }
+  h+='</div>';
+
+  // ---- weekly checklist ----
+  var wk=VD.checklist[WEEK]||{};
+  var checks=[
+    {k:'heat',lbl:'Run HEAT review'},
+    {k:'brandpub',lbl:'Publish a video to Gazette brand channels'},
+    {k:'casestudy',lbl:'Case study of the week — written & filed'},
+    {k:'flag',lbl:'Send Friday end-of-week report',pill:'FRI',pc:'fri'},
+    {k:'feedback',lbl:'Reporter video feedback round',pill:'FORTNIGHTLY',pc:'fort',active:fort===0},
+    {k:'pubteam',lbl:'Report to publishing team',pill:'FORTNIGHTLY · FRI',pc:'fort',active:fort===1}
+  ];
+  var due=checks.filter(function(c){return c.active===undefined||c.active;});
+  var doneN=due.filter(function(c){return wk[c.k];}).length;
+  h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">This week — keep the machine moving</div><div class="vd-sec-sum">'+doneN+'/'+due.length+' done</div></div>';
+  due.forEach(function(c){ var d=!!wk[c.k]; h+='<div class="vd-check-row'+(d?' done':'')+'" onclick="vdToggleCheck(\''+c.k+'\')"><div class="vd-check-box">'+(d?'✓':'')+'</div><div class="vd-check-lbl">'+c.lbl+'</div>'+(c.pill?'<span class="vd-pill '+c.pc+'">'+c.pill+'</span>':'')+'</div>'; });
+  h+='</div>';
+
+  // ---- output per reporter ----
+  h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">Network video-first output</div><div class="vd-sec-sum">'+totalFiled+'/'+slotTotal+' · target 4 each</div></div>';
+  h+='<div class="vd-sec-cap">Small bars = last '+VD_TREND_WEEKS+' weeks, oldest to this week. Click a reporter for slots, feedback prep and notes.</div>';
+  info.forEach(function(x,ri){
+    var rep=x.rep; var pct=Math.round(x.filed/4*100);
+    var open=VD_EXPAND[ri]?' open':'';
+    h+='<div class="vd-rep'+open+'">';
+    h+='<div class="vd-rep-head" onclick="vdToggleRep('+ri+')"><div class="vd-rep-info"><div class="vd-rep-name">'+esc(rep.name)+'</div><div class="vd-rep-pub">'+esc(rep.pub)+'</div></div>';
+    h+='<div class="vd-bar"><div class="vd-bar-fill'+(x.behind?' behind':'')+'" style="width:'+pct+'%"></div></div>';
+    h+='<div class="vd-trend">'+x.trend.map(function(t,ti){
+      var cur=ti===x.trend.length-1;
+      if(t.c===null) return '<div class="vd-tb na" title="'+esc(t.w)+': before the 4-video rule"></div>';
+      var cls=cur?'cur':(t.c>=4?'full':'part');
+      return '<div class="vd-tb '+cls+'" style="height:'+(4+t.c*5)+'px" title="Week of '+esc(t.w)+': '+t.c+'/4"></div>';
+    }).join('')+'</div>';
+    h+='<div class="vd-rep-tally'+(x.behind?' behind':'')+'">'+x.filed+'/4</div><div class="vd-rep-caret">▸</div></div>';
+    h+='<div class="vd-rep-detail">';
+    VD_SLOTS.forEach(function(sl){
+      var s=(VD_OUTPUT[x.key]||{})[sl.n]; var proj=vdProjectFor(rep.name,rep.pub,sl.n);
+      h+='<div class="vd-slot"><div class="vd-slot-lbl">'+sl.lbl+'</div>';
+      h+=(s&&s.headline)?'<div class="vd-slot-head">'+esc(s.headline)+'</div>':'<div class="vd-slot-head empty">not planned yet</div>';
+      h+=vdBadge(x.st[sl.n],s);
+      if(s&&s.filed){ var posted=Array.isArray(s.posted)?s.posted:[]; if(posted.length===0) h+='<span class="vd-badge dist">not posted</span>'; }
+      if(proj){ h+='<div class="vd-dots" title="'+esc(VD_STAGES[Math.min(proj.stage,4)])+'">'; for(var i=0;i<5;i++)h+='<div class="vd-dot'+(proj.stage>=i?' on':'')+'"></div>'; h+='</div>'; }
+      h+='</div>';
     });
-    h += '</div>';
-    // pre-shoot checklist — shown while Approved, gates "Shot"
-    if (p.stage === 0){
-      var ps = p.preshoot || {};
-      var preItems = [{k:'location',lbl:'Location / access sorted'},{k:'gear',lbl:'Gear & kit ready'},{k:'talent',lbl:'Talent / interviewee confirmed'},{k:'brief',lbl:'Shot brief agreed with reporter'}];
-      h += '<div class="vd-preshoot"><div class="vd-preshoot-h">Pre-shoot checklist &mdash; complete before marking Shot</div>';
-      preItems.forEach(function(it){
-        h += '<div class="vd-pre-row' + (ps[it.k]?' on':'') + '" onclick="vdPreshoot(\'' + p.id + '\',\'' + it.k + '\')"><div class="vd-pre-box">' + (ps[it.k]?'&#10003;':'') + '</div>' + it.lbl + '</div>';
+    h+=vdFeedbackPrep(x);
+    h+='<div class="vd-act"><div class="vd-note"><div class="vd-note-top"><select id="vdnote-slot-'+ri+'"><option value="">Note about…</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+'</option>';}).join('')+'</select></div>';
+    h+='<div class="vd-tpls">'+VD_TEMPLATES.map(function(t,ti){return '<span class="vd-tpl" onclick="vdTpl('+ri+','+ti+')">'+esc(t.t)+'</span>';}).join('')+'</div>';
+    h+='<textarea id="vdnote-text-'+ri+'" placeholder="Leave a note — pings '+esc(vdFirst(rep.name))+' in Slack"></textarea>';
+    h+='<div><button class="vd-btn sm" id="vdnote-btn-'+ri+'" onclick="vdNote('+ri+')">Send note</button></div></div>';
+    if(x.behind){
+      var nk=rep.name+'|'+WEEK; var nudged=VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000);
+      h+='<button class="vd-btn warn sm" id="vdnudge-'+ri+'"'+(nudged?' disabled':'')+' onclick="vdNudge('+ri+')">'+(nudged?'Nudged ✓':'Nudge: behind on video')+'</button>';
+    }
+    h+='</div></div></div>';
+  });
+  h+='</div>';
+
+  // ---- pipeline (live) + published log ----
+  var live=VD.projects.filter(function(p){return p.stage<4;});
+  var published=VD.projects.filter(function(p){return p.stage>=4;}).sort(function(a,b){return (b.stageAt||b.created||0)-(a.stageAt||a.created||0);});
+  h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">Pipeline</div><div class="vd-sec-sum">Approved → Shot → Edited → Published</div></div>';
+  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name"><div class="vd-add-row"><select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+'</select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+' ('+sl.n+')</option>';}).join('')+'</select><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
+  var ordered=live.slice().sort(function(a,b){return (b.standalone?1:0)-(a.standalone?1:0)||(a.created||0)-(b.created||0);});
+  if(!ordered.length) h+='<div class="rollup-empty">Nothing in the pipeline right now.</div>';
+  ordered.forEach(function(p){
+    var cls=p.pushed?' pushed':(p.standalone?' standalone':'');
+    var age=vdAgeDays(p);
+    var meta=p.standalone?'Standalone project':(esc(p.reporter)+' · '+esc(p.pub)+(p.slot?' · '+vdSlotName(p.slot):''));
+    h+='<div class="vd-proj'+cls+'"><div class="vd-proj-top"><div><div class="vd-proj-title">'+esc(p.title)+'</div><div class="vd-proj-meta">'+meta+(p.pushed?' · ✓ on planner':'')+(age>=1?' · '+age+' day'+(age>1?'s':'')+' at this stage':'')+'</div></div><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
+    h+='<div class="vd-stages">'; VD_STAGES.forEach(function(nm,i){ if(i>0)h+='<span class="vd-arrow">›</span>'; var c=i<p.stage?'done':(i===p.stage?'cur':''); h+='<span class="vd-stage '+c+'">'+nm.replace('Published — ','Pub: ')+'</span>'; }); h+='</div>';
+    if(p.stage===0){ var ps=p.preshoot||{}; var items=[{k:'location',l:'Location / access'},{k:'gear',l:'Gear & kit'},{k:'talent',l:'Talent confirmed'},{k:'brief',l:'Shot brief agreed'}]; h+='<div class="vd-pre"><div class="vd-pre-h">Pre-shoot — complete before marking Shot</div>'+items.map(function(it){return '<div class="vd-pre-row'+(ps[it.k]?' on':'')+'" onclick="vdPreshoot(\''+p.id+'\',\''+it.k+'\')"><div class="vd-pre-box">'+(ps[it.k]?'✓':'')+'</div>'+it.l+'</div>';}).join('')+'</div>'; }
+    if(p.stage>=3){
+      var okUrl=p.url&&/^https?:\/\//i.test(p.url);
+      h+='<div class="vd-url"><input id="vdurl-'+p.id+'" value="'+esc(p.url||'')+'" placeholder="Link to the published video"><button class="vd-btn ghost sm" onclick="vdSaveUrl(\''+p.id+'\')">Save link</button>'+(okUrl?'<a class="vd-link" href="'+esc(p.url)+'" target="_blank" rel="noopener">Open ↗</a>':'')+'</div>';
+    }
+    h+='<div class="vd-act" style="margin-top:12px">';
+    var gated=p.stage===0&&!vdPreshootDone(p);
+    h+='<button class="vd-btn sm"'+(gated?' disabled title="Finish pre-shoot first"':'')+' onclick="vdAdvance(\''+p.id+'\')">Mark '+VD_STAGES[p.stage+1].replace('Published — ','Pub: ')+' →</button>';
+    if(p.stage>0) h+='<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')">← Back</button>';
+    if(!p.pushed){
+      if(p.standalone){ h+='<div class="vd-push"><select id="vdpush-rep-'+p.id+'"><option value="">Assign to…</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+'</option>';}).join('')+'</select><select id="vdpush-slot-'+p.id+'"><option value="">Slot</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+'</option>';}).join('')+'</select><button class="vd-btn sm" onclick="vdPush(\''+p.id+'\')">Push to planner</button></div>'; }
+      else if(p.slot){ h+='<button class="vd-btn ghost sm" onclick="vdPush(\''+p.id+'\')">Push to '+esc(vdFirst(p.reporter))+'’s planner</button>'; }
+    }
+    h+='</div></div>';
+  });
+  if(published.length){
+    h+='<div class="vd-pubhead" onclick="vdTogglePub()">Published ('+published.length+') '+(VD_PUB_OPEN?'▾':'▸')+'</div>';
+    if(VD_PUB_OPEN){
+      h+='<input class="vd-pubfilter" placeholder="Search published videos…" oninput="vdFilterPub(this.value)">';
+      published.forEach(function(p){
+        var okUrl=p.url&&/^https?:\/\//i.test(p.url);
+        var who=p.standalone?'Standalone':(p.reporter||'');
+        h+='<div class="vd-pubrow" data-text="'+esc((p.title+' '+who).toLowerCase())+'"><div class="vd-pub-main"><div class="vd-pub-title">'+esc(p.title)+'</div><div class="vd-pub-meta">'+esc(who)+'</div></div>'+(okUrl?'<a class="vd-link" href="'+esc(p.url)+'" target="_blank" rel="noopener">Watch ↗</a>':'<button class="vd-btn ghost sm" onclick="vdPromptUrl(\''+p.id+'\')">+ Add link</button>')+'<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')" title="Move back to the pipeline">Reopen</button><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
       });
-      h += '</div>';
     }
-    // actions
-    h += '<div class="vd-proj-act">';
-    if (p.stage < VD_STAGES.length - 1){
-      var gated = (p.stage === 0 && !vdPreshootDone(p));
-      h += '<button class="vd-btn sm"' + (gated?' disabled title="Finish the pre-shoot checklist first"':'') + ' onclick="vdAdvance(\'' + p.id + '\')">Mark ' + VD_STAGES[p.stage+1].replace('Published — ','Published: ') + ' &rarr;</button>';
-    } else {
-      h += '<span class="vd-filed yes">&#10003; Published on all platforms &amp; website</span>';
-    }
-    if (p.stage > 0){ h += '<button class="vd-btn ghost sm" onclick="vdStepBack(\'' + p.id + '\')">&larr; Back a step</button>'; }
-    h += '</div></div>';
-  });
-  h += '</div>';
+  }
+  h+='</div>';
 
-  // ===== series =====
-  h += '<div class="vd-sec"><div class="vd-sec-h">Series <span class="vd-cad">Target: 2 running per reporter</span></div>';
-  h += '<div class="vd-add"><input id="vd-series-title" placeholder="Series name"><div class="vd-add-row"><select id="vd-series-rep">' +
-       locals.map(function(rep){ return '<option value="' + esc(rep.name) + '|' + esc(rep.pub) + '">' + esc(rep.name) + '</option>'; }).join('') +
-       '</select><button class="vd-btn sm" onclick="vdAddSeries()">+ Add series</button></div></div>';
+  // ---- series ----
+  h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">Series — everyone runs two</div><div class="vd-sec-sum">'+healthy+'/'+seriesTarget+' healthy</div></div>';
+  h+='<div class="vd-newbanner '+(newThisWeek>=1?'ok':'no')+'">'+(newThisWeek>=1?'✓ '+newThisWeek+' new series started this week':'No new series this week — aim for at least 1 across the team')+'</div>';
+  h+='<div class="vd-add"><input id="vd-series-title" placeholder="New series name"><div class="vd-add-row"><select id="vd-series-rep">'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+'</option>';}).join('')+'</select><button class="vd-btn sm" onclick="vdAddSeries()">+ Start series</button></div></div>';
   locals.forEach(function(rep){
-    var mine = VD.series.filter(function(s){ return s.reporter===rep.name && s.pub===rep.pub; });
-    var col = mine.length>=2 ? 'var(--success-lt)' : 'var(--cream)';
-    var tc = mine.length>=2 ? 'var(--success)' : 'var(--cream-dk)';
-    h += '<div class="vd-series-row"><span class="vd-series-rep">' + esc(rep.name) + '</span> ';
-    h += '<span style="color:var(--grey-md);font-size:12px">' + (mine.length ? mine.map(function(s){ return esc(s.title); }).join(', ') : 'no series yet') + '</span>';
-    h += '<span class="vd-series-ct" style="background:' + col + ';color:' + tc + '">' + mine.length + '/2</span>';
-    mine.forEach(function(s){ /* removable */ });
-    h += '</div>';
+    var mine=allSeries(rep); var act=activeSeries(rep).length;
+    h+='<div class="vd-series-row"><div class="vd-series-name">'+esc(rep.name)+'</div><div class="vd-chips">';
+    if(!mine.length) h+='<span class="vd-series-empty">no series yet</span>';
+    mine.forEach(function(s){ var stalled=s.status==='stalled'; var age=stalled?vdWeeksBetween(s.started,WEEK):0; h+='<span class="vd-chip '+(stalled?'stalled':'active')+'"><span onclick="vdToggleSeries(\''+s.id+'\')">'+esc(s.title)+(stalled?(' — stalled'+(age>0?' '+age+'w':'')):' ✓')+'</span><span class="x" onclick="vdRemoveSeries(\''+s.id+'\')">×</span></span>'; });
+    h+='</div><div class="vd-series-ct" style="color:'+(act>=2?'var(--vd-green)':'var(--vd-rust)')+'">'+act+'/2</div></div>';
   });
-  h += '</div>';
+  h+='</div>';
 
-  document.getElementById('video-desk-body').innerHTML = h;
+  // ---- performance placeholder ----
+  h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">What’s winning — by format</div><div class="vd-sec-sum">avg watch-through</div></div>';
+  h+='<div class="vd-perf-note">Lights up when analytics connects — watch-through &amp; engagement per format are not wired yet, so these are placeholders, not real numbers.</div>';
+  VD_FORMATS.forEach(function(fmt){ h+='<div class="vd-perf-row"><div class="vd-perf-name">'+esc(fmt)+'</div><div class="vd-perf-bar"></div><div class="vd-perf-val">—</div></div>'; });
+  h+='</div>';
+
+  // ---- my desk ----
+  h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">My desk — standing jobs</div><div class="vd-sec-sum">'+VD.myDesk.length+'</div></div>';
+  h+='<div class="vd-add"><div class="vd-add-row"><input id="vd-desk-lbl" placeholder="Standing job (e.g. Format deck v1)"><input id="vd-desk-status" placeholder="Status (e.g. 3 of 5 done)"><button class="vd-btn sm" onclick="vdAddDesk()">+ Add</button></div></div>';
+  if(!VD.myDesk.length) h+='<div class="rollup-empty">No standing jobs yet.</div>';
+  VD.myDesk.forEach(function(j){ var done=/\b(done|filed|complete|completed)\b/i.test(j.status||''); h+='<div class="vd-desk-row"><div class="vd-desk-lbl">'+esc(j.label)+'</div><div class="vd-desk-status'+(done?' done':'')+'">'+esc(j.status||'')+'</div><button class="vd-del" onclick="vdRemoveDesk(\''+j.id+'\')">×</button></div>'; });
+  h+='</div>';
+
+  document.getElementById('video-desk-body').innerHTML=h;
 }
 
-// ---- actions (optimistic: mutate, save, re-render; roll back on failure) ----
-async function vdCommit(prev, msg){
-  var ok = await saveVD();
-  if (ok){ renderVideoDesk(); }
-  else { VD = prev; renderVideoDesk(); alert(msg || 'Could not save. Try again.'); }
+// ── tasks (Needs your eye) ───────────────────────────────────────────────────
+async function vdAddTask(){
+  var inp=document.getElementById('vd-task-in'); var t=inp?inp.value.trim():''; if(!t) return;
+  var id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{
+    var res=await supa.from('system_flags').insert({key:'videotask:'+Date.now()+'-'+id,value:JSON.stringify({id:id,text:t.slice(0,500),source:'dashboard',created:new Date().toISOString()})});
+    if(res.error){ console.error(res.error); alert('Could not add the task. Try again.'); return; }
+  }catch(e){ alert('Could not add the task. Try again.'); return; }
+  await vdLoadTasks(); renderVideoDesk();
 }
-function vdClone(){ return JSON.parse(JSON.stringify(VD)); }
+async function vdToggleTask(id,done){
+  try{
+    var res=await supa.from('system_flags').insert({key:'videotaskdone:'+id+':'+Date.now(),value:JSON.stringify({id:id,done:!!done})});
+    if(res.error){ console.error(res.error); alert('Could not update the task. Try again.'); return; }
+  }catch(e){ alert('Could not update the task. Try again.'); return; }
+  await vdLoadTasks(); renderVideoDesk();
+}
+function vdToggleFlags(){ VD_FLAGS_OPEN=!VD_FLAGS_OPEN; renderVideoDesk(); }
+function vdToggleShowDone(){ VD_SHOW_DONE=!VD_SHOW_DONE; renderVideoDesk(); }
 
-async function vdToggleCheck(k){
-  var prev = vdClone();
-  if (!VD.checklist[WEEK]) VD.checklist[WEEK] = {};
-  VD.checklist[WEEK][k] = !VD.checklist[WEEK][k];
-  await vdCommit(prev);
+// ── desk state actions ───────────────────────────────────────────────────────
+async function vdToggleCheck(k){ var prev=vdClone(); if(!VD.checklist[WEEK])VD.checklist[WEEK]={}; VD.checklist[WEEK][k]=!VD.checklist[WEEK][k]; await vdCommit(prev); }
+async function vdAddProject(){ var t=document.getElementById('vd-new-title').value.trim(); if(!t){alert('Give the video a title.');return;} var rep=document.getElementById('vd-new-rep').value; var slot=document.getElementById('vd-new-slot').value; var prev=vdClone(); var now=Date.now(); var p={id:now.toString(36),title:t,stage:0,preshoot:{},created:now,stageAt:now}; if(rep){var pa=rep.split('|');p.reporter=pa[0];p.pub=pa[1];p.slot=slot||null;p.standalone=false;}else p.standalone=true; VD.projects.push(p); await vdCommit(prev,'Could not add.'); }
+async function vdRemoveProject(id){ if(!confirm('Remove this video from the pipeline?'))return; var prev=vdClone(); VD.projects=VD.projects.filter(function(p){return p.id!==id;}); await vdCommit(prev); }
+async function vdPreshoot(id,f){ var prev=vdClone(); var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; if(!p.preshoot)p.preshoot={}; p.preshoot[f]=!p.preshoot[f]; await vdCommit(prev); }
+async function vdAdvance(id){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; if(p.stage===0&&!vdPreshootDone(p)){alert('Finish the pre-shoot checklist first.');return;} var prev=vdClone(); if(p.stage<VD_STAGES.length-1){p.stage++;p.stageAt=Date.now();} await vdCommit(prev); }
+async function vdStepBack(id){ var prev=vdClone(); var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(p&&p.stage>0){p.stage--;p.stageAt=Date.now();} await vdCommit(prev); }
+async function vdSetUrl(id,val){
+  var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p) return;
+  val=(val||'').trim();
+  if(val&&!/^https?:\/\//i.test(val)) val='https://'+val;
+  if(val&&/\s/.test(val)){ alert('That link has spaces in it — paste just the URL.'); return; }
+  var prev=vdClone(); p.url=val; await vdCommit(prev,'Could not save the link.');
 }
-async function vdAddProject(){
-  var title = document.getElementById('vd-new-title').value.trim();
-  if (!title){ alert('Give the video a title.'); return; }
-  var rep = document.getElementById('vd-new-rep').value;
-  var slot = document.getElementById('vd-new-slot').value;
-  var prev = vdClone();
-  var proj = { id: Date.now().toString(36), title: title, stage: 0, preshoot:{}, created: Date.now() };
-  if (rep){ var parts = rep.split('|'); proj.reporter = parts[0]; proj.pub = parts[1]; proj.slot = slot || null; proj.standalone = false; }
-  else { proj.standalone = true; }
-  VD.projects.push(proj);
-  await vdCommit(prev, 'Could not add the project. Try again.');
+async function vdSaveUrl(id){ var el=document.getElementById('vdurl-'+id); await vdSetUrl(id,el?el.value:''); }
+async function vdPromptUrl(id){ var v=prompt('Link to the published video'); if(v) await vdSetUrl(id,v); }
+function vdTogglePub(){ VD_PUB_OPEN=!VD_PUB_OPEN; renderVideoDesk(); }
+function vdFilterPub(v){ v=(v||'').toLowerCase().trim(); document.querySelectorAll('#video-desk-body .vd-pubrow').forEach(function(r){ r.style.display=(!v||r.getAttribute('data-text').indexOf(v)>-1)?'':'none'; }); }
+async function vdPush(id){
+  var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return;
+  var rep=p.reporter,pub=p.pub,slot=p.slot;
+  if(p.standalone){ var rv=(document.getElementById('vdpush-rep-'+id)||{}).value||''; if(rv){var pa=rv.split('|');rep=pa[0];pub=pa[1];} slot=(document.getElementById('vdpush-slot-'+id)||{}).value||''; }
+  if(!rep||!slot){ alert('Pick a reporter and a slot to push to.'); return; }
+  var occ=(VD_OUTPUT[rep+'|'+pub]||{})[slot];
+  if(occ&&occ.headline&&!confirm('Slot '+slot+' on '+rep+'’s planner already has “'+occ.headline+'”. Overwrite it?'))return;
+  try{
+    var row={reporter:rep,publication:pub,week_of:WEEK,story_num:slot,headline:p.title,angle:'',notes:'From Video Desk pipeline',format:'Video',assigned_by:'Editor',updated_at:new Date().toISOString()};
+    await editorUpsert(row);
+    notifySlack(slackMention(rep)+':clapper: A video was assigned from the Video Desk to *'+rep+'*: "'+p.title+'"');
+    p.pushed=true;p.standalone=false;p.reporter=rep;p.pub=pub;p.slot=slot;
+    await saveVD(); await loadVideoDesk();
+  }catch(e){ alert('Could not push to planner. Check your connection.'); }
 }
-async function vdRemoveProject(id){
-  if (!confirm('Remove this video from the pipeline?')) return;
-  var prev = vdClone();
-  VD.projects = VD.projects.filter(function(p){ return p.id !== id; });
-  await vdCommit(prev);
+async function vdAddSeries(){ var t=document.getElementById('vd-series-title').value.trim(); var rep=document.getElementById('vd-series-rep').value; if(!t||!rep){alert('Pick a reporter and name the series.');return;} var prev=vdClone(); var pa=rep.split('|'); VD.series.push({id:Date.now().toString(36),reporter:pa[0],pub:pa[1],title:t,started:WEEK,status:'active'}); await vdCommit(prev); }
+async function vdToggleSeries(id){ var prev=vdClone(); var s=VD.series.filter(function(x){return x.id===id;})[0]; if(s)s.status=(s.status==='stalled')?'active':'stalled'; await vdCommit(prev); }
+async function vdRemoveSeries(id){ var prev=vdClone(); VD.series=VD.series.filter(function(s){return s.id!==id;}); await vdCommit(prev); }
+async function vdAddDesk(){ var l=document.getElementById('vd-desk-lbl').value.trim(); var st=document.getElementById('vd-desk-status').value.trim(); if(!l){alert('Name the job.');return;} var prev=vdClone(); VD.myDesk.push({id:Date.now().toString(36),label:l,status:st}); await vdCommit(prev); }
+async function vdRemoveDesk(id){ var prev=vdClone(); VD.myDesk=VD.myDesk.filter(function(j){return j.id!==id;}); await vdCommit(prev); }
+function vdToggleRep(ri){ VD_EXPAND[ri]=!VD_EXPAND[ri]; renderVideoDesk(); }
+
+// ── notes, templates, nudges ─────────────────────────────────────────────────
+function vdTpl(ri,ti){
+  var sel=document.getElementById('vdnote-slot-'+ri); var n=sel?sel.value:'';
+  var nm=n?vdSlotName(n).toLowerCase():'video';
+  var t=VD_TEMPLATES[ti].x.replace(/\{s\}/g,nm);
+  var ta=document.getElementById('vdnote-text-'+ri); if(!ta) return;
+  ta.value=ta.value?ta.value.replace(/\s+$/,'')+' '+t:t; ta.focus();
 }
-async function vdPreshoot(id, field){
-  var prev = vdClone();
-  var p = VD.projects.filter(function(x){ return x.id===id; })[0];
-  if (!p) return;
-  if (!p.preshoot) p.preshoot = {};
-  p.preshoot[field] = !p.preshoot[field];
-  await vdCommit(prev);
+async function vdNote(ri){
+  var rep=vdLocalReporters()[ri]; if(!rep)return;
+  var slot=(document.getElementById('vdnote-slot-'+ri)||{}).value||'';
+  var ta=document.getElementById('vdnote-text-'+ri); var text=ta?ta.value.trim():'';
+  if(!slot){ alert('Pick which video the note is about.'); return; }
+  if(!text) return;
+  var btn=document.getElementById('vdnote-btn-'+ri); if(btn){btn.disabled=true;btn.textContent='Sending…';}
+  try{
+    var ex=await supaFetch(TABLE+'?reporter=eq.'+encodeURIComponent(rep.name)+'&publication=eq.'+encodeURIComponent(rep.pub)+'&week_of=eq.'+encodeURIComponent(WEEK)+'&story_num=eq.'+encodeURIComponent(slot)+'&select=*');
+    var row,notes;
+    if(ex&&ex.length){ notes=parseEditorNotes(ex[0]); notes.push({id:newNoteId(),text:text,addressed:false}); row=Object.assign({},ex[0],{editor_note:serializeEditorNotes(notes),updated_at:new Date().toISOString()}); }
+    else { notes=[{id:newNoteId(),text:text,addressed:false}]; row={reporter:rep.name,publication:rep.pub,week_of:WEEK,story_num:slot,headline:'',angle:'',notes:'',format:'',word_count:'',file_day:'',todo:[],posted:[],filed:false,editor_note:serializeEditorNotes(notes),updated_at:new Date().toISOString()}; }
+    await editorUpsert(row);
+    var storyLabel=row.headline?'"'+row.headline+'"':vdSlotName(slot).toLowerCase();
+    notifySlack(slackMention(rep.name)+':memo: Note from the Video Desk for *'+rep.name+'* on '+storyLabel+':\n>'+text);
+    if(ta)ta.value='';
+    if(btn){ btn.textContent='Note sent ✓'; setTimeout(function(){ if(btn){btn.disabled=false;btn.textContent='Send note';} },1800); }
+  }catch(e){ if(btn){btn.disabled=false;btn.textContent='Send note';} alert('Could not send the note.'); }
 }
-async function vdAdvance(id){
-  var p = VD.projects.filter(function(x){ return x.id===id; })[0];
-  if (!p) return;
-  if (p.stage === 0 && !vdPreshootDone(p)){ alert('Finish the pre-shoot checklist before marking this Shot.'); return; }
-  var prev = vdClone();
-  if (p.stage < VD_STAGES.length - 1) p.stage++;
-  await vdCommit(prev);
-}
-async function vdStepBack(id){
-  var prev = vdClone();
-  var p = VD.projects.filter(function(x){ return x.id===id; })[0];
-  if (p && p.stage > 0) p.stage--;
-  await vdCommit(prev);
-}
-async function vdAddSeries(){
-  var title = document.getElementById('vd-series-title').value.trim();
-  var rep = document.getElementById('vd-series-rep').value;
-  if (!title || !rep){ alert('Pick a reporter and name the series.'); return; }
-  var prev = vdClone();
-  var parts = rep.split('|');
-  VD.series.push({ id: Date.now().toString(36), reporter: parts[0], pub: parts[1], title: title });
-  await vdCommit(prev);
-}
-async function vdSaveNotes(){
-  var prev = vdClone();
-  VD.nickNotes = document.getElementById('vd-nick-notes').value;
-  var ok = await saveVD();
-  if (ok){ alert('Note saved.'); } else { VD = prev; alert('Could not save the note. Try again.'); }
+function vdNudge(ri){
+  var x=VD_INFO[ri]; if(!x) return;
+  var parts=x.problems.map(function(p){
+    var nm=vdSlotName(p.n);
+    if(p.st==='overdue') return nm+(p.row&&p.row.headline?' (“'+p.row.headline+'”)':'')+' was due'+(p.row&&p.row.file_day?' '+p.row.file_day:'');
+    return nm+" isn't planned yet";
+  });
+  notifySlack(slackMention(x.rep.name)+':clapper: Nudge from the Video Desk — '+parts.join('; ')+". Shout if you're stuck.");
+  VD_NUDGED[x.rep.name+'|'+WEEK]=Date.now();
+  var b=document.getElementById('vdnudge-'+ri); if(b){b.textContent='Nudged ✓';b.disabled=true;}
 }
 
 // ── Resources — curated links for reporters, stored as one JSON row in system_flags ──
