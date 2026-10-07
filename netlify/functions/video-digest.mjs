@@ -20,6 +20,35 @@ const NICK_ID      = process.env.NICK_SLACK_ID;
 
 const SLOT_NAMES = { "01": "Original 1", "02": "Original 2", "03": "Video flip", "04": "Impact video" };
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+// The six local mastheads (National Account is deliberately left out). Used so a reporter
+// with NO planner rows at all still shows up as behind, instead of being invisible.
+export const ROSTER = [
+  { name: "Douglas Connor", pub: "Mid North Coaster" }, { name: "Huw Bradshaw", pub: "North Shore Lorikeet" },
+  { name: "Matthew Sims", pub: "Eastern Melburnian" }, { name: "Zara Cuthbertson", pub: "West Vic Brolga — Wannon" },
+  { name: "Darcie Humphreys", pub: "West Vic Brolga — Ballarat" }, { name: "Jacob Wallace", pub: "Gippsland Monitor" },
+];
+export const QUIET_DAYS = 14;
+export function groupReporters(stories) {
+  const by = {};
+  ROSTER.forEach((r) => { by[r.name + "|" + r.pub] = { name: r.name, pub: r.pub, slots: {} }; });
+  (stories || []).forEach((s) => {
+    if (/^National Account/.test(s.publication || "")) return;
+    const k = s.reporter + "|" + s.publication;
+    (by[k] = by[k] || { name: s.reporter, pub: s.publication, slots: {} }).slots[s.story_num] = s;
+  });
+  return Object.values(by);
+}
+// Same rule as the desk: quiet = has logged episodes and none for QUIET_DAYS; manual "stalled" always counts.
+export function activeSeriesCount(snap, r) {
+  return ((snap && snap.series) || []).filter((s) => {
+    if (s.reporter !== r.name || s.pub !== r.pub) return false;
+    if (s.status === "stalled") return false;
+    const eps = ((snap && snap.projects) || []).filter((p) => p.seriesId === s.id && p.stage >= 3);
+    if (!eps.length) return true;
+    const last = Math.max(s.touched || 0, ...eps.map((p) => p.publishedAt || p.stageAt || p.created || 0));
+    return Math.floor((Date.now() - last) / 864e5) < QUIET_DAYS;
+  }).length;
+}
 
 // ── pure helpers (exported for testing) ──
 export function sydneyParts(now = new Date()) {
@@ -64,15 +93,9 @@ export function buildDigest({ today, week, snapshot, tasks, stories }) {
   if (open.length) { L.push("*Your checklist — still open this week*"); open.forEach((c) => L.push("• " + c.lbl)); L.push(""); }
 
   // reporters
-  const by = {};
-  (stories || []).forEach((s) => {
-    if (/^National Account/.test(s.publication || "")) return;
-    const k = s.reporter + "|" + s.publication;
-    (by[k] = by[k] || { name: s.reporter, slots: {} }).slots[s.story_num] = s;
-  });
   const repLines = [];
   let filedTotal = 0, repCount = 0;
-  Object.values(by).forEach((r) => {
+  groupReporters(stories).forEach((r) => {
     repCount++;
     const bits = [];
     let filed = 0;
@@ -125,17 +148,23 @@ export function buildDigest({ today, week, snapshot, tasks, stories }) {
 }
 
 // ── io ──
-async function sget(path) {
+export async function sget(path) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } });
   if (!r.ok) throw new Error(`Supabase ${r.status}: ${(await r.text()).slice(0, 160)}`);
   return r.json();
 }
-async function loadTasks() {
+export async function loadTasks() {
   const rows = await sget("system_flags?select=key,value&key=like.videotask*&order=key.asc&limit=1000");
   const tasks = {}, done = {};
   rows.forEach((row) => { let v; try { v = JSON.parse(row.value); } catch { return; } if (!v || !v.id) return;
     if (row.key.startsWith("videotaskdone:")) done[v.id] = !!v.done; else if (row.key.startsWith("videotask:")) tasks[v.id] = v; });
   return Object.values(tasks).map((t) => ({ ...t, done: !!done[t.id] }));
+}
+
+export async function sendDM(text) {
+  const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST", headers: { Authorization: `Bearer ${BOT_TOKEN}`, "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify({ channel: NICK_ID, text }) });
+  const j = await r.json();
+  if (!j.ok) throw new Error("Slack: " + j.error);
 }
 
 export default async () => {
@@ -148,9 +177,7 @@ export default async () => {
     const tasks = await loadTasks();
     const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(01,02,03,04)&select=reporter,publication,story_num,headline,filed,file_day`);
     const text = buildDigest({ today, week, snapshot, tasks, stories });
-    const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST", headers: { Authorization: `Bearer ${BOT_TOKEN}`, "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify({ channel: NICK_ID, text }) });
-    const j = await r.json();
-    if (!j.ok) throw new Error("Slack: " + j.error);
+    await sendDM(text);
     return new Response("sent");
   } catch (e) { console.error("video-digest failed:", e); return new Response("failed: " + e.message, { status: 500 }); }
 };
