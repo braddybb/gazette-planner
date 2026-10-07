@@ -579,8 +579,8 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 }
 
 /* ── Video Desk ───────────────────────────────────────────────── */
-.vd-wrap{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start}
-@media(max-width:900px){.vd-wrap{grid-template-columns:1fr}}
+#video-desk-view{display:none;padding:1.5rem 2rem;max-width:980px;margin:0 auto}
+.vd-wrap{display:block}
 .vd-main{min-width:0}
 .vd-statrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1.5rem}
 .vd-stat{flex:1;min-width:150px;background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:14px 16px}
@@ -661,6 +661,13 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-series-row{display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:9px 13px;margin-bottom:7px;font-size:13px}
 .vd-series-rep{font-weight:600;color:var(--ink)}
 .vd-series-ct{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+
+.vd-statrow{gap:10px}
+.vd-stat{border-color:#ECECEC;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.vd-sec-h{border-bottom:1px solid #ECECEC;padding-bottom:7px}
+.vd-rep,.vd-proj,.vd-add,.vd-check-row,.vd-series-row{border-color:#ECECEC}
+.vd-rep{box-shadow:0 1px 2px rgba(0,0,0,.03)}
+
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -877,7 +884,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <div class="wr-header">
       <div>
         <div class="wr-title">Video Desk</div>
-        <div class="wr-sub">Nick's board for the six local mastheads &mdash; the weekly machine, the pipeline, and Chef's rollup</div>
+        <div class="wr-sub">Nick's board for the six local mastheads &mdash; the weekly machine and the pipeline</div>
       </div>
       <button class="vd-btn ghost sm" onclick="loadVideoDesk()">&#8635; Refresh</button>
     </div>
@@ -3134,7 +3141,6 @@ function renderVideoDesk(){
   });
 
   var h = '';
-  h += '<div class="vd-wrap"><div class="vd-main">';
 
   // ===== lead stat row =====
   h += '<div class="vd-statrow">';
@@ -3272,28 +3278,6 @@ function renderVideoDesk(){
   });
   h += '</div>';
 
-  h += '</div>';  // /vd-main
-
-  // ===== Chef's rollup (right rail) =====
-  h += '<div class="vd-side"><div class="vd-side-h">Chef&rsquo;s rollup</div><div class="vd-side-sub">Auto-flags from the desk + Nick&rsquo;s note to you</div>';
-  var sideFlags = [];
-  sideFlags.push({ ok: filedCount===slotTotal, t: filedCount + '/' + slotTotal + ' video slots filed network-wide' });
-  var behind = 0;
-  locals.forEach(function(rep){
-    var slots = VD_OUTPUT[rep.name + '|' + rep.pub] || {};
-    var filed = VD_SLOTS.filter(function(sl){ return slots[sl.n] && slots[sl.n].filed; }).length;
-    if (filed < 4) behind++;
-  });
-  sideFlags.push({ ok: behind===0, t: behind===0 ? 'Every reporter on slate' : behind + ' reporter(s) below the 4-video slate' });
-  var seriesShort = locals.filter(function(rep){ return VD.series.filter(function(s){ return s.reporter===rep.name && s.pub===rep.pub; }).length < 2; }).length;
-  sideFlags.push({ ok: seriesShort===0, t: seriesShort===0 ? 'All reporters running 2 series' : seriesShort + ' reporter(s) under 2 running series' });
-  sideFlags.push({ ok: inFlight>0 || published>0, t: inFlight + ' in pipeline, ' + published + ' published this cycle' });
-  sideFlags.forEach(function(f){ h += '<div class="vd-side-flag' + (f.ok?' ok':'') + '">' + f.t + '</div>'; });
-  h += '<textarea class="vd-side-notes" id="vd-nick-notes" placeholder="Nick&rsquo;s note to Chef this week&hellip;">' + esc(VD.nickNotes||'') + '</textarea>';
-  h += '<button class="vd-side-save" onclick="vdSaveNotes()">Save note</button>';
-  h += '</div>';
-
-  h += '</div>';  // /vd-wrap
   document.getElementById('video-desk-body').innerHTML = h;
 }
 
