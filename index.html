@@ -871,6 +871,21 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
 
 /* Assigned story indicator */
+.away-banner{background:#ECEAF6;color:#4B3F8F;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin:0 0 14px}
+.carried-badge{font-size:11px;font-weight:600;color:#8A6209;background:#FBEFCF;border-radius:999px;padding:3px 10px;margin:0 0 8px 6px;display:inline-block}
+.abandon-btn{font:inherit;font-size:11.5px;font-weight:600;color:#B4532A;background:#fff;border:1px solid #E7C4B4;border-radius:999px;padding:3px 11px;margin:0 0 8px 6px;cursor:pointer}
+.abandon-btn:hover{background:#FBEFE9}
+.abandoned-banner{background:#F1F0EC;border-left:3px solid #999;border-radius:6px;padding:9px 12px;font-size:12.5px;color:#555;margin-bottom:10px;line-height:1.5}
+.abandon-restore{font:inherit;font-size:11.5px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0 0 0 6px}
+.story-card.is-abandoned{opacity:.62}
+.abandon-pill{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#E5E3DC;color:#666;border-radius:999px;padding:2px 8px;margin-right:6px}
+.ab-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:400}
+.ab-box{background:#fff;border-radius:14px;padding:22px 24px;width:min(440px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.ab-h{font-size:17px;font-weight:700;margin-bottom:6px}.ab-sub{font-size:13px;color:#666;line-height:1.5;margin-bottom:12px}
+.ab-box textarea{width:100%;box-sizing:border-box;min-height:96px;border:1px solid #DDD;border-radius:8px;padding:10px 12px;font:inherit;font-size:14px;resize:vertical}
+.ab-err{color:#B4532A;font-size:12.5px;min-height:18px;margin:6px 0}.ab-btns{display:flex;gap:8px;justify-content:flex-end}
+.ab-cancel{font:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid #DDD;background:#fff;cursor:pointer}
+.ab-go{font:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:#B4532A;color:#fff;cursor:pointer}.ab-go:disabled{opacity:.6}
 .assigned-label{font-size:11px;font-weight:600;color:var(--blue-dk);background:var(--blue-lt);border-radius:999px;padding:3px 10px;margin-bottom:8px;display:inline-block}
 
 
@@ -1075,7 +1090,7 @@ padding:5px 12px;border-radius:999px}
 </div>
 
 <div class="dupe-warning" id="dupe-warning" style="display:none">
-⚠️ Two stories are sharing the same slot number — one may be hidden. Contact Chef so this can be fixed in Supabase before either card is edited further.
+⚠️ Two stories are sharing the same slot number — one may be hidden. Tell an editor so this can be fixed in Supabase before either card is edited further.
 </div>
 <div id="stories-view">
 <div class="positioning-banner" id="positioning-banner" style="display:none">
@@ -1723,6 +1738,35 @@ goToWeek(getMondayOf(val));
 toggleWeekBanner();
 }
 
+// ── Away banner: shows when an editor has marked this reporter away this week.
+// Best-effort — if the database doesn't let a reporter read it, nothing shows. ──
+async function showAwayBanner() {
+let el = document.getElementById('away-banner');
+if (el) el.remove();
+try {
+const rows = await supaFetch('GET', 'system_flags?select=key,value&key=like.away*&order=key.asc&limit=500');
+const recs = {}, ended = {};
+(rows || []).forEach(r => { let v; try { v = JSON.parse(r.value); } catch(e) { return; } if (!v || !v.id) return;
+if (r.key.indexOf('awayend:') === 0) ended[v.id] = true; else if (r.key.indexOf('away:') === 0) recs[v.id] = v; });
+const mine = Object.keys(recs).filter(id => !ended[id]).map(id => recs[id]).filter(a => a.reporter === USER.name && a.pub === USER.pub);
+const days = [];
+for (let d = 0; d < 5; d++) {
+const dt = new Date(WEEK + 'T00:00:00'); dt.setDate(dt.getDate() + d);
+const ymd = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+if (mine.some(a => a.from <= ymd && ymd <= a.to)) days.push(DAYS[d]);
+}
+if (!days.length) return;
+el = document.createElement('div');
+el.id = 'away-banner';
+el.className = 'away-banner';
+el.textContent = days.length === 5
+? 'You\u2019re marked away this week \u2014 nothing is expected of you. Enjoy the time off.'
+: 'You\u2019re marked away on ' + days.join(', ') + ' \u2014 your target is scaled down for those days.';
+const c = document.getElementById('stories-container');
+if (c && c.parentNode) c.parentNode.insertBefore(el, c);
+} catch(e) { /* not visible to reporters — fine */ }
+}
+
 async function loadStories() {
 const container = document.getElementById('stories-container');
 container.innerHTML = `<div class="loading-screen"><div class="loading-spinner"></div><div class="loading-text">Loading your stories...</div></div>`;
@@ -1742,6 +1786,7 @@ if (seenNums[r.story_num]) dupeNums.push(r.story_num);
 seenNums[r.story_num] = true;
 DATA[r.story_num] = r; DATA[r.story_num].editor_notes = parseEditorNotes(r);
 });
+restorePlanDrafts();
 if (dupeNums.length) {
 // Two rows exist in Supabase for the same slot number — this happens when
 // two saves race (e.g. reporter + editor assigning at once). Only one row
@@ -1753,6 +1798,8 @@ showDupeWarning(dupeNums);
 hideDupeWarning();
 }
 renderGrid();
+showPlanGateWarnings();
+showAwayBanner();
 renderCalendar();
 renderStreak();
 renderSoundToggle();
@@ -2450,7 +2497,7 @@ return extras;
 function showDupeWarning(nums) {
 const el = document.getElementById('dupe-warning');
 if (!el) return;
-el.textContent = '⚠️ Slot' + (nums.length > 1 ? 's ' : ' ') + nums.join(', ') + ' — two stories are sharing the same number, one may be hidden. Contact Chef so this can be fixed in Supabase before either card is edited further.';
+el.textContent = '⚠️ Slot' + (nums.length > 1 ? 's ' : ' ') + nums.join(', ') + ' — two stories are sharing the same number, one may be hidden. Tell an editor so this can be fixed in Supabase before either card is edited further.';
 el.style.display = 'block';
 }
 function hideDupeWarning() {
@@ -2637,7 +2684,7 @@ const filed = !!st.filed;
 const hasContent = storyHasContent(st);
 const prev = st.headline || emptyPrompt(s.n);
 const wrap = document.createElement('div');
-wrap.className = 'story-card' + (filed ? ' is-filed' : '') + (isExtra ? ' is-extra' : '');
+wrap.className = 'story-card' + (filed ? ' is-filed' : '') + (isExtra ? ' is-extra' : '') + (st.status === 'abandoned' ? ' is-abandoned' : '');
 wrap.id = 'card-' + s.n;
 
 // Header
@@ -2654,6 +2701,7 @@ hdr.innerHTML =
 '<div class="hdr-right">' +
 '<span class="note-dot' + (showDot ? ' show' : '') + '" id="notedot-' + s.n + '" title="New note from your editor">&#9679;</span>' +
 '<span class="filed-pill ' + s.t + (filed ? ' show' : '') + '" id="fpill-' + s.n + '">Filed</span>' +
+(st.status === 'abandoned' ? '<span class="abandon-pill">Abandoned</span>' : '') +
 '<span class="hdr-chev ' + s.t + '" id="chev-' + s.n + '">\u25be</span>' +
 '</div>';
 wrap.appendChild(hdr);
@@ -2670,6 +2718,28 @@ const albl = document.createElement('div');
 albl.className = 'assigned-label';
 albl.textContent = 'Assigned by ' + st.assigned_by;
 body.appendChild(albl);
+if (st.carried_from) {
+const cb = document.createElement('span');
+cb.className = 'carried-badge';
+let cd = st.carried_from;
+try { cd = new Date(st.carried_from + 'T00:00:00').toLocaleDateString('en-AU', {day:'numeric', month:'short'}); } catch(e) {}
+cb.textContent = 'Carried over — first assigned week of ' + cd;
+body.appendChild(cb);
+}
+if (!filed && st.status !== 'abandoned') {
+const ab = document.createElement('button');
+ab.type = 'button';
+ab.className = 'abandon-btn';
+ab.textContent = 'Can\u2019t do this one';
+ab.onclick = function(ev) { ev.stopPropagation(); openAbandonModal(s.n); };
+body.appendChild(ab);
+}
+}
+if (st.status === 'abandoned') {
+const banner = document.createElement('div');
+banner.className = 'abandoned-banner';
+banner.innerHTML = '<b>Abandoned.</b> ' + esc(st.abandon_reason || '') + ' <button type="button" class="abandon-restore" onclick="restoreStory(\'' + s.n + '\')">Restore</button>';
+body.appendChild(banner);
 }
 
 // Editor-assigned extras can be promoted into an open workload slot
@@ -3817,9 +3887,10 @@ throw new Error('POST ' + postRes.status + ': ' + errText);
 async function manualSave(num) {
 const btn = document.getElementById('savebtn-' + num);
 const err = document.getElementById('saveerr-' + num);
+if (!DATA[num]) DATA[num] = blankStory(num);
+if (!planGateAllows(num)) { if (btn) { btn.textContent = 'Not saved'; setTimeout(() => { btn.textContent = 'Save'; }, 2000); } return; }
 if (btn) { btn.classList.add('saving'); btn.textContent = 'Saving...'; }
 if (err) err.classList.remove('show');
-if (!DATA[num]) DATA[num] = blankStory(num);
 const row = {
 reporter:    USER.name,
 publication: USER.pub,
@@ -3856,8 +3927,131 @@ clearTimeout(saveTimer);
 saveTimer = setTimeout(() => saveStory(num), 150);
 }
 
+// ── Planning gate: a card with a headline can't be saved until it has a day and
+// something in Angle or Notes. Blocked edits stay on screen (and in a local draft),
+// but are NOT written to the database, so nothing half-planned reaches editors. ──
+const PLAN_BLOCKED = {};
+function planCardType(num) {
+const def = STORIES.find(s => s.n === num) || (getExtras().find(e => e.num === num) ? {t: (DATA[num] && DATA[num].assigned_by ? 'imp' : 'std')} : null);
+return def ? def.t : null;
+}
+function planGateProblem(num) {
+const st = DATA[num];
+if (!st || !st.headline || !String(st.headline).trim()) return null;   // clearing a card is always fine
+const type = planCardType(num);
+const noDay = type !== 'poll' && !st.file_day;
+const noAngle = !((st.angle && st.angle.trim()) || (st.notes && st.notes.trim()));
+if (!noDay && !noAngle) return null;
+if (noDay && noAngle) return 'This card won\u2019t save yet — pick the day you\u2019ll file it and add something to Angle or Notes.';
+if (noDay) return 'This card won\u2019t save yet — pick the day you\u2019ll file it' + (type === 'newsletter' ? ' (send day)' : '') + '.';
+return 'This card won\u2019t save yet — add something to Angle or Notes.';
+}
+function draftKey(num) { return 'gz_draft|' + USER.name + '|' + USER.pub + '|' + WEEK + '|' + num; }
+function showPlanGate(num, msg) {
+PLAN_BLOCKED[num] = true;
+try { localStorage.setItem(draftKey(num), JSON.stringify(DATA[num])); } catch(e) {}
+let el = document.getElementById('gate-warn-' + num);
+if (!el) {
+const row = document.querySelector('#card-' + num + ' .filed-row');
+if (!row) return;
+el = document.createElement('div');
+el.id = 'gate-warn-' + num;
+el.className = 'dist-warning';
+row.parentNode.insertBefore(el, row);
+}
+el.textContent = msg;
+el.style.display = 'block';
+}
+function clearPlanGate(num) {
+delete PLAN_BLOCKED[num];
+try { localStorage.removeItem(draftKey(num)); } catch(e) {}
+const el = document.getElementById('gate-warn-' + num);
+if (el) el.style.display = 'none';
+}
+// Run the gate; returns true if the save may go ahead.
+function planGateAllows(num) {
+const p = planGateProblem(num);
+if (p) { showPlanGate(num, p); return false; }
+clearPlanGate(num);
+return true;
+}
+// After loading, put back any unsaved drafts and re-show their warnings.
+function restorePlanDrafts() {
+Object.keys(localStorage).filter(k => k.indexOf('gz_draft|' + USER.name + '|' + USER.pub + '|' + WEEK + '|') === 0).forEach(k => {
+try {
+const num = k.split('|')[4];
+const d = JSON.parse(localStorage.getItem(k));
+if (d && !(DATA[num] && DATA[num].filed)) DATA[num] = Object.assign({}, DATA[num] || {}, d);
+} catch(e) {}
+});
+}
+function showPlanGateWarnings() {
+Object.keys(DATA).forEach(num => { const p = planGateProblem(num); if (p) showPlanGate(num, p); });
+}
+window.addEventListener('beforeunload', function(e) {
+if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ── Abandoning an assigned story: a reason is required, and editors are told ──
+let _abandonNum = null;
+function openAbandonModal(num) {
+_abandonNum = num;
+let el = document.getElementById('abandon-ov');
+if (el) el.remove();
+el = document.createElement('div');
+el.id = 'abandon-ov';
+el.className = 'ab-ov';
+const st = getStory(num);
+el.innerHTML = '<div class="ab-box"><div class="ab-h">Can\u2019t do this one?</div>' +
+'<div class="ab-sub">\u201c' + esc(st.headline || 'This story') + '\u201d was assigned to you. Tell your editors why it isn\u2019t going ahead \u2014 they\u2019ll see this.</div>' +
+'<textarea id="ab-reason" placeholder="What happened? e.g. source won\u2019t talk, story fell over, no longer relevant\u2026"></textarea>' +
+'<div class="ab-err" id="ab-err"></div>' +
+'<div class="ab-btns"><button type="button" class="ab-cancel" onclick="closeAbandonModal()">Keep it</button><button type="button" class="ab-go" id="ab-go" onclick="confirmAbandon()">Abandon story</button></div></div>';
+document.body.appendChild(el);
+setTimeout(() => { const t = document.getElementById('ab-reason'); if (t) t.focus(); }, 30);
+}
+function closeAbandonModal() { const el = document.getElementById('abandon-ov'); if (el) el.remove(); _abandonNum = null; }
+async function confirmAbandon() {
+const num = _abandonNum; if (!num) return;
+const reason = (document.getElementById('ab-reason').value || '').trim();
+const err = document.getElementById('ab-err');
+if (reason.length < 15) { err.textContent = 'Give your editors a proper reason (a sentence is plenty).'; return; }
+const btn = document.getElementById('ab-go'); btn.disabled = true; btn.textContent = 'Saving\u2026';
+try {
+await writeStoryStatus(num, { status: 'abandoned', abandon_reason: reason, abandoned_at: new Date().toISOString() });
+} catch(e) {
+btn.disabled = false; btn.textContent = 'Abandon story';
+err.textContent = 'Could not save \u2014 check your connection and try again.';
+return;
+}
+const st = getStory(num);
+notifySlack(':no_entry: *' + USER.name + '* abandoned an assigned story \u2014 \u201c' + (st.headline || 'untitled') + '\u201d\n>' + reason.replace(/\n/g, ' '));
+closeAbandonModal();
+renderGrid(); showPlanGateWarnings();
+}
+async function restoreStory(num) {
+try { await writeStoryStatus(num, { status: null, abandon_reason: null, abandoned_at: null }); }
+catch(e) { alert('Could not restore it \u2014 try again.'); return; }
+renderGrid(); showPlanGateWarnings();
+}
+// Writes the story's status fields straight through (bypasses the planning gate on purpose).
+async function writeStoryStatus(num, fields) {
+if (!DATA[num]) DATA[num] = blankStory(num);
+const row = Object.assign({
+reporter: USER.name, publication: USER.pub, week_of: WEEK, story_num: num,
+headline: DATA[num].headline || '', angle: DATA[num].angle || '', notes: DATA[num].notes || '',
+format: DATA[num].format || '', word_count: DATA[num].word_count || '', file_day: DATA[num].file_day || '',
+todo: DATA[num].todo || [], posted: DATA[num].posted || [], filed: !!DATA[num].filed,
+editor_note: serializeEditorNotes(DATA[num].editor_notes), editor_note_addressed: false,
+updated_at: new Date().toISOString(),
+}, fields);
+await upsertRow(row);
+Object.assign(DATA[num], fields);
+}
+
 async function saveStory(num) {
 if (!DATA[num]) return;
+if (!planGateAllows(num)) return;
 const row = {
 reporter:    USER.name,
 publication: USER.pub,
