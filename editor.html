@@ -328,7 +328,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .wr-type-gap-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;background:#FFF4E0;color:#7A3800;border:0.5px solid #F0C878}
 .drill-name{font-size:24px;font-weight:600;color:var(--ink)}
 .drill-pub{font-size:14px;color:var(--grey-md);margin-top:2px}
-.drill-stories{display:flex;flex-direction:column;gap:10px}
+.drill-stories{display:flex;flex-direction:column;background:#fff;border:1px solid #ECECEC;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.dr-summary{background:#fff;border:1px solid #ECECEC;border-radius:12px;padding:14px 18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.dr-sum-top{display:flex;align-items:center;gap:14px}
+.dr-sum-count{font-size:13px;color:#666;white-space:nowrap}.dr-sum-count b{font-size:20px;color:#111;font-weight:700}
+.dr-sum-bar{flex:1;height:7px;background:#EEEDE7;border-radius:4px;overflow:hidden}.dr-sum-fill{height:100%;background:var(--blue);border-radius:4px}
+.dr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.dr-chip{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;background:#F1F0EC;color:#666}
+.dr-chip.red{background:#F6E3DA;color:#B4532A}.dr-chip.amber{background:#FBEFCF;color:#8A6209}.dr-chip.blue{background:#E6EEFB;color:#1F4F9C}.dr-chip.ok{background:#E3EFE8;color:#2E6B4F}.dr-chip.purple{background:#EDE6FA;color:#5B2DB8}
+.dr-filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px dotted #DDD}
+.dr-filter{font:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid #DDD;background:#fff;color:#555;cursor:pointer}
+.dr-filter:hover{background:#F6F6F6}.dr-filter.on{background:#111;border-color:#111;color:#fff}
+.dr-row{border-bottom:1px dotted #E2E2E2;border-left:3px solid transparent}.dr-row:last-child{border-bottom:none}
+.dr-row.st-overdue{border-left-color:#B4532A}.dr-row.st-incomplete{border-left-color:#D9A12B}.dr-row.st-due{border-left-color:#1F4F9C}.dr-row.st-filed{border-left-color:#2E6B4F}
+.dr-main{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer}
+.dr-main:hover{background:#FAFAF7}
+.dr-num{flex:0 0 34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:14px;font-weight:700;color:#fff;background:#3A3A3A}
+.dr-num.l2n,.dr-num.vidfirst{background:#1C1C1C}.dr-num.std,.dr-num.poll{background:var(--blue)}.dr-num.imp{background:#D9492E}.dr-num.life{background:#E8896E}.dr-num.vidflip{background:#5555FF}.dr-num.original{background:#3A3A3A}.dr-num.newsletter{background:#787878}.dr-num.election{background:#2B2F77}.dr-num.editorial{background:#1E7A46}.dr-num.vidimp{background:#6D28D9}
+.dr-title{flex:1;min-width:0}
+.dr-type{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#999}
+.dr-head{font-size:14px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dr-head.empty{color:#aaa;font-weight:400;font-style:italic}
+.dr-meta{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.dr-tag{font-size:11px;color:#777;background:#F3F2EE;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.dr-tag.assigned{background:var(--blue-lt);color:var(--blue-dk);font-weight:600}.dr-tag.note{background:#FBEFCF;color:#8A6209;font-weight:600}
+.dr-status{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;background:#F1F0EC;color:#777}
+.dr-status.ok{background:#E3EFE8;color:#2E6B4F}.dr-status.red{background:#F6E3DA;color:#B4532A}.dr-status.amber{background:#FBEFCF;color:#8A6209}.dr-status.blue{background:#E6EEFB;color:#1F4F9C}
+.dr-caret{color:#BBB;font-size:11px;transition:transform .15s}.dr-row.open .dr-caret{transform:rotate(90deg)}
+.dr-detail{display:none;padding:2px 18px 16px 61px;background:#FCFBF8}.dr-row.open .dr-detail{display:block}
+.dr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 18px;margin-top:8px}
+.dr-f.wide{grid-column:1/-1}
+.dr-fl{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#999;margin-bottom:3px}
+.dr-fv{font-size:13px;color:#111;line-height:1.5;white-space:pre-wrap}.dr-fv.empty{color:#BBB}
+.dr-sep{padding:9px 16px;background:#F5F4F0;border-bottom:1px dotted #E2E2E2;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888}
+.dr-none{padding:28px;text-align:center;color:#999;font-size:13px}
+.dr-abandon{margin-top:8px;background:#F1F0EC;border-left:3px solid #999;border-radius:6px;padding:9px 12px;font-size:12.5px;color:#444;line-height:1.5}
+.dr-away{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.away-badge{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#ECEAF6;color:#4B3F8F;letter-spacing:.02em}
+.pc-bar.away{background:#D9D6EA}
+.vd-bar-fill.lvlaway{background:#D9D6EA}.vd-rep-tally.lvlaway{color:#4B3F8F}
+.away-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:300}
+.away-box{background:#fff;border-radius:14px;padding:22px 24px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.away-h{font-size:17px;font-weight:700;margin-bottom:4px}.away-sub{font-size:12.5px;color:#777;margin-bottom:14px}
+.away-l{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:#555;margin-bottom:10px}
+.away-l input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #DDD;border-radius:8px;font-weight:400}
+.away-err{color:#B4532A;font-size:12.5px;min-height:16px;margin-bottom:6px}.away-btns{display:flex;gap:8px;justify-content:flex-end}
+@media(max-width:640px){.dr-meta{display:none}.dr-detail{padding-left:18px}.dr-grid{grid-template-columns:1fr 1fr}}
+
 .drill-card{background:#fff;border:0.5px solid var(--border);border-radius:10px;overflow:hidden}
 .drill-card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px}
 .drill-card-hdr.l2n,.drill-card-hdr.vidfirst{background:#1C1C1C}
@@ -907,6 +952,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       <div class="drill-name" id="drill-name"></div><span id="drill-name-star"></span>
       <div class="drill-pub" id="drill-pub"></div>
     </div>
+    <div class="dr-summary" id="drill-summary"></div>
     <div class="drill-stories" id="drill-stories"></div>
   </div>
 
@@ -1514,6 +1560,7 @@ async function loadWeek() {
   try {
     await refreshData();
     await loadGoldStars();
+    await loadAway();
     renderGrid();
     checkNotifs();
     initEditorRealtime();
@@ -1721,14 +1768,16 @@ function renderNetworkBar() {
   let baseFiled = 0;
   let extrasFiled = 0;
   let totalStories = 0;
+  let awayCount = 0;
   REPORTERS.forEach(r => {
     const data = getReporterData(r.name, r.pub);
     baseFiled += getFiledCount(data, r.pub);
     extrasFiled += getExtrasFiledCount(data, r.pub);
-    totalStories += getStoryDefs(r.pub).length; // 8 for National Account, 10 for local mastheads
+    totalStories += scaledBase(r); // 8 for National Account, 10 for local mastheads — scaled down for days away
+    if (awayInfo(r.name, r.pub).any) awayCount++;
   });
   const totalFiled = baseFiled + extrasFiled; // headline count includes extras/assigned stories
-  const pct = Math.round(baseFiled / totalStories * 100); // progress bar reflects the committed base slate only
+  const pct = totalStories ? Math.min(100, Math.round(baseFiled / totalStories * 100)) : 0; // progress bar reflects the committed base slate only
   function fmtWk(ds) {
     try {
       const m = new Date(ds+'T00:00:00');
@@ -1744,13 +1793,13 @@ function renderNetworkBar() {
     </div>
     <div class="net-divider"></div>
     <div class="net-stat">
-      <div class="net-num">${totalStories - baseFiled}</div>
+      <div class="net-num">${Math.max(0, totalStories - baseFiled)}</div>
       <div class="net-label">Still to file</div>
     </div>
     <div class="net-divider"></div>
     <div class="net-stat">
       <div class="net-num">${REPORTERS.length}</div>
-      <div class="net-label">Reporters</div>
+      <div class="net-label">Reporters${awayCount ? ' · ' + awayCount + ' away' : ''}</div>
     </div>
     <div class="net-divider"></div>
     <div class="net-track-wrap">
@@ -1777,7 +1826,7 @@ function renderGrid() {
     const header = document.createElement('div');
     header.className = 'region-header';
     const filedTotal = inRegion.reduce((sum, r) => sum + getTotalFiledCount(getReporterData(r.name, r.pub), r.pub), 0);
-    const possibleTotal = inRegion.reduce((sum, r) => sum + getStoryDefs(r.pub).length, 0);
+    const possibleTotal = inRegion.reduce((sum, r) => sum + scaledBase(r), 0);
     header.innerHTML = '<span class="region-name">' + esc(region) + '</span>' +
       '<span class="region-count">' + filedTotal + ' / ' + possibleTotal + ' filed</span>';
     section.appendChild(header);
@@ -1793,10 +1842,11 @@ function renderGrid() {
 function buildRepCard(r) {
   const data = getReporterData(r.name, r.pub);
   const repDefs = getStoryDefs(r.pub);
-  const baseCount = repDefs.length; // 8 for National Account, 10 for local mastheads
+  const awayI = awayInfo(r.name, r.pub);
+  const baseCount = scaledBase(r); // 8 for National Account, 10 for local mastheads — scaled down for days away
   const filed = getFiledCount(data, r.pub);
   const extrasFiled = getExtrasFiledCount(data, r.pub);
-  const pct   = Math.round(filed / baseCount * 100);
+  const pct   = baseCount ? Math.min(100, Math.round(filed / baseCount * 100)) : 0;
 
   const typeIdx = t => repDefs.reduce((a,s,i) => s.t === t ? a.concat(i) : a, []);
   const isFiledAt = i => !!(data[repDefs[i].n] && data[repDefs[i].n].filed);
@@ -1855,7 +1905,7 @@ function buildRepCard(r) {
     <div class="rep-header">
       <div>
         <div class="rep-name">${r.name}${goldStarBadgeHtml(r.name)}</div>
-        <div class="rep-pub">${r.pub}</div>
+        <div class="rep-pub">${r.pub}${awayI.any ? ` <span class="away-badge" title="${esc(awayI.reason || '')}">${esc(awayI.label)}${awayI.back ? ' · back ' + esc(vdDayLabel(awayI.back)) : ''}</span>` : ''}</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <a href="/?as=${encodeURIComponent(r.name)}&pub=${encodeURIComponent(r.pub)}"
@@ -1865,7 +1915,7 @@ function buildRepCard(r) {
         </a>
         <div style="text-align:right">
           <div class="rep-filed-big">${filed + extrasFiled}</div>
-          <div class="rep-filed-sub">of ${baseCount} filed${extrasFiled ? ` (${filed} base +${extrasFiled} extra)` : ''}</div>
+          <div class="rep-filed-sub">${awayI.full ? 'away — not counted' : 'of ' + baseCount + ' filed'}${extrasFiled ? ` (${filed} base +${extrasFiled} extra)` : ''}</div>
         </div>
       </div>
     </div>
@@ -2074,31 +2124,118 @@ function cycleDrillSort() {
 // Renders the full drilldown card list (base + extras) for a reporter,
 // using the shared sort above. Called on open and on every background
 // refresh so the ordering never jumps.
-function renderDrillBody(r) {
-  const data = getReporterData(r.name, r.pub);
-  const container = document.getElementById('drill-stories');
-  container.innerHTML = '';
-  const defs = getStoryDefs(r.pub);
-  const sortedDefs = sortDrillDefs(defs, data);
-  sortedDefs.forEach(s => {
-    container.appendChild(buildDrillCard(s, data[s.n], r.name, r.pub, WEEK));
-  });
-  // Also render extras (story_num beyond this reporter's base slot count)
-  const extraNums = Object.keys(data).filter(n => parseInt(n, 10) > defs.length);
-  if (extraNums.length) {
-    const extraHdr = document.createElement('div');
-    extraHdr.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:16px;margin-bottom:8px';
-    extraHdr.textContent = 'Extra stories';
-    container.appendChild(extraHdr);
-    const extraDefs = extraNums.map(num => ({
-      n: num, t: data[num].assigned_by ? 'imp' : 'std',
-      lbl: data[num].assigned_by ? 'Editor assignment' : 'Extra story'
-    }));
-    const sortedExtraDefs = sortDrillDefs(extraDefs, data);
-    sortedExtraDefs.forEach(sDef => {
-      container.appendChild(buildDrillCard(sDef, data[sDef.n], r.name, r.pub, WEEK));
-    });
+// ── Editor drilldown: one compact row per story, expandable ─────────────────
+var DRILL_OPEN = {};        // 'reporter|pub|week|num' -> expanded
+var DRILL_FILTER = 'all';   // all | attention | unfiled | filed | assigned | video
+var DRILL_VIDEO = {vidfirst:1, vidflip:1, vidimp:1};
+
+function drillKey(rep, pub, week, n){ return rep+'|'+pub+'|'+week+'|'+n; }
+
+// Where a story stands, in plain terms. Mirrors the planner's own rules:
+// a card is "planned" only with a headline, a day, and something in Angle or Notes.
+function drillStatus(st, def, ai){
+  var ds = vdDayState();
+  var has = function(v){ return !!(v && String(v).trim()); };
+  if (st && st.filed) return {k:'filed', label:'Filed', cls:'ok', rank:5};
+  if (st && st.status === 'abandoned') return {k:'abandoned', label:'Abandoned', cls:'grey', rank:6};
+  if (ai && ai.any) {
+    var fdi = st && has(st.file_day) ? DAYS.indexOf(st.file_day) : -1;
+    if (ai.full || (fdi > -1 && ai.idx.indexOf(fdi) > -1)) return {k:'away', label:'Away', cls:'grey', rank:4};
   }
+  if (!(st && has(st.headline))) return {k:'empty', label:'Not planned', cls:(ds.state==='current'&&ds.idx>=2)||ds.state==='past'?'red':'grey', rank:(ds.state==='current'&&ds.idx>=2)||ds.state==='past'?1:4};
+  var dayNeeded = !(def && def.t === 'poll');
+  if (dayNeeded && !has(st.file_day)) return {k:'incomplete', label:'No day set', cls:'amber', rank:2};
+  if (!has(st.angle) && !has(st.notes)) return {k:'incomplete', label:'No angle yet', cls:'amber', rank:2};
+  var di = has(st.file_day) ? DAYS.indexOf(st.file_day) : 4; if (di < 0) di = 4;
+  if (ds.state==='past') return {k:'overdue', label:'Unfiled', cls:'red', rank:0};
+  if (ds.state==='future') return {k:'planned', label:'Due '+(st.file_day||'Fri'), cls:'grey', rank:3};
+  if (ds.idx > di) return {k:'overdue', label:'Overdue · '+(st.file_day||'Fri'), cls:'red', rank:0};
+  if (ds.idx === di) return {k:'due', label:'Due today', cls:'blue', rank:1};
+  return {k:'planned', label:'Due '+(st.file_day||'Fri'), cls:'grey', rank:3};
+}
+
+function drillAll(r){
+  var data = getReporterData(r.name, r.pub);
+  var defs = getStoryDefs(r.pub);
+  var all = defs.map(function(s){ return {def:s, st:data[s.n], extra:false}; });
+  Object.keys(data).filter(function(n){ return parseInt(n,10) > defs.length; }).forEach(function(n){
+    var a = !!data[n].assigned_by;
+    all.push({def:{n:n, t:a?'imp':'std', lbl:a?'Editor assignment':'Extra story'}, st:data[n], extra:true});
+  });
+  var ai = awayInfo(r.name, r.pub);
+  all.forEach(function(x){ x.status = drillStatus(x.st, x.def, ai); x.assigned = !!(x.st && x.st.assigned_by); });
+  return all;
+}
+
+function drillMatches(x){
+  switch(DRILL_FILTER){
+    case 'attention': return x.status.k==='overdue' || x.status.k==='incomplete' || (x.status.k==='empty' && x.status.cls==='red');
+    case 'unfiled': return x.status.k!=='filed' && x.status.k!=='abandoned';
+    case 'filed': return x.status.k==='filed';
+    case 'assigned': return x.assigned;
+    case 'video': return !!DRILL_VIDEO[x.def.t];
+  }
+  return true;
+}
+
+function renderDrillSummary(r, all){
+  var el = document.getElementById('drill-summary'); if (!el) return;
+  var ai = awayInfo(r.name, r.pub);
+  var base = all.filter(function(x){ return !x.extra; });
+  var filed = base.filter(function(x){ return x.status.k==='filed'; }).length;
+  var cnt = function(k){ return all.filter(function(x){ return x.status.k===k; }).length; };
+  var overdue = cnt('overdue'), due = cnt('due'), inc = cnt('incomplete');
+  var notPlanned = all.filter(function(x){ return !x.extra && x.status.k==='empty'; }).length;
+  var assignedOpen = all.filter(function(x){ return x.assigned && x.status.k!=='filed' && x.status.k!=='abandoned'; }).length;
+  var tgt = ai.any ? scaledBase(r) : base.length;
+  var pct = tgt ? Math.min(100, Math.round(filed/tgt*100)) : 0;
+  var chips = '';
+  if (overdue) chips += '<span class="dr-chip red">'+overdue+' overdue</span>';
+  if (due) chips += '<span class="dr-chip blue">'+due+' due today</span>';
+  if (inc) chips += '<span class="dr-chip amber">'+inc+' incomplete</span>';
+  if (notPlanned) chips += '<span class="dr-chip grey">'+notPlanned+' not planned</span>';
+  if (assignedOpen) chips += '<span class="dr-chip purple">'+assignedOpen+' assigned open</span>';
+  if (!chips) chips = '<span class="dr-chip ok">Nothing outstanding</span>';
+  var filters = [['all','All'],['attention','Needs attention'],['unfiled','Unfiled'],['filed','Filed'],['assigned','Assigned'],['video','Video']];
+  el.innerHTML =
+    '<div class="dr-sum-top"><div class="dr-sum-count"><b>'+filed+'</b> of '+(ai.any?scaledBase(r):base.length)+' filed'+(ai.full?' · away':'')+'</div>'+
+    '<div class="dr-sum-bar"><div class="dr-sum-fill" style="width:'+pct+'%"></div></div></div>'+
+    '<div class="dr-chips">'+chips+'</div>'+
+    awayBarHtml(r, ai)+
+    '<div class="dr-filters">'+filters.map(function(f){ return '<button class="dr-filter'+(DRILL_FILTER===f[0]?' on':'')+'" onclick="setDrillFilter(\''+f[0]+'\')">'+f[1]+'</button>'; }).join('')+'</div>';
+}
+function awayBarHtml(r, ai){
+  var h='<div class="dr-away">';
+  if(ai.any){
+    h+='<span class="dr-chip grey">'+esc(ai.label)+(ai.back?' · back '+esc(vdDayLabel(ai.back)):'')+(ai.reason?' · '+esc(ai.reason):'')+'</span>';
+    ai.recs.forEach(function(a){ h+='<button class="dr-filter" onclick="endAway(\''+esc(a.id)+'\')">Remove away '+esc(vdShortDate(a.from))+'–'+esc(vdShortDate(a.to))+'</button>'; });
+  }
+  h+='<button class="dr-filter" onclick="openAwayModal(\''+esc(r.name).replace(/'/g,"\\'")+'\',\''+esc(r.pub).replace(/'/g,"\\'")+'\')">'+(ai.any?'+ Another away period':'Mark away')+'</button></div>';
+  return h;
+}
+function setDrillFilter(f){ DRILL_FILTER = f; if (window._assignReporter) renderDrillBody(window._assignReporter); }
+
+function renderDrillBody(r) {
+  const container = document.getElementById('drill-stories');
+  const all = drillAll(r);
+  renderDrillSummary(r, all);
+  container.innerHTML = '';
+  const base = sortDrillDefs(all.filter(function(x){ return !x.extra; }).map(function(x){ return x.def; }), getReporterData(r.name, r.pub));
+  const byNum = {}; all.forEach(function(x){ byNum[x.def.n] = x; });
+  let shown = 0;
+  base.forEach(function(d){ const x = byNum[d.n]; if (drillMatches(x)) { container.appendChild(buildDrillCard(x.def, x.st, r.name, r.pub, WEEK, x.status)); shown++; } });
+  const extras = all.filter(function(x){ return x.extra; });
+  if (extras.length) {
+    const sorted = sortDrillDefs(extras.map(function(x){ return x.def; }), getReporterData(r.name, r.pub));
+    const ex = sorted.map(function(d){ return byNum[d.n]; }).filter(drillMatches);
+    if (ex.length) {
+      const hdr = document.createElement('div');
+      hdr.className = 'dr-sep'; hdr.textContent = 'Extra stories & assignments';
+      container.appendChild(hdr);
+      ex.forEach(function(x){ container.appendChild(buildDrillCard(x.def, x.st, r.name, r.pub, WEEK, x.status)); shown++; });
+    }
+  }
+  if (!shown) container.innerHTML = '<div class="dr-none">Nothing matches this filter.</div>';
 }
 
 function openDrill(r) {
@@ -2160,77 +2297,67 @@ function goHome() {
   if (mainView) mainView.style.display = 'block';
 }
 
-function buildDrillCard(s, st, r_name, r_pub, r_week) {
-  const filed    = st && st.filed;
-  const headline = st && st.headline ? st.headline : null;
-  const angle    = st && st.angle    ? st.angle    : null;
-  const notes    = st && st.notes    ? st.notes    : null;
-  const fmt      = st && st.format   ? st.format   : null;
-  const wc       = st && st.word_count ? st.word_count : null;
-  const day      = st && st.file_day ? st.file_day : null;
-  const todo     = st && st.todo     ? st.todo     : [];
-  const posted   = st && st.posted   ? st.posted   : [];
-
-  const todoChecks = TODO_ITEMS.map(t =>
-    `<span class="dcheck ${todo.includes(t)?'done':'notdone'}">${t}</span>`
-  ).join('');
-
-  const postChecks = POST_ITEMS.map(p =>
-    `<span class="dcheck ${posted.includes(p)?'done':'notdone'}">${p}</span>`
-  ).join('');
+function buildDrillCard(s, st, r_name, r_pub, r_week, status) {
+  status = status || drillStatus(st, s);
+  const key = drillKey(r_name, r_pub, r_week, s.n);
+  const headline = st && st.headline ? st.headline : '';
+  const angle = st && st.angle ? st.angle : '';
+  const notes = st && st.notes ? st.notes : '';
+  const fmt = st && st.format ? st.format : '';
+  const wc = st && st.word_count ? st.word_count : '';
+  const day = st && st.file_day ? st.file_day : '';
+  const todo = st && st.todo ? st.todo : [];
+  const posted = st && st.posted ? st.posted : [];
+  const enotes = parseEditorNotes(st);
+  const openNotes = enotes.filter(function(n){ return !n.addressed; }).length;
+  const todoChecks = TODO_ITEMS.map(t => `<span class="dcheck ${todo.includes(t)?'done':'notdone'}">${t}</span>`).join('');
+  const postChecks = POST_ITEMS.map(p => `<span class="dcheck ${posted.includes(p)?'done':'notdone'}">${p}</span>`).join('');
+  const meta = [];
+  if (st && st.assigned_by) meta.push('<span class="dr-tag assigned">Assigned</span>');
+  if (st && st.carried_from) meta.push('<span class="dr-tag note" title="Carried over from week of ' + esc(st.carried_from) + '">Carried over</span>');
+  if (day) meta.push('<span class="dr-tag">' + esc(day) + '</span>');
+  if (fmt) meta.push('<span class="dr-tag">' + esc(fmt) + '</span>');
+  if (todo.length) meta.push('<span class="dr-tag" title="To-do items ticked">' + todo.length + '/' + TODO_ITEMS.length + ' to-do</span>');
+  if (posted.length) meta.push('<span class="dr-tag" title="Posted to">' + posted.length + ' posted</span>');
+  if (openNotes) meta.push('<span class="dr-tag note">' + openNotes + ' note' + (openNotes>1?'s':'') + ' open</span>');
 
   const div = document.createElement('div');
-  div.className = 'drill-card';
-  div.innerHTML = `
-    <div class="drill-card-hdr ${s.t}">
-      <div class="drill-num ${s.t}">${s.n}</div>
-      <div style="flex:1;min-width:0">
-        <div class="drill-type ${s.t}">${s.lbl}</div>
-        <div class="drill-headline-hdr ${s.t} ${!headline?'empty':''}">${headline || 'No headline yet'}</div>
-      </div>
-      ${filed ? `<span class="drill-filed-badge ${s.t}">Filed</span>` : ''}${st && st.assigned_by ? '<span class="assigned-badge">Assigned</span>' : ''}
-    </div>
-    <div class="drill-body">
-      <div class="drill-field">
-        <div class="drill-field-label">Angle</div>
-        <div class="drill-field-val ${!angle?'empty':''}">${angle || '—'}</div>
-      </div>
-      <div class="drill-field">
-        <div class="drill-field-label">Notes</div>
-        <div class="drill-field-val ${!notes?'empty':''}">${notes || '—'}</div>
-      </div>
-      <div class="drill-field">
-        <div class="drill-field-label">Format</div>
-        <div class="drill-field-val ${!fmt?'empty':''}">${fmt || '—'}</div>
-      </div>
-      <div class="drill-field">
-        <div class="drill-field-label">Word count</div>
-        <div class="drill-field-val ${!wc?'empty':''}">${wc || '—'}</div>
-      </div>
-      <div class="drill-field">
-        <div class="drill-field-label">File by</div>
-        <div class="drill-field-val ${!day?'empty':''}">${day || '—'}</div>
-      </div>
-      <div class="drill-field">
-        <div class="drill-field-label">To do</div>
-        <div class="drill-field-val"><div class="drill-checks">${todoChecks}</div></div>
-      </div>
-      <div class="drill-field">
-        <div class="drill-field-label">Posted to</div>
-        <div class="drill-field-val"><div class="drill-checks">${postChecks}</div></div>
-      </div>
-    </div>
-  `;
+  div.className = 'dr-row st-' + status.k + (DRILL_OPEN[key] ? ' open' : '');
+  div.innerHTML =
+    '<div class="dr-main">' +
+      '<span class="dr-num ' + s.t + '">' + esc(s.n) + '</span>' +
+      '<div class="dr-title"><div class="dr-type">' + esc(s.lbl) + '</div>' +
+        '<div class="dr-head' + (headline ? '' : ' empty') + '">' + (headline ? esc(headline) : 'No headline yet') + '</div></div>' +
+      '<div class="dr-meta">' + meta.join('') + '</div>' +
+      '<span class="dr-status ' + status.cls + '">' + esc(status.label) + '</span>' +
+      '<span class="dr-caret">▸</span>' +
+    '</div>' +
+    '<div class="dr-detail">' +
+      (st && st.status === 'abandoned' ? '<div class="dr-abandon"><b>Abandoned by reporter.</b> ' + esc(st.abandon_reason || 'No reason recorded.') + '</div>' : '') +
+      '<div class="dr-grid">' +
+        '<div class="dr-f wide"><div class="dr-fl">Angle</div><div class="dr-fv' + (angle?'':' empty') + '">' + (angle ? esc(angle) : '—') + '</div></div>' +
+        '<div class="dr-f wide"><div class="dr-fl">Notes</div><div class="dr-fv' + (notes?'':' empty') + '">' + (notes ? esc(notes) : '—') + '</div></div>' +
+        '<div class="dr-f"><div class="dr-fl">Format</div><div class="dr-fv' + (fmt?'':' empty') + '">' + (fmt ? esc(fmt) : '—') + '</div></div>' +
+        '<div class="dr-f"><div class="dr-fl">Word count</div><div class="dr-fv' + (wc?'':' empty') + '">' + (wc ? esc(wc) : '—') + '</div></div>' +
+        '<div class="dr-f"><div class="dr-fl">File by</div><div class="dr-fv' + (day?'':' empty') + '">' + (day ? esc(day) : '—') + '</div></div>' +
+        '<div class="dr-f wide"><div class="dr-fl">To do</div><div class="drill-checks">' + todoChecks + '</div></div>' +
+        '<div class="dr-f wide"><div class="dr-fl">Posted to</div><div class="drill-checks">' + postChecks + '</div></div>' +
+      '</div>' +
+    '</div>';
 
-  // Add note form separately to avoid nested template literal issues
   const noteForm = document.createElement('div');
   noteForm.className = 'note-form';
   noteForm.dataset.reporter = r_name;
   noteForm.dataset.pub = r_pub;
   noteForm.dataset.week = r_week;
   noteForm.dataset.num = s.n;
-  renderNoteForm(noteForm, parseEditorNotes(st));
-  div.querySelector('.drill-body').appendChild(noteForm);
+  renderNoteForm(noteForm, enotes);
+  div.querySelector('.dr-detail').appendChild(noteForm);
+
+  div.querySelector('.dr-main').addEventListener('click', function(){
+    const open = div.classList.toggle('open');
+    if (open) DRILL_OPEN[key] = true; else delete DRILL_OPEN[key];
+  });
   return div;
 }
 
@@ -2455,11 +2582,14 @@ function renderProgressSection(data) {
   REPORTERS.forEach(r => {
     const key = r.name + '|' + r.pub;
     const rData = byReporter[key] || {};
-    const counts = weeks.map(w => rData[w] || 0);
     const maxBar = getStoryDefs(r.pub).length; // 8 for National Account, 10 for local mastheads
-    const avg = counts.length ? (counts.reduce((a,b)=>a+b,0) / counts.length) : 0;
-    const recent = counts.slice(-3);
-    const earlier = counts.slice(0, -3);
+    const awayWk = weeks.map(w => awayInfo(r.name, r.pub, w));
+    // Weeks fully away are left out of the average and trend; part-away weeks are scaled to their target.
+    const counts = weeks.map((w, i) => awayWk[i].full ? null : Math.min(maxBar, Math.round((rData[w] || 0) * 5 / awayWk[i].avail)));
+    const live = counts.filter(c => c !== null);
+    const avg = live.length ? (live.reduce((a,b)=>a+b,0) / live.length) : 0;
+    const recent = live.slice(-3);
+    const earlier = live.slice(0, -3);
     const recentAvg = recent.length ? recent.reduce((a,b)=>a+b,0)/recent.length : 0;
     const earlierAvg = earlier.length ? earlier.reduce((a,b)=>a+b,0)/earlier.length : 0;
     let trend = 'flat', trendLabel = 'Steady';
@@ -2472,6 +2602,7 @@ function renderProgressSection(data) {
     // Sparkline bars
     html += '<div class="pc-sparkline">';
     counts.forEach((c, i) => {
+      if (c === null) { html += '<div class="pc-bar away" style="height:4px" title="' + weeks[i] + ': away — not counted"></div>'; return; }
       const h = c === 0 ? 4 : Math.round((c / maxBar) * 40);
       const cls = i === counts.length - 1 ? 'current' : (c === 0 ? 'zero' : '');
       html += '<div class="pc-bar ' + cls + '" style="height:' + h + 'px" title="' + weeks[i] + ': ' + c + '/' + maxBar + ' filed"></div>';
@@ -2480,7 +2611,7 @@ function renderProgressSection(data) {
     // Stats
     html += '<div class="pc-stats">';
     html += '<div class="pc-stat"><span class="pc-stat-num">' + avg.toFixed(1) + '</span>avg/week</div>';
-    html += '<div class="pc-stat"><span class="pc-stat-num">' + counts[counts.length-1] + '/' + maxBar + '</span>this week</div>';
+    html += '<div class="pc-stat"><span class="pc-stat-num">' + (counts[counts.length-1] === null ? 'Away' : counts[counts.length-1] + '/' + maxBar) + '</span>this week</div>';
     html += '<div class="pc-stat"><span class="pc-trend ' + trend + '">' + trendLabel + '</span></div>';
     html += '</div>';
     html += '</div>';
@@ -3445,23 +3576,34 @@ function renderVideoDesk(){
   var weeks=[]; for(var i=VD_TREND_WEEKS-1;i>=0;i--) weeks.push(vdAddDays(WEEK,-7*i));
   var info=locals.map(function(rep){
     var key=rep.name+'|'+rep.pub; var d=VD_DATA[key]||{}; var cur=d[WEEK]||{};
+    var ai=awayInfo(rep.name,rep.pub,WEEK); var vt=ai.full?0:Math.round(4*ai.avail/5);
     var filed=0, problems=[], st={};
     VD_SLOTS.forEach(function(sl){
       var row=cur[sl.n]; var s=vdSlotStatus(row,ds); st[sl.n]=s;
       if(s==='filed') filed++;
       else if(s==='overdue'||s==='late-unplanned') problems.push({n:sl.n,st:s,row:row});
     });
+    if(ai.any){
+      // days away aren't counted against them: drop problems on away days, and as many unplanned slots as the days away allow
+      problems=problems.filter(function(p){ return !(p.row&&p.row.file_day&&ai.idx.indexOf(DAYS.indexOf(p.row.file_day))>-1); });
+      var spare=4-vt;
+      problems=problems.filter(function(p){ if(p.st!=='overdue'&&spare>0){ spare--; return false; } return true; });
+      if(ai.full) problems=[];
+    }
     var trend=weeks.map(function(w){
       if(VD_TREND_FROM&&w<VD_TREND_FROM) return {w:w,c:null};
-      var wd=d[w]||{}; return {w:w,c:VD_SLOTS.filter(function(sl){return wd[sl.n]&&wd[sl.n].filed;}).length};
+      var wa=awayInfo(rep.name,rep.pub,w);
+      if(wa.full) return {w:w,c:null,away:true};
+      var wd=d[w]||{}; var c=VD_SLOTS.filter(function(sl){return wd[sl.n]&&wd[sl.n].filed;}).length;
+      var tg=Math.round(4*wa.avail/5);
+      return {w:w,c:c,tg:tg,lvl:tg?Math.min(4,Math.round(c/tg*4)):4};
     });
     var streak=false;
-    if(ds.state!=='future'){ var p3=trend.slice(trend.length-4,trend.length-1); streak=p3.length===3&&p3.every(function(t){return t.c!==null&&t.c<4;}); }
-    return {rep:rep,key:key,d:d,filed:filed,problems:problems,st:st,trend:trend,streak:streak,behind:problems.length>0};
+    if(ds.state!=='future'){ var p3=trend.slice(trend.length-4,trend.length-1); streak=p3.length===3&&p3.every(function(t){return t.c!==null&&t.c<t.tg;}); }
+    return {rep:rep,key:key,d:d,filed:filed,problems:problems,st:st,trend:trend,streak:streak,behind:problems.length>0,ai:ai,vt:vt};
   });
   VD_INFO=info;
-  var totalFiled=0; info.forEach(function(x){totalFiled+=x.filed;});
-  var slotTotal=locals.length*4;
+  var totalFiled=0, slotTotal=0; info.forEach(function(x){totalFiled+=x.filed; slotTotal+=x.vt;});
   var healthy=0; locals.forEach(function(r){ healthy+=Math.min(vdActiveSeries(r).length,2); });
   var seriesTarget=locals.length*2;
   var newThisWeek=VD.series.filter(function(s){return s.started===WEEK;}).length;
@@ -3479,7 +3621,7 @@ function renderVideoDesk(){
       else if(up.length>1) issuesBy[ri].push({sev:2,cls:'amber',text:up.length+' videos not planned'});
       if(x.streak) issuesBy[ri].push({sev:2,cls:'amber',text:'3 weeks under 4/4'});
       var a=vdActiveSeries(x.rep).length;
-      if(a<2) issuesBy[ri].push({sev:1,cls:'grey',text:a+'/2 series running'});
+      if(a<2&&!x.ai.full) issuesBy[ri].push({sev:1,cls:'grey',text:a+'/2 series running'});
     });
     if(ds.state==='current'&&ds.idx>=3&&newThisWeek===0) teamIssues.push({title:'No new series this week',chip:'Aim for 1 across the team',cls:'grey',target:'vd-sec-series'});
   }
@@ -3556,18 +3698,18 @@ function renderVideoDesk(){
   h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">Network video-first output</div><div class="vd-sec-sum">'+totalFiled+'/'+slotTotal+' · target 4 each</div></div>';
   h+='<div class="vd-sec-cap">Small bars = last '+VD_TREND_WEEKS+' weeks, oldest to this week. Click a reporter for slots, feedback prep and notes.</div>';
   info.forEach(function(x,ri){
-    var rep=x.rep; var pct=Math.round(x.filed/4*100);
+    var rep=x.rep; var pct=x.vt?Math.min(100,Math.round(x.filed/x.vt*100)):0; var lv=x.ai.full?'away':(x.vt?Math.min(4,Math.round(x.filed/x.vt*4)):4);
     var open=VD_EXPAND[ri]?' open':'';
     h+='<div class="vd-rep'+open+'" id="vd-rep-'+ri+'">';
     h+='<div class="vd-rep-head" onclick="vdToggleRep('+ri+')"><div class="vd-rep-info"><div class="vd-rep-name">'+esc(rep.name)+'</div><div class="vd-rep-pub">'+esc(rep.pub)+'</div></div>';
-    h+='<div class="vd-bar"><div class="vd-bar-fill lvl'+x.filed+'" style="width:'+pct+'%"></div></div>';
+    h+='<div class="vd-bar"><div class="vd-bar-fill lvl'+lv+'" style="width:'+pct+'%"></div></div>';
     h+='<div class="vd-trend">'+x.trend.map(function(t,ti){
       var cur=ti===x.trend.length-1;
-      if(t.c===null) return '<div class="vd-tb na" title="'+esc(t.w)+': before the 4-video rule"></div>';
-      var cls=cur?'cur':'lvl'+t.c;
-      return '<div class="vd-tb '+cls+'" style="height:'+(4+t.c*5)+'px" title="Week of '+esc(t.w)+': '+t.c+'/4"></div>';
+      if(t.c===null) return '<div class="vd-tb na" title="'+esc(t.w)+(t.away?': away — not counted':': before the 4-video rule')+'"></div>';
+      var cls=cur?'cur':'lvl'+t.lvl;
+      return '<div class="vd-tb '+cls+'" style="height:'+(4+t.c*5)+'px" title="Week of '+esc(t.w)+': '+t.c+'/'+t.tg+'"></div>';
     }).join('')+'</div>';
-    h+='<div class="vd-rep-tally lvl'+x.filed+'">'+x.filed+'/4</div><div class="vd-rep-caret">▸</div></div>';
+    h+='<div class="vd-rep-tally lvl'+lv+'">'+(x.ai.full?'Away':x.filed+'/'+x.vt)+'</div><div class="vd-rep-caret">▸</div></div>';
     h+='<div class="vd-rep-detail">';
     VD_SLOTS.forEach(function(sl){
       var s=(VD_OUTPUT[x.key]||{})[sl.n]; var proj=vdProjectFor(rep.name,rep.pub,sl.n);
@@ -3823,6 +3965,102 @@ function vdNudge(ri){
   VD_NUDGELOG.unshift(entry);
   try{ supa.from('system_flags').insert({key:'videonudge:'+entry.ts+'-'+Math.random().toString(36).slice(2,6),value:JSON.stringify(entry)}).then(function(r){ if(r&&r.error) console.error('nudge log',r.error); }); }catch(e){}
   document.querySelectorAll('[data-nudge="'+ri+'"]').forEach(function(b){ b.textContent='Nudged ✓'; b.disabled=true; });
+}
+
+// ── Away — a reporter marked away for a stretch isn't counted against ───────
+// Stored insert-only in system_flags (editors can INSERT, not UPDATE):
+//   away:<ts>-<id>      {id, reporter, pub, from, to, reason, by, created}
+//   awayend:<id>:<ts>   {id}   — cancels a record
+// Only Mon–Fri count. A week with some days away has its targets scaled down;
+// a fully-away week is left out of totals, trends and nudges altogether.
+var AWAY_LIST = [];
+async function loadAway(){
+  try{
+    var r=await supa.from('system_flags').select('key,value').like('key','away%').order('key',{ascending:true}).limit(1000);
+    var recs={}, ended={};
+    (r.data||[]).forEach(function(row){
+      var v; try{ v=JSON.parse(row.value); }catch(e){ return; }
+      if(!v||!v.id) return;
+      if(row.key.indexOf('awayend:')===0) ended[v.id]=true;
+      else if(row.key.indexOf('away:')===0) recs[v.id]=v;
+    });
+    AWAY_LIST=Object.keys(recs).filter(function(id){ return !ended[id]; }).map(function(id){ return recs[id]; });
+  }catch(e){ AWAY_LIST=[]; }
+}
+function awayNextWorkday(ymd){
+  var d=vdAddDays(ymd,1);
+  while([0,6].indexOf(new Date(vdUTC(d)).getUTCDay())>-1) d=vdAddDays(d,1);
+  return d;
+}
+function awayInfo(name,pub,week){
+  week=week||WEEK;
+  var idx=[], recs=[];
+  for(var d=0;d<5;d++){
+    var ymd=vdAddDays(week,d);
+    var hit=AWAY_LIST.filter(function(a){ return a.reporter===name&&a.pub===pub&&a.from<=ymd&&ymd<=a.to; })[0];
+    if(hit){ idx.push(d); if(recs.indexOf(hit)<0) recs.push(hit); }
+  }
+  var info={n:idx.length,avail:5-idx.length,full:idx.length===5,any:idx.length>0,idx:idx,recs:recs,label:'',back:''};
+  if(info.any){
+    var until=recs.reduce(function(m,a){ return a.to>m?a.to:m; },'');
+    info.back=awayNextWorkday(until);
+    info.label=info.full?'Away this week':'Away '+idx.map(function(i){ return DAYS[i]; }).join(', ');
+    info.reason=(recs[0]&&recs[0].reason)||'';
+  }
+  return info;
+}
+function scaledBase(r,week){
+  var base=getStoryDefs(r.pub,week||WEEK).length;
+  var ai=awayInfo(r.name,r.pub,week);
+  if(ai.full) return 0;
+  return Math.round(base*ai.avail/5);
+}
+
+function openAwayModal(name,pub){
+  var el=document.getElementById('away-ov');
+  if(el) el.remove();
+  var from=WEEK, to=vdAddDays(WEEK,4);
+  el=document.createElement('div'); el.id='away-ov'; el.className='away-ov';
+  el.innerHTML='<div class="away-box"><div class="away-h">Mark '+esc(name)+' away</div>'+
+    '<div class="away-sub">Days away aren’t counted against them — targets scale down and nudges stop.</div>'+
+    '<label class="away-l">From <input type="date" id="away-from" value="'+from+'"></label>'+
+    '<label class="away-l">To (last day away) <input type="date" id="away-to" value="'+to+'"></label>'+
+    '<label class="away-l">Reason (optional) <input type="text" id="away-reason" placeholder="e.g. annual leave"></label>'+
+    '<div class="away-err" id="away-err"></div>'+
+    '<div class="away-btns"><button class="vd-btn ghost sm" onclick="closeAwayModal()">Cancel</button><button class="vd-btn sm" id="away-save">Mark away</button></div></div>';
+  document.body.appendChild(el);
+  document.getElementById('away-save').onclick=function(){ saveAway(name,pub); };
+}
+function closeAwayModal(){ var el=document.getElementById('away-ov'); if(el) el.remove(); }
+async function saveAway(name,pub){
+  var from=document.getElementById('away-from').value, to=document.getElementById('away-to').value;
+  var reason=(document.getElementById('away-reason').value||'').trim().slice(0,120);
+  var err=document.getElementById('away-err');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)){ err.textContent='Pick both dates.'; return; }
+  if(to<from){ err.textContent='“To” can’t be before “From”.'; return; }
+  var id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  var val={id:id,reporter:name,pub:pub,from:from,to:to,reason:reason,by:EDITOR_NAME,created:new Date().toISOString()};
+  var btn=document.getElementById('away-save'); btn.disabled=true; btn.textContent='Saving…';
+  try{
+    var res=await supa.from('system_flags').insert({key:'away:'+Date.now()+'-'+id,value:JSON.stringify(val)});
+    if(res.error) throw res.error;
+  }catch(e){ btn.disabled=false; btn.textContent='Mark away'; err.textContent='Could not save. Try again.'; return; }
+  closeAwayModal(); await refreshAfterAway();
+}
+async function endAway(id){
+  if(!confirm('Remove this away period? They’ll count as normal for those days.')) return;
+  try{
+    var res=await supa.from('system_flags').insert({key:'awayend:'+id+':'+Date.now(),value:JSON.stringify({id:id})});
+    if(res.error) throw res.error;
+  }catch(e){ alert('Could not remove it. Try again.'); return; }
+  await refreshAfterAway();
+}
+async function refreshAfterAway(){
+  await loadAway();
+  renderNetworkBar(); renderGrid();
+  if(window._assignReporter&&document.getElementById('drilldown').style.display!=='none') renderDrillBody(window._assignReporter);
+  if(document.getElementById('video-desk-view').style.display==='block') renderVideoDesk();
+  try{ initProgress(); }catch(e){}
 }
 
 // ── Resources — curated links for reporters, stored as one JSON row in system_flags ──
