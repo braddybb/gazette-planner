@@ -1369,7 +1369,7 @@ async function checkLogin() {
   
   await loadWeek();
   refreshSplashBadge();
-  vdMaybeOpen();
+  if (document.readyState === 'complete') vdMaybeOpen(); else window.addEventListener('load', function(){ vdMaybeOpen(); });
 }
 
 // Intercept back button — same fix as the reporter Planner
@@ -2257,7 +2257,7 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
       }
       
       await loadWeek();
-      vdMaybeOpen();
+      if (document.readyState === 'complete') vdMaybeOpen(); else window.addEventListener('load', function(){ vdMaybeOpen(); });
       return;
     }
     // Session exists but isn't a valid editor — sign out to avoid a
