@@ -1367,8 +1367,9 @@ async function checkLogin() {
     history.pushState('dashboard', '', window.location.pathname);
   }
   
-  loadWeek();
+  await loadWeek();
   refreshSplashBadge();
+  vdMaybeOpen();
 }
 
 // Intercept back button — same fix as the reporter Planner
@@ -2255,7 +2256,8 @@ function buildDrillCard(s, st, r_name, r_pub, r_week) {
         history.pushState('dashboard', '', window.location.pathname);
       }
       
-      loadWeek();
+      await loadWeek();
+      vdMaybeOpen();
       return;
     }
     // Session exists but isn't a valid editor — sign out to avoid a
@@ -3312,6 +3314,12 @@ function vdNudgeTag(rep){
   return '<span class="vd-nudgeinfo'+(done?' ok':'')+'">Nudged '+vdAgo(ni.ts)+(ni.total?(done?' · all sorted ✓':' · '+ni.sorted+' of '+ni.total+' sorted'):'')+'</span>';
 }
 
+// /videodesk is a Netlify rewrite to this same page. Landing on it opens the desk straight after login.
+function vdMaybeOpen(){
+  try{
+    if(/^\/videodesk\/?$/i.test(window.location.pathname)){ document.title='Video Desk'; openVideoDesk(); }
+  }catch(e){}
+}
 function openVideoDesk(){ hideAllViews(); document.getElementById('video-desk-view').style.display='block'; loadVideoDesk(); }
 function closeVideoDesk(){ document.getElementById('video-desk-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
 
