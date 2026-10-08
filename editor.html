@@ -742,6 +742,9 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-tb.full{background:var(--vd-green)}
 .vd-tb.part{background:#D9A58C}
 .vd-tb.cur{background:#9DA4E8}
+/* Output colour scale: 4/4 green → 0/4 red */
+.vd-bar-fill.lvl4,.vd-tb.lvl4{background:#2E6B4F}.vd-bar-fill.lvl3,.vd-tb.lvl3{background:#7A9E3F}.vd-bar-fill.lvl2,.vd-tb.lvl2{background:#D9A12B}.vd-bar-fill.lvl1,.vd-tb.lvl1{background:#D4692E}.vd-bar-fill.lvl0,.vd-tb.lvl0{background:#B3392B}
+.vd-rep-tally.lvl4{color:#2E6B4F}.vd-rep-tally.lvl3{color:#6A8C33}.vd-rep-tally.lvl2{color:#B8841A}.vd-rep-tally.lvl1{color:#C25A22}.vd-rep-tally.lvl0{color:#B3392B}
 .vd-tb.na{height:3px;background:#E6E4DD}
 .vd-badge.due{background:#FBE6CE;color:#8A5A12}
 .vd-badge.plan{background:#EFEEE9;color:#8A8A84}
@@ -3557,14 +3560,14 @@ function renderVideoDesk(){
     var open=VD_EXPAND[ri]?' open':'';
     h+='<div class="vd-rep'+open+'" id="vd-rep-'+ri+'">';
     h+='<div class="vd-rep-head" onclick="vdToggleRep('+ri+')"><div class="vd-rep-info"><div class="vd-rep-name">'+esc(rep.name)+'</div><div class="vd-rep-pub">'+esc(rep.pub)+'</div></div>';
-    h+='<div class="vd-bar"><div class="vd-bar-fill'+(x.behind?' behind':'')+'" style="width:'+pct+'%"></div></div>';
+    h+='<div class="vd-bar"><div class="vd-bar-fill lvl'+x.filed+'" style="width:'+pct+'%"></div></div>';
     h+='<div class="vd-trend">'+x.trend.map(function(t,ti){
       var cur=ti===x.trend.length-1;
       if(t.c===null) return '<div class="vd-tb na" title="'+esc(t.w)+': before the 4-video rule"></div>';
-      var cls=cur?'cur':(t.c>=4?'full':'part');
+      var cls=cur?'cur':'lvl'+t.c;
       return '<div class="vd-tb '+cls+'" style="height:'+(4+t.c*5)+'px" title="Week of '+esc(t.w)+': '+t.c+'/4"></div>';
     }).join('')+'</div>';
-    h+='<div class="vd-rep-tally'+(x.behind?' behind':'')+'">'+x.filed+'/4</div><div class="vd-rep-caret">▸</div></div>';
+    h+='<div class="vd-rep-tally lvl'+x.filed+'">'+x.filed+'/4</div><div class="vd-rep-caret">▸</div></div>';
     h+='<div class="vd-rep-detail">';
     VD_SLOTS.forEach(function(sl){
       var s=(VD_OUTPUT[x.key]||{})[sl.n]; var proj=vdProjectFor(rep.name,rep.pub,sl.n);
