@@ -875,6 +875,10 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .carried-badge{font-size:11px;font-weight:600;color:#8A6209;background:#FBEFCF;border-radius:999px;padding:3px 10px;margin:0 0 8px 6px;display:inline-block}
 .abandon-btn{font:inherit;font-size:11.5px;font-weight:600;color:#B4532A;background:#fff;border:1px solid #E7C4B4;border-radius:999px;padding:3px 11px;margin:0 0 8px 6px;cursor:pointer}
 .abandon-btn:hover{background:#FBEFE9}
+.vh-btn{font:inherit;font-size:11.5px;font-weight:600;color:#4A56B8;background:#fff;border:1px solid #C9CEF0;border-radius:999px;padding:3px 11px;margin:0 0 8px 6px;cursor:pointer}
+.vh-btn:hover{background:#F1F2FC}
+.vh-btn.sent{color:#2E6B4F;border-color:#BBD8C8;background:#F1F8F4;cursor:default}
+.vh-sel{width:100%;font:inherit;font-size:14px;padding:9px 10px;border:1px solid #DDD;border-radius:8px;margin:0 0 10px;background:#fff}
 .abandoned-banner{background:#F1F0EC;border-left:3px solid #999;border-radius:6px;padding:9px 12px;font-size:12.5px;color:#555;margin-bottom:10px;line-height:1.5}
 .abandon-restore{font:inherit;font-size:11.5px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0 0 0 6px}
 .story-card.is-abandoned{opacity:.62}
@@ -2742,6 +2746,18 @@ banner.innerHTML = '<b>Abandoned.</b> ' + esc(st.abandon_reason || '') + ' <butt
 body.appendChild(banner);
 }
 
+// Video slots: one tap to flag the Head of Video when you need a hand
+if ((s.t === 'vidfirst' || s.t === 'vidflip' || s.t === 'vidimp') && !filed && st.status !== 'abandoned') {
+const vh = document.createElement('button');
+vh.type = 'button';
+const sent = videoHelpSent(s.n);
+vh.className = 'vh-btn' + (sent ? ' sent' : '');
+vh.textContent = sent ? '\u2713 Video help requested' : '\uD83C\uDFAC Need video help';
+vh.id = 'vh-btn-' + s.n;
+if (!sent) vh.onclick = function(ev) { ev.stopPropagation(); openVideoHelp(s.n, s.lbl); };
+body.appendChild(vh);
+}
+
 // Editor-assigned extras can be promoted into an open workload slot
 if (st.assigned_by && isExtra) {
 body.appendChild(buildMoveControl(s.n));
@@ -3991,6 +4007,62 @@ Object.keys(DATA).forEach(num => { const p = planGateProblem(num); if (p) showPl
 window.addEventListener('beforeunload', function(e) {
 if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; }
 });
+
+// ── Video help: tell the Head of Video you need a hand ───────────────────────
+// Goes through /.netlify/functions/video-help (signed in as you), which files the
+// request on the Video Desk and pings him in Slack. If that's unavailable it falls
+// back to filing the request directly and posting to the usual Slack channel.
+const VH_TYPES = ['Shoot help', 'Edit help', 'Idea / series pitch', 'Stuck on it', 'Something else'];
+let _vhNum = null, _vhLbl = '';
+function videoHelpSent(num) { try { return localStorage.getItem('gz_vh|' + WEEK + '|' + USER.name + '|' + num) === '1'; } catch(e) { return false; } }
+function markVideoHelpSent(num) { try { localStorage.setItem('gz_vh|' + WEEK + '|' + USER.name + '|' + num, '1'); } catch(e) {} }
+function openVideoHelp(num, lbl) {
+_vhNum = num; _vhLbl = lbl || '';
+let el = document.getElementById('vh-ov'); if (el) el.remove();
+el = document.createElement('div'); el.id = 'vh-ov'; el.className = 'ab-ov';
+const st = getStory(num);
+el.innerHTML = '<div class="ab-box"><div class="ab-h">Need video help?</div>' +
+'<div class="ab-sub">This goes straight to the Head of Video for \u201c' + esc(st.headline || (lbl || 'this video')) + '\u201d.</div>' +
+'<select id="vh-type" class="vh-sel">' + VH_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select>' +
+'<textarea id="vh-note" placeholder="What do you need? (optional, but it helps)"></textarea>' +
+'<div class="ab-err" id="vh-err"></div>' +
+'<div class="ab-btns"><button type="button" class="ab-cancel" onclick="closeVideoHelp()">Cancel</button><button type="button" class="ab-go" id="vh-go" style="background:#4A56B8" onclick="sendVideoHelp()">Send</button></div></div>';
+document.body.appendChild(el);
+}
+function closeVideoHelp() { const el = document.getElementById('vh-ov'); if (el) el.remove(); _vhNum = null; }
+async function sendVideoHelp() {
+const num = _vhNum; if (!num) return;
+const type = document.getElementById('vh-type').value;
+const note = (document.getElementById('vh-note').value || '').trim().slice(0, 500);
+const err = document.getElementById('vh-err');
+const btn = document.getElementById('vh-go'); btn.disabled = true; btn.textContent = 'Sending\u2026';
+const st = getStory(num);
+const payload = { reporter: USER.name, pub: USER.pub, week: WEEK, slot: num, headline: st.headline || '', type: type, note: note };
+let ok = false;
+try {
+const { data: { session } } = await supa.auth.getSession();
+const r = await fetch('/.netlify/functions/video-help', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (session ? session.access_token : '') },
+body: JSON.stringify(payload),
+});
+ok = r.ok;
+} catch(e) { ok = false; }
+if (!ok) {
+// fallback: file it directly and tell #editorial
+try {
+const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+await supaFetch('POST', 'system_flags', { key: 'videohelp:' + Date.now() + '-' + id, value: JSON.stringify(Object.assign({ id: id, ts: Date.now() }, payload)) });
+notifySlack(':clapper: *' + USER.name + '* needs video help (' + type + ') on \u201c' + (st.headline || 'a video slot') + '\u201d' + (note ? '\n>' + note.replace(/\n/g, ' ') : ''));
+ok = true;
+} catch(e) { ok = false; }
+}
+if (!ok) { btn.disabled = false; btn.textContent = 'Send'; err.textContent = 'Could not send \u2014 check your connection and try again.'; return; }
+markVideoHelpSent(num);
+closeVideoHelp();
+const b = document.getElementById('vh-btn-' + num);
+if (b) { b.className = 'vh-btn sent'; b.textContent = '\u2713 Video help requested'; b.onclick = null; }
+}
 
 // ── Abandoning an assigned story: a reason is required, and editors are told ──
 let _abandonNum = null;
