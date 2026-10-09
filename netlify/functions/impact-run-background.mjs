@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Impact Radar — WORKER (Netlify background function: "-background" → up to 15 min).
+// Impact Radar — WORKER, runs at 6:30am Mon–Fri and when an editor presses "Scan now" (Netlify background function: "-background" → up to 15 min).
 // Pulls every active source in impact_sources, drops anything off-beat or already
 // seen, saves the rest to impact_items, has Claude score each new item (relevance,
 // why it matters, a story angle, topics, which masthead it touches), then DMs the
@@ -21,6 +21,7 @@ async function isEditor(req, env) {
     if (!body || body.force !== true) return false;
     const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
     if (!token) return false;
+    if (env.SUPABASE_SERVICE_ROLE_KEY && token === env.SUPABASE_SERVICE_ROLE_KEY) return true; // the 6:30am scheduler
     const base = env.SUPABASE_URL || "https://asgyshkafnrqknnmkbfo.supabase.co";
     const h = { apikey: env.SUPABASE_SERVICE_ROLE_KEY };
     const u = await fetch(`${base}/auth/v1/user`, { headers: { ...h, Authorization: `Bearer ${token}` } });
@@ -35,6 +36,8 @@ async function isEditor(req, env) {
 export default async (req) => {
   const env = process.env;
   const force = req && req.method === "POST" ? await isEditor(req, env) : false;
+  // Scans only start from an editor pressing "Scan now" or the 6:30am Mon–Fri scheduler (impact-cron). Anything else does nothing.
+  if (!force) return new Response("manual scans only", { status: 200 });
   if (!env.SUPABASE_SERVICE_ROLE_KEY) { console.error("impact: missing SUPABASE_SERVICE_ROLE_KEY"); return new Response("not configured", { status: 500 }); }
   try {
     const out = await run({ fetch: globalThis.fetch, env, now: Date.now(), model: env.IMPACT_MODEL || "claude-haiku-5-5", ...(force ? { minGapMs: 60e3 } : {}) });
