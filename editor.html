@@ -884,6 +884,76 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
 
 
+/* ── Impact Radar ── */
+#impact-radar-view{display:none;padding:1.25rem 2rem 3rem;max-width:980px;margin:0 auto;--ir-green:#2E6B4F;--ir-rust:#B4532A}
+.ir-head{background:var(--ink);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.ir-head-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#fff}
+.ir-head-right{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#b9b9b4}
+.ir-head-right .warn{color:#F3B38F;font-weight:600}
+.ir-refresh{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:14px;font-family:inherit}
+.ir-refresh:hover{background:rgba(255,255,255,.2)}
+.ir-banner{background:#E1E7FA;color:#2F46A8;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;margin-bottom:12px;cursor:pointer}
+.ir-setup{background:#FBE6CE;color:#6E4710;border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.55}
+.ir-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.ir-tab{font:inherit;font-size:13px;font-weight:600;padding:7px 13px;border-radius:20px;border:1px solid #DDD;background:#fff;color:#444;cursor:pointer}
+.ir-tab:hover{background:#F6F6F2}
+.ir-tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ir-tab .n{opacity:.6;font-weight:500;margin-left:5px}
+.ir-bar .grow{flex:1}
+.ir-bar select,.ir-bar input[type=search]{font:inherit;font-size:13px;border:1px solid #DDD;border-radius:8px;padding:7px 10px;background:#fff;color:#222}
+.ir-bar input[type=search]{min-width:200px}
+.ir-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.ir-chip{font:inherit;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #E3E3DC;background:#fff;color:#666;cursor:pointer}
+.ir-chip:hover{background:#F6F6F2}
+.ir-chip.on{background:#E1E7FA;border-color:#C5CEF3;color:#2F46A8}
+.ir-tools{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
+.ir-panel{background:#FAFAF7;border:1px solid #ECECEC;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.ir-panel h4{margin:0 0 4px;font-size:13px;font-weight:700;color:#333}
+.ir-panel .cap{font-size:12px;color:#8A8A82;margin:0 0 10px}
+.ir-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dotted #E5E5E0;font-size:13px;flex-wrap:wrap}
+.ir-row:last-of-type{border-bottom:none}
+.ir-row .nm{font-weight:700;color:var(--ink);min-width:0}
+.ir-row .grow{flex:1;min-width:0;color:#666;word-break:break-word}
+.ir-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ir-form input,.ir-form select{font:inherit;font-size:13px;border:1px solid #DDD;border-radius:8px;padding:7px 10px;background:#fff;min-width:0}
+.ir-form input.w{flex:1;min-width:160px}
+.ir-form label{font-size:12px;color:#666;display:flex;align-items:center;gap:5px}
+.ir-health{font-size:11.5px;font-weight:600}
+.ir-health.ok{color:var(--ir-green)}.ir-health.bad{color:var(--ir-rust)}.ir-health.na{color:#A0A098}
+.ir-tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EFEEE9;color:#77776F;white-space:nowrap}
+.ir-tag.unv{background:#FBE6CE;color:#8A5A12}
+.ir-list{display:flex;flex-direction:column;gap:10px}
+.ir-empty{padding:34px 10px;text-align:center;color:#8A8A82;font-size:14px}
+.ir-card{display:flex;gap:14px;background:#fff;border:1px solid #ECECEC;border-radius:12px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.ir-card.dim{opacity:.62}
+.ir-score{flex:0 0 44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;background:#EFEEE9;color:#77776F}
+.ir-score.s3{background:var(--ink);color:#fff}.ir-score.s2{background:#2F46A8;color:#fff}.ir-score.s1{background:#C5CEF3;color:#2F46A8}
+.ir-main{flex:1;min-width:0}
+.ir-meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:#8A8A82;margin-bottom:3px}
+.ir-meta .src{font-weight:600;color:#666}
+.ir-cat{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EFEEE9;color:#77776F}
+.ir-cat.govt{background:#E1E7FA;color:#2F46A8}.ir-cat.company{background:#FBE6CE;color:#8A5A12}.ir-cat.social{background:#EBDDF5;color:#6A3A8C}.ir-cat.think-tank{background:#E3EFE8;color:var(--ir-green)}.ir-cat.lead{background:#F6E3DA;color:var(--ir-rust)}
+.ir-hit{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F6E3DA;color:var(--ir-rust)}
+.ir-title{display:block;font-size:15.5px;font-weight:700;line-height:1.35;color:var(--ink);text-decoration:none}
+.ir-title:hover{text-decoration:underline}
+.ir-why{font-size:13px;color:#555;margin:5px 0 0;line-height:1.45}
+.ir-angle{font-size:13px;color:#2F46A8;margin:4px 0 0;line-height:1.45}
+.ir-angle b{font-weight:700}
+.ir-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.ir-t{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px;background:#F3F3EE;color:#77776F}
+.ir-t.mh{background:#E3EFE8;color:var(--ir-green)}
+.ir-acts{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.ir-acts .st{font-size:12px;color:#8A8A82}
+.ir-pick-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:400}
+.ir-pick{background:#fff;border-radius:14px;padding:20px 22px;width:min(420px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.ir-pick h3{margin:0 0 4px;font-size:16px}
+.ir-pick p{margin:0 0 12px;font-size:13px;color:#777}
+.ir-pick button.rep{display:flex;justify-content:space-between;width:100%;font:inherit;font-size:13.5px;padding:9px 12px;margin-bottom:6px;border:1px solid #E3E3DC;background:#fff;border-radius:9px;cursor:pointer;text-align:left}
+.ir-pick button.rep:hover{background:#F6F6F2}
+.ir-pick button.rep.sug{border-color:#C5CEF3;background:#F4F6FD}
+.ir-pick button.rep span{color:#8A8A82;font-size:12px}
+@media(max-width:700px){#impact-radar-view{padding:1rem}.ir-card{flex-direction:column;gap:8px}.ir-score{flex-basis:auto;width:44px}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -972,6 +1042,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
     <button class="tool" id="bank-rollup-btn" onclick="openTool('bank', openBankRollup)" title="Bank — everyone's evergreen store">&#127974;<span class="tool-dot" id="dot-bank"></span></button>
     <button class="tool" id="resources-btn" onclick="openResourcesAdmin()" title="Resources — manage onboarding docs & links">&#128218;</button>
     <button class="tool" id="leaderboard-btn" onclick="openLeaderboard()" title="Gold stars — everyone's tally">&#11088;</button>
+    <button class="tool" id="impact-radar-btn" onclick="openImpactRadar()" title="Impact Radar — climate, energy &amp; environment leads">&#128225;</button>
     <button class="tool" id="video-desk-btn" onclick="openVideoDesk()" title="Video Desk — Nick's board + your rollup">&#127909;</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
   </div>
@@ -1093,6 +1164,11 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
       </div>
     </div>
     <div id="leaderboard-body"></div>
+  </div>
+
+  <div id="impact-radar-view" style="display:none">
+    <button class="back-btn" onclick="closeImpactRadar()">&#8592; Back to all reporters</button>
+    <div id="impact-radar-body"><div class="wr-loading"><div class="wr-spin"></div>Loading the Radar&hellip;</div></div>
   </div>
 
   <div id="video-desk-view" style="display:none">
@@ -2471,7 +2547,7 @@ async function openAssign(r) {
   document.getElementById('assign-overlay').classList.add('show');
   setTimeout(() => document.getElementById('am-headline').focus(), 50);
 }
-function closeAssign() { document.getElementById('assign-overlay').classList.remove('show'); }
+function closeAssign() { document.getElementById('assign-overlay').classList.remove('show'); window._assignItem=null; window._assignFromRadar=false; }
 
 async function saveAssignment() {
   const r = window._assignReporter;
@@ -2506,9 +2582,11 @@ async function saveAssignment() {
   try {
     await editorUpsert(row);
     notifySlack(slackMention(r.name) + ':clipboard: A story was assigned to *' + r.name + '*: "' + headline + '"');
+    const fromRadar = window._assignFromRadar && window._assignItem;
+    if (fromRadar) await irMarkAssigned(window._assignItem, r.name);
     closeAssign();
-    // Refresh the drilldown to show the new assignment
-    openDrill(r);
+    // Refresh the drilldown to show the new assignment (or the Radar, if assigned from there)
+    if (fromRadar) irRender(); else openDrill(r);
   } catch(e) {
     alert('Could not assign story. Check your connection.');
     console.error(e);
@@ -3093,7 +3171,7 @@ document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.i
 let WR_DATA = null; // cached once generated, until the user navigates away
 
 function hideAllViews(){
-  ['main-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view','video-desk-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  ['main-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view','video-desk-view','impact-radar-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
 }
 async function openWeeklyReview() {
   hideAllViews();
@@ -3492,6 +3570,7 @@ function vdNudgeTag(rep){
 function vdMaybeOpen(){
   try{
     if(/^\/videodesk\/?$/i.test(window.location.pathname)){ document.title='Video Desk'; openVideoDesk(); }
+    else if(/^\/impact\/?$/i.test(window.location.pathname)){ document.title='Impact Radar'; openImpactRadar(); }
   }catch(e){}
 }
 function openVideoDesk(){ hideAllViews(); document.getElementById('video-desk-view').style.display='block'; loadVideoDesk(); }
@@ -5388,6 +5467,251 @@ function downloadWeeklyReviewPdf() {
   win.document.close();
   setTimeout(() => win.print(), 300);
 }
+
+// ── Impact Radar — everything published that could feed an Impact story ──────
+// Data is written by the scheduled functions (impact-run-background); this tab reads
+// it, and lets the editor save / dismiss / assign items, follow watchlists, manage
+// sources and add leads by hand. All tables are editor-only (RLS).
+var IR={items:[],sources:[],lists:[],runs:[],tab:'top',win:'24h',topic:'',cat:'',q:'',panel:'',err:'',pending:0,next:null,timer:null,loaded:false};
+var IR_TOPICS=['climate','energy','environment','water','land & agriculture','mining & resources','transport & EVs','politics & policy','corporate & finance','science & data','local & regional'];
+var IR_CATS={news:'News',govt:'Government',company:'Company',social:'Social','think-tank':'Think tank',lead:'Lead'};
+var IR_WIN={'24h':24,'3d':72,'7d':168};
+function irEl(){ return document.getElementById('impact-radar-view'); }
+function openImpactRadar(){ hideAllViews(); irEl().style.display='block'; irLoad(false); irStopPoll(); IR.timer=setInterval(function(){ if(irEl().style.display==='none'){ irStopPoll(); return; } irLoad(true); },90000); }
+function closeImpactRadar(){ irEl().style.display='none'; document.getElementById('main-view').style.display='block'; irStopPoll(); }
+function irStopPoll(){ if(IR.timer){ clearInterval(IR.timer); IR.timer=null; } }
+function irTime(it){ var t=Date.parse(it.published_at||it.fetched_at); return isNaN(t)?0:t; }
+
+async function irFetchAll(){
+  var since=new Date(Date.now()-8*864e5).toISOString();
+  function chk(r){ if(r.error) throw r.error; return r.data||[]; }
+  var recent=chk(await supa.from('impact_items').select('*').gte('fetched_at',since).order('fetched_at',{ascending:false}).limit(1500));
+  var keep=chk(await supa.from('impact_items').select('*').eq('status','saved').order('fetched_at',{ascending:false}).limit(300)).concat(chk(await supa.from('impact_items').select('*').eq('status','assigned').order('fetched_at',{ascending:false}).limit(300)));
+  var seen={}; var items=[]; recent.concat(keep).forEach(function(r){ if(!seen[r.id]){ seen[r.id]=1; items.push(r); } });
+  var sources=chk(await supa.from('impact_sources').select('*').order('name',{ascending:true}));
+  var lists=chk(await supa.from('impact_watchlists').select('*').order('created_at',{ascending:true}));
+  var runs=chk(await supa.from('impact_runs').select('*').order('started_at',{ascending:false}).limit(3));
+  return {items:items,sources:sources,lists:lists,runs:runs};
+}
+async function irLoad(quiet){
+  try{
+    var d=await irFetchAll();
+    if(quiet&&IR.loaded){
+      var have={}; IR.items.forEach(function(i){ have[i.id]=1; });
+      var fresh=d.items.filter(function(i){ return !have[i.id]&&i.status==='new'&&((i.relevance||0)>=60||(i.watch_hits||[]).length); }).length;
+      IR.sources=d.sources; IR.lists=d.lists; IR.runs=d.runs;
+      if(fresh){ IR.next=d.items; IR.pending=fresh; irRenderBanner(); } else { IR.items=d.items; IR.pending=0; irRenderBanner(); }
+      irRenderHead(); return;
+    }
+    IR.items=d.items; IR.sources=d.sources; IR.lists=d.lists; IR.runs=d.runs; IR.err=''; IR.loaded=true; IR.pending=0; IR.next=null;
+  }catch(e){
+    var m=String((e&&(e.message||e.code))||e);
+    if(quiet) return;
+    IR.err=/relation|does not exist|schema cache|PGRST205|42P01/i.test(m)?'setup':m;
+  }
+  irRender();
+}
+function irApplyPending(){ if(IR.next){ IR.items=IR.next; IR.next=null; } IR.pending=0; irRender(); }
+
+// ── filtering ────────────────────────────────────────────────────────────────
+function irBase(){
+  var cut=Date.now()-IR_WIN[IR.win]*3600e3; var q=IR.q.trim().toLowerCase();
+  return IR.items.filter(function(it){
+    if(IR.topic&&(it.topics||[]).indexOf(IR.topic)<0) return false;
+    if(IR.cat&&it.category!==IR.cat) return false;
+    if(q&&((it.title||'')+' '+(it.why||'')+' '+(it.source_name||'')+' '+(it.summary||'')).toLowerCase().indexOf(q)<0) return false;
+    return true;
+  }).map(function(it){ return it; }).filter(function(it){ return it.status!=='new'||irTime(it)>=cut||!it.published_at&&Date.parse(it.fetched_at)>=cut; });
+}
+var IR_TABS=[
+  {k:'top',lbl:'Top',f:function(i){ return i.status==='new'&&(i.relevance||0)>=60; },sort:'rel'},
+  {k:'latest',lbl:'Latest',f:function(i){ return i.status==='new'; },sort:'time'},
+  {k:'watch',lbl:'Watchlist hits',f:function(i){ return (i.watch_hits||[]).length&&i.status!=='dismissed'; },sort:'time'},
+  {k:'saved',lbl:'Saved',f:function(i){ return i.status==='saved'; },sort:'saved'},
+  {k:'assigned',lbl:'Assigned',f:function(i){ return i.status==='assigned'; },sort:'assigned'},
+  {k:'dismissed',lbl:'Dismissed',f:function(i){ return i.status==='dismissed'; },sort:'time'}
+];
+function irRows(tab){
+  var t=IR_TABS.filter(function(x){ return x.k===tab; })[0]; var rows=irBase().filter(t.f);
+  rows.sort(function(a,b){
+    if(t.sort==='rel') return ((b.relevance||0)-(a.relevance||0))||(irTime(b)-irTime(a));
+    if(t.sort==='saved') return Date.parse(b.saved_at||b.fetched_at)-Date.parse(a.saved_at||a.fetched_at);
+    if(t.sort==='assigned') return Date.parse(b.assigned_at||b.fetched_at)-Date.parse(a.assigned_at||a.fetched_at);
+    return irTime(b)-irTime(a);
+  });
+  return rows;
+}
+
+// ── rendering ────────────────────────────────────────────────────────────────
+function irRunPill(){
+  var r=IR.runs[0]; if(!r) return '<span class="warn">No run yet — the first one lands within 30 minutes of deploying the functions</span>';
+  var age=Date.now()-Date.parse(r.started_at); var s='Updated '+vdAgo(Date.parse(r.started_at))+' · +'+(r.inserted||0)+' new'+(r.scored!=null?' · '+r.scored+' scored':'');
+  var bits=[]; if(age>90*60e3) bits.push('<span class="warn">No run in over 90 min — check the scheduled function</span>');
+  if(r.errors) bits.push('<span class="warn" title="'+esc(r.errors)+'">⚠ issues — see Sources</span>');
+  return esc(s)+(bits.length?' · '+bits.join(' · '):'');
+}
+function irRenderHead(){ var h=document.getElementById('ir-run'); if(h) h.innerHTML=irRunPill(); }
+function irRenderBanner(){ var b=document.getElementById('ir-banner'); if(!b) return; b.innerHTML=IR.pending?'<div class="ir-banner" onclick="irApplyPending()">'+IR.pending+' new item'+(IR.pending>1?'s':'')+' — show</div>':''; }
+function irRender(){
+  var body=document.getElementById('impact-radar-body'); if(!body) return;
+  var h='<div class="ir-head"><div class="ir-head-title">📡 Impact Radar</div><div class="ir-head-right"><span id="ir-run">'+irRunPill()+'</span><button class="ir-refresh" onclick="irLoad(false)" title="Refresh">↻</button></div></div><div id="ir-banner"></div>';
+  if(IR.err){
+    h+=IR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>impact-tables.sql</code> in the Supabase SQL editor, then refresh. After that the Radar fills itself every 30 minutes.</div>':'<div class="ir-setup"><b>Could not load the Radar.</b> '+esc(IR.err)+'</div>';
+    body.innerHTML=h; return;
+  }
+  h+='<div class="ir-bar">';
+  IR_TABS.forEach(function(t){ h+='<button class="ir-tab'+(IR.tab===t.k?' on':'')+'" onclick="irSetTab(\''+t.k+'\')">'+t.lbl+'<span class="n">'+irRows(t.k).length+'</span></button>'; });
+  h+='<span class="grow"></span><select onchange="irSetWin(this.value)" title="How far back">'+[['24h','Last 24 hours'],['3d','Last 3 days'],['7d','Last 7 days']].map(function(o){ return '<option value="'+o[0]+'"'+(IR.win===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select><input type="search" placeholder="Search…" value="'+esc(IR.q)+'" oninput="irSetQ(this.value)"></div>';
+  h+='<div class="ir-chips">'+IR_TOPICS.map(function(t){ return '<button class="ir-chip'+(IR.topic===t?' on':'')+'" onclick="irSetTopic(\''+t.replace(/'/g,"\\'")+'\')">'+esc(t)+'</button>'; }).join('')+'</div>';
+  h+='<div class="ir-chips">'+Object.keys(IR_CATS).map(function(k){ return '<button class="ir-chip'+(IR.cat===k?' on':'')+'" onclick="irSetCat(\''+k+'\')">'+IR_CATS[k]+'</button>'; }).join('')+'</div>';
+  h+='<div class="ir-tools"><button class="vd-btn ghost sm" onclick="irPanel(\'lists\')">👁 Watchlists ('+IR.lists.length+')</button><button class="vd-btn ghost sm" onclick="irPanel(\'sources\')">📡 Sources ('+IR.sources.length+')</button><button class="vd-btn ghost sm" onclick="irPanel(\'lead\')">+ Add a lead</button></div>';
+  h+='<div id="ir-panel">'+irPanelHtml()+'</div><div class="ir-list" id="ir-list">'+irListHtml()+'</div>';
+  body.innerHTML=h; irRenderBanner();
+}
+function irRenderList(){ var l=document.getElementById('ir-list'); if(l) l.innerHTML=irListHtml(); document.querySelectorAll('.ir-tab .n').forEach(function(n,i){ n.textContent=irRows(IR_TABS[i].k).length; }); }
+function irSetTab(k){ IR.tab=k; irRender(); }
+function irSetWin(v){ IR.win=v; irRender(); }
+function irSetQ(v){ IR.q=v; irRenderList(); }
+function irSetTopic(t){ IR.topic=IR.topic===t?'':t; irRender(); }
+function irSetCat(c){ IR.cat=IR.cat===c?'':c; irRender(); }
+function irPanel(p){ IR.panel=IR.panel===p?'':p; var el=document.getElementById('ir-panel'); if(el) el.innerHTML=irPanelHtml(); }
+
+function irScoreCls(n){ return n>=85?'s3':(n>=70?'s2':(n>=55?'s1':'')); }
+function irMastheadReporters(it){
+  var out=[]; (it.mastheads||[]).forEach(function(m){ REPORTERS.forEach(function(r){ if(r.pub.indexOf(m)===0&&out.indexOf(r.name)<0) out.push(r.name); }); }); return out;
+}
+function irCardHtml(it){
+  var sc=it.relevance==null?'<div class="ir-score" title="Not scored yet">…</div>':'<div class="ir-score '+irScoreCls(it.relevance)+'" title="Relevance score">'+it.relevance+'</div>';
+  var h='<div class="ir-card'+(it.status==='dismissed'?' dim':'')+'" id="ir-c-'+esc(it.id)+'">'+sc+'<div class="ir-main"><div class="ir-meta"><span class="ir-cat '+esc(it.category)+'">'+esc(IR_CATS[it.category]||it.category)+'</span><span class="src">'+esc(it.source_name)+'</span><span>· '+esc(vdAgo(irTime(it)))+'</span>'+(it.kind&&it.kind!=='news'?'<span>· '+esc(it.kind)+'</span>':'')+(it.jurisdiction&&it.jurisdiction!=='unknown'?'<span>· '+esc(it.jurisdiction)+'</span>':'')+(it.watch_hits||[]).map(function(w){ return '<span class="ir-hit">👁 '+esc(w)+'</span>'; }).join('')+'</div>';
+  var safe=/^https?:\/\//i.test(it.url||'')?it.url:'#';
+  h+='<a class="ir-title" href="'+esc(safe)+'" target="_blank" rel="noopener">'+esc(it.title)+' ↗</a>';
+  if(it.why) h+='<div class="ir-why">'+esc(it.why)+'</div>';
+  if(it.angle) h+='<div class="ir-angle"><b>Angle:</b> '+esc(it.angle)+'</div>';
+  if(it.note) h+='<div class="ir-why"><b>Note:</b> '+esc(it.note)+'</div>';
+  var tags=(it.topics||[]).map(function(t){ return '<span class="ir-t">'+esc(t)+'</span>'; }).join('');
+  var reps=irMastheadReporters(it); if(reps.length) tags+=reps.map(function(r){ return '<span class="ir-t mh">→ '+esc(vdFirst(r))+'</span>'; }).join('');
+  if(tags) h+='<div class="ir-tags">'+tags+'</div>';
+  h+='<div class="ir-acts">';
+  var id=esc(it.id);
+  if(it.status==='new'){ h+='<button class="vd-btn sm" onclick="irSetStatus(\''+id+'\',\'saved\')">Save</button><button class="vd-btn ghost sm" onclick="irAssign(\''+id+'\')">Assign…</button><button class="vd-btn ghost sm" onclick="irSetStatus(\''+id+'\',\'dismissed\')">Dismiss</button>'; }
+  else if(it.status==='saved'){ h+='<button class="vd-btn sm" onclick="irAssign(\''+id+'\')">Assign…</button><button class="vd-btn ghost sm" onclick="irNote(\''+id+'\')">Note</button><button class="vd-btn ghost sm" onclick="irSetStatus(\''+id+'\',\'new\')">Unsave</button><span class="st">Saved'+(it.saved_by?' by '+esc(vdFirst(it.saved_by)):'')+'</span>'; }
+  else if(it.status==='assigned'){ h+='<span class="st">✓ Assigned to <b>'+esc(it.assigned_to||'')+'</b>'+(it.assigned_at?' · '+esc(vdAgo(Date.parse(it.assigned_at))):'')+'</span>'; }
+  else { h+='<button class="vd-btn ghost sm" onclick="irSetStatus(\''+id+'\',\'new\')">Restore</button>'; }
+  h+='<button class="vd-btn ghost sm" onclick="irCopy(\''+id+'\')">Copy link</button></div></div></div>';
+  return h;
+}
+function irListHtml(){
+  var rows=irRows(IR.tab);
+  if(!rows.length){
+    var unscored=IR.items.filter(function(i){ return i.status==='new'&&i.relevance==null; }).length;
+    var msg={top:'Nothing scoring 60+ in this window yet.',latest:'Nothing here yet.',watch:'No watchlist hits in this window.',saved:'Nothing saved.',assigned:'Nothing assigned from the Radar yet.',dismissed:'Nothing dismissed.'}[IR.tab];
+    return '<div class="ir-empty">'+msg+(IR.items.length===0?' The first run fills this within 30 minutes of deploying.':'')+(unscored&&IR.tab==='top'?' ('+unscored+' still being scored.)':'')+'</div>';
+  }
+  return rows.slice(0,150).map(irCardHtml).join('')+(rows.length>150?'<div class="ir-empty">Showing the first 150 of '+rows.length+' — narrow the filters.</div>':'');
+}
+function irItem(id){ return IR.items.filter(function(i){ return i.id===id; })[0]; }
+
+// ── actions ──────────────────────────────────────────────────────────────────
+async function irSetStatus(id,status){
+  var it=irItem(id); if(!it) return; var prev={status:it.status,saved_by:it.saved_by,saved_at:it.saved_at};
+  var patch={status:status};
+  if(status==='saved'){ patch.saved_by=EDITOR_NAME||null; patch.saved_at=new Date().toISOString(); }
+  Object.assign(it,patch); irRender();
+  try{ var r=await supa.from('impact_items').update(patch).eq('id',id); if(r.error) throw r.error; }
+  catch(e){ Object.assign(it,prev); irRender(); alert('Could not save that change. Try again.'); }
+}
+async function irNote(id){
+  var it=irItem(id); if(!it) return; var v=prompt('Note on this lead',it.note||''); if(v===null) return; v=v.trim().slice(0,500);
+  var prev=it.note; it.note=v||null; irRender();
+  try{ var r=await supa.from('impact_items').update({note:it.note}).eq('id',id); if(r.error) throw r.error; }catch(e){ it.note=prev; irRender(); alert('Could not save the note.'); }
+}
+function irCopy(id){
+  var it=irItem(id); if(!it) return;
+  function done(){ var b=document.querySelector('#ir-c-'+id+' .ir-acts .vd-btn:last-of-type'); if(b){ b.textContent='Copied ✓'; setTimeout(function(){ b.textContent='Copy link'; },1500); } }
+  try{ navigator.clipboard.writeText(it.url).then(done,function(){}); }catch(e){}
+}
+function irAssign(id){
+  var it=irItem(id); if(!it) return; var sug=irMastheadReporters(it);
+  var ov=document.createElement('div'); ov.className='ir-pick-ov'; ov.id='ir-pick-ov'; ov.onclick=function(e){ if(e.target===ov) ov.remove(); };
+  var order=REPORTERS.slice().sort(function(a,b){ return (sug.indexOf(b.name)>-1)-(sug.indexOf(a.name)>-1); });
+  ov.innerHTML='<div class="ir-pick"><h3>Assign to…</h3><p>'+esc(it.title.slice(0,110))+'</p>'+order.map(function(r){ var ri=REPORTERS.indexOf(r); return '<button class="rep'+(sug.indexOf(r.name)>-1?' sug':'')+'" onclick="irDoAssign(\''+esc(id)+'\','+ri+')">'+esc(r.name)+'<span>'+(sug.indexOf(r.name)>-1?'suggested · ':'')+esc(r.pub)+'</span></button>'; }).join('')+'<button class="vd-btn ghost sm" style="margin-top:6px" onclick="document.getElementById(\'ir-pick-ov\').remove()">Cancel</button></div>';
+  document.body.appendChild(ov);
+}
+async function irDoAssign(id,ri){
+  var it=irItem(id); var r=REPORTERS[ri]; var ov=document.getElementById('ir-pick-ov'); if(ov) ov.remove(); if(!it||!r) return;
+  window._assignItem=it; window._assignFromRadar=true;
+  await openAssign(r);
+  document.getElementById('am-headline').value=it.title.replace(/\s[-–|]\s[^-–|]{2,40}$/,'').slice(0,200);
+  document.getElementById('am-angle').value=it.angle||'';
+  document.getElementById('am-notes').value='Lead: '+it.url+'\nSource: '+it.source_name+(it.why?'\nWhy it matters: '+it.why:'');
+}
+async function irMarkAssigned(it,name){
+  var patch={status:'assigned',assigned_to:name,assigned_at:new Date().toISOString()}; Object.assign(it,patch);
+  try{ await supa.from('impact_items').update(patch).eq('id',it.id); }catch(e){ console.warn('radar: could not mark assigned',e); }
+}
+
+// watchlists
+function irListsPanel(){
+  var h='<div class="ir-panel"><h4>Watchlists</h4><p class="cap">Follow a minister, project, company or place. Items matching any term get a 👁 tag; with alerts on, the Impact editor is DM’d in Slack as they arrive.</p>';
+  if(!IR.lists.length) h+='<div class="ir-row"><span class="grow">No watchlists yet.</span></div>';
+  IR.lists.forEach(function(l){ h+='<div class="ir-row"><span class="nm">'+esc(l.label)+'</span><span class="grow">'+(l.terms||[]).map(esc).join(' · ')+'</span><label class="ir-health"><input type="checkbox"'+(l.alert!==false?' checked':'')+' onchange="irListAlert(\''+esc(l.id)+'\',this.checked)"> Slack alerts</label><button class="vd-del" onclick="irDelList(\''+esc(l.id)+'\')" title="Delete">×</button></div>'; });
+  h+='<div class="ir-form"><input class="w" id="ir-wl-label" placeholder="Name (e.g. Offshore wind)"><input class="w" id="ir-wl-terms" placeholder="Terms, comma-separated (e.g. offshore wind, Gippsland, Star of the South)"><label><input type="checkbox" id="ir-wl-alert" checked> Slack alerts</label><button class="vd-btn sm" onclick="irAddList()">+ Add</button></div></div>';
+  return h;
+}
+async function irAddList(){
+  var label=document.getElementById('ir-wl-label').value.trim(); var terms=document.getElementById('ir-wl-terms').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  if(!label||!terms.length){ alert('Give the watchlist a name and at least one term.'); return; }
+  var r=await supa.from('impact_watchlists').insert({label:label,terms:terms,alert:document.getElementById('ir-wl-alert').checked,created_by:EDITOR_NAME||null}).select();
+  if(r.error){ alert('Could not add the watchlist.'); return; }
+  await irLoad(false); IR.panel='lists'; irPanel('lists'); irPanel('lists');
+}
+async function irListAlert(id,on){ await supa.from('impact_watchlists').update({alert:on}).eq('id',id); var l=IR.lists.filter(function(x){ return x.id===id; })[0]; if(l) l.alert=on; }
+async function irDelList(id){ if(!confirm('Delete this watchlist?')) return; await supa.from('impact_watchlists').delete().eq('id',id); IR.lists=IR.lists.filter(function(l){ return l.id!==id; }); IR.panel='lists'; irRender(); irPanelOpen('lists'); }
+function irPanelOpen(p){ IR.panel=p; var el=document.getElementById('ir-panel'); if(el) el.innerHTML=irPanelHtml(); }
+
+// sources
+function irHealth(s){
+  if(s.last_error) return '<span class="ir-health bad" title="'+esc(s.last_error)+'">⚠ '+esc(s.last_error.slice(0,60))+'</span>';
+  if(s.last_ok) return '<span class="ir-health ok">✓ '+(s.last_count||0)+' new-looking · '+esc(vdAgo(Date.parse(s.last_ok)))+'</span>';
+  return '<span class="ir-health na">not run yet</span>';
+}
+function irSourcesPanel(){
+  var h='<div class="ir-panel"><h4>Sources</h4><p class="cap">What the Radar reads every 30 minutes. “Unverified” sources couldn’t be checked when the Radar was built — their health shows after the first run. A source with a warning or 0 items probably needs a different URL.</p>';
+  var cats=['news','govt','company','social','think-tank'];
+  cats.forEach(function(c){
+    var rows=IR.sources.filter(function(s){ return s.category===c; }); if(!rows.length) return;
+    h+='<div class="ir-row" style="border:none;padding-bottom:0"><span class="ir-cat '+c+'">'+IR_CATS[c]+'</span></div>';
+    rows.forEach(function(s){ h+='<div class="ir-row"><label><input type="checkbox"'+(s.active?' checked':'')+' onchange="irSourceActive(\''+esc(s.id)+'\',this.checked)"></label><span class="nm">'+esc(s.name)+'</span>'+(!s.verified&&!s.last_ok?'<span class="ir-tag unv">unverified</span>':'')+'<span class="ir-tag">'+esc(s.kind)+'</span><span class="grow">'+irHealth(s)+'</span><button class="vd-del" onclick="irDelSource(\''+esc(s.id)+'\')" title="Remove">×</button></div>'; });
+  });
+  h+='<div class="ir-form"><input class="w" id="ir-s-name" placeholder="Name"><select id="ir-s-kind"><option value="rss">RSS / Atom feed</option><option value="html">Web page with a list of links</option></select><input class="w" id="ir-s-url" placeholder="https://…"><select id="ir-s-cat">'+Object.keys(IR_CATS).filter(function(k){ return k!=='lead'; }).map(function(k){ return '<option value="'+k+'">'+IR_CATS[k]+'</option>'; }).join('')+'</select><input class="w" id="ir-s-inc" placeholder="Web page only: link must match (regex, e.g. /news/[^/]+$)"><label><input type="checkbox" id="ir-s-trusted"> Everything here is on-topic</label><button class="vd-btn sm" onclick="irAddSource()">+ Add source</button></div></div>';
+  return h;
+}
+async function irSourceActive(id,on){ await supa.from('impact_sources').update({active:on}).eq('id',id); var s=IR.sources.filter(function(x){ return x.id===id; })[0]; if(s) s.active=on; }
+async function irDelSource(id){ if(!confirm('Remove this source? Items already collected stay.')) return; await supa.from('impact_sources').delete().eq('id',id); IR.sources=IR.sources.filter(function(s){ return s.id!==id; }); irRender(); irPanelOpen('sources'); }
+async function irAddSource(){
+  var name=document.getElementById('ir-s-name').value.trim(), url=document.getElementById('ir-s-url').value.trim(), kind=document.getElementById('ir-s-kind').value, inc=document.getElementById('ir-s-inc').value.trim();
+  if(!name||!/^https?:\/\//i.test(url)){ alert('Give it a name and a full https:// address.'); return; }
+  if(inc){ try{ new RegExp(inc); }catch(e){ alert('That link pattern is not valid.'); return; } }
+  var cfg={}; if(document.getElementById('ir-s-trusted').checked) cfg.trusted=true; if(kind==='html'&&inc) cfg.include=inc;
+  var r=await supa.from('impact_sources').insert({name:name,kind:kind,url:url,category:document.getElementById('ir-s-cat').value,config:cfg,verified:false}).select();
+  if(r.error){ alert(/duplicate|unique/i.test(r.error.message||'')?'A source with that name already exists.':'Could not add the source.'); return; }
+  await irLoad(false); irPanelOpen('sources');
+}
+
+// leads
+function irLeadPanel(){
+  return '<div class="ir-panel"><h4>Add a lead</h4><p class="cap">Spotted something the Radar can’t see (a Facebook or X post, a tip, a document)? Add it here and it goes straight to Saved.</p><div class="ir-form"><input class="w" id="ir-l-url" placeholder="Link (https://…)"><input class="w" id="ir-l-title" placeholder="What is it? (one line)"><input class="w" id="ir-l-note" placeholder="Note (optional)"><button class="vd-btn sm" onclick="irAddLead()">+ Save lead</button></div></div>';
+}
+async function irAddLead(){
+  var url=document.getElementById('ir-l-url').value.trim(), title=document.getElementById('ir-l-title').value.trim(), note=document.getElementById('ir-l-note').value.trim();
+  if(!/^https?:\/\//i.test(url)||!title){ alert('A full https:// link and a one-line title, please.'); return; }
+  var now=new Date().toISOString();
+  var row={source_name:'Added by '+(EDITOR_NAME||'editor'),category:'lead',url:url,url_key:'manual:'+Date.now()+Math.random().toString(36).slice(2,6),title_key:null,title:title.slice(0,400),summary:note||null,published_at:now,fetched_at:now,status:'saved',saved_by:EDITOR_NAME||null,saved_at:now,note:note||null,manual:true,watch_hits:[]};
+  var r=await supa.from('impact_items').insert(row).select();
+  if(r.error){ alert('Could not save the lead.'); return; }
+  IR.tab='saved'; await irLoad(false);
+}
+function irPanelHtml(){ return IR.panel==='lists'?irListsPanel():(IR.panel==='sources'?irSourcesPanel():(IR.panel==='lead'?irLeadPanel():'')); }
 
 // ── Password recovery link detection ──
 if (window.location.hash.includes('type=recovery')) {
