@@ -891,6 +891,8 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .ir-head-right{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#b9b9b4}
 .ir-head-right .warn{color:#F3B38F;font-weight:600}
 .ir-refresh{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:14px;font-family:inherit}
+.ir-scan{background:#fff;color:var(--ink);border:none;border-radius:7px;padding:0 12px;height:28px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.ir-scan:hover{background:#E1E7FA}
 .ir-refresh:hover{background:rgba(255,255,255,.2)}
 .ir-banner{background:#E1E7FA;color:#2F46A8;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;margin-bottom:12px;cursor:pointer}
 .ir-setup{background:#FBE6CE;color:#6E4710;border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.55}
@@ -5472,7 +5474,7 @@ function downloadWeeklyReviewPdf() {
 // Data is written by the scheduled functions (impact-run-background); this tab reads
 // it, and lets the editor save / dismiss / assign items, follow watchlists, manage
 // sources and add leads by hand. All tables are editor-only (RLS).
-var IR={items:[],sources:[],lists:[],runs:[],tab:'top',win:'24h',topic:'',cat:'',q:'',panel:'',err:'',pending:0,next:null,timer:null,loaded:false};
+var IR={scanning:false,scanMsg:'',items:[],sources:[],lists:[],runs:[],tab:'top',win:'24h',topic:'',cat:'',q:'',panel:'',err:'',pending:0,next:null,timer:null,loaded:false};
 var IR_TOPICS=['climate','energy','environment','water','land & agriculture','mining & resources','transport & EVs','politics & policy','corporate & finance','science & data','local & regional'];
 var IR_CATS={news:'News',govt:'Government',company:'Company',social:'Social','think-tank':'Think tank',lead:'Lead'};
 var IR_WIN={'24h':24,'3d':72,'7d':168};
@@ -5510,6 +5512,25 @@ async function irLoad(quiet){
     IR.err=/relation|does not exist|schema cache|PGRST205|42P01/i.test(m)?'setup':m;
   }
   irRender();
+}
+async function irScanNow(){
+  if(IR.scanning) return;
+  var before=IR.runs[0]?IR.runs[0].started_at:null; IR.scanning=true; IR.scanMsg=''; irRender();
+  var fin=function(m){ IR.scanning=false; IR.scanMsg=m; irLoad(false).then(function(){ var el=document.getElementById('ir-scanmsg'); if(el) el.textContent=m; }); };
+  try{
+    var ses=(await supa.auth.getSession()).data.session; var token=ses?ses.access_token:'';
+    var r=await fetch('/.netlify/functions/impact-run-background',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({force:true})});
+    if(!r.ok&&r.status!==202) throw new Error('HTTP '+r.status);
+  }catch(e){ fin('Could not start a scan ('+(e.message||e)+'). Is the function uploaded?'); return; }
+  var tries=0; (function poll(){
+    tries++; setTimeout(async function(){
+      try{ var d=await supa.from('impact_runs').select('*').order('started_at',{ascending:false}).limit(1); var row=d.data&&d.data[0];
+        if(row&&row.started_at!==before&&row.finished_at){ fin('Scan done — '+(row.inserted||0)+' new, '+(row.scored||0)+' scored.'); return; }
+        if(row&&row.started_at===before&&tries===3&&Date.now()-Date.parse(before)<60e3){ fin('A scan ran under a minute ago — give it a moment and try again.'); return; }
+      }catch(e){}
+      if(tries>=40) fin('Still running — it can take a few minutes. Refresh in a bit.'); else poll();
+    },5000);
+  })();
 }
 function irApplyPending(){ if(IR.next){ IR.items=IR.next; IR.next=null; } IR.pending=0; irRender(); }
 
@@ -5554,7 +5575,7 @@ function irRenderHead(){ var h=document.getElementById('ir-run'); if(h) h.innerH
 function irRenderBanner(){ var b=document.getElementById('ir-banner'); if(!b) return; b.innerHTML=IR.pending?'<div class="ir-banner" onclick="irApplyPending()">'+IR.pending+' new item'+(IR.pending>1?'s':'')+' — show</div>':''; }
 function irRender(){
   var body=document.getElementById('impact-radar-body'); if(!body) return;
-  var h='<div class="ir-head"><div class="ir-head-title">📡 Impact Radar</div><div class="ir-head-right"><span id="ir-run">'+irRunPill()+'</span><button class="ir-refresh" onclick="irLoad(false)" title="Refresh">↻</button></div></div><div id="ir-banner"></div>';
+  var h='<div class="ir-head"><div class="ir-head-title">📡 Impact Radar</div><div class="ir-head-right"><span id="ir-run">'+irRunPill()+'</span><button class="ir-scan" id="ir-scan" onclick="irScanNow()" title="Check every source right now">'+(IR.scanning?'Scanning…':'⚡ Scan now')+'</button><button class="ir-refresh" onclick="irLoad(false)" title="Refresh">↻</button></div></div><div id="ir-banner"></div>'+(IR.scanMsg?'<div class="ir-banner" id="ir-scanmsg" style="cursor:default">'+esc(IR.scanMsg)+'</div>':'');
   if(IR.err){
     h+=IR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>impact-tables.sql</code> in the Supabase SQL editor, then refresh. After that the Radar fills itself every 30 minutes.</div>':'<div class="ir-setup"><b>Could not load the Radar.</b> '+esc(IR.err)+'</div>';
     body.innerHTML=h; return;
