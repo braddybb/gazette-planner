@@ -5565,9 +5565,9 @@ function irRows(tab){
 
 // ── rendering ────────────────────────────────────────────────────────────────
 function irRunPill(){
-  var r=IR.runs[0]; if(!r) return '<span class="warn">No run yet — the first one lands within 30 minutes of deploying the functions</span>';
-  var age=Date.now()-Date.parse(r.started_at); var s='Updated '+vdAgo(Date.parse(r.started_at))+' · +'+(r.inserted||0)+' new'+(r.scored!=null?' · '+r.scored+' scored':'');
-  var bits=[]; if(age>90*60e3) bits.push('<span class="warn">No run in over 90 min — check the scheduled function</span>');
+  var r=IR.runs[0]; if(!r) return '<span class="warn">No scan yet — press Scan now</span>';
+  var age=Date.now()-Date.parse(r.started_at); var s='Last scan '+vdAgo(Date.parse(r.started_at))+' · +'+(r.inserted||0)+' new'+(r.scored!=null?' · '+r.scored+' scored':'');
+  var bits=[];
   if(r.errors) bits.push('<span class="warn" title="'+esc(r.errors)+'">⚠ issues — see Sources</span>');
   return esc(s)+(bits.length?' · '+bits.join(' · '):'');
 }
@@ -5577,7 +5577,7 @@ function irRender(){
   var body=document.getElementById('impact-radar-body'); if(!body) return;
   var h='<div class="ir-head"><div class="ir-head-title">📡 Impact Radar</div><div class="ir-head-right"><span id="ir-run">'+irRunPill()+'</span><button class="ir-scan" id="ir-scan" onclick="irScanNow()" title="Check every source right now">'+(IR.scanning?'Scanning…':'⚡ Scan now')+'</button><button class="ir-refresh" onclick="irLoad(false)" title="Refresh">↻</button></div></div><div id="ir-banner"></div>'+(IR.scanMsg?'<div class="ir-banner" id="ir-scanmsg" style="cursor:default">'+esc(IR.scanMsg)+'</div>':'');
   if(IR.err){
-    h+=IR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>impact-tables.sql</code> in the Supabase SQL editor, then refresh. After that the Radar fills itself every 30 minutes.</div>':'<div class="ir-setup"><b>Could not load the Radar.</b> '+esc(IR.err)+'</div>';
+    h+=IR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>impact-tables.sql</code> in the Supabase SQL editor, then refresh. After that, press <b>Scan now</b> to fill it.</div>':'<div class="ir-setup"><b>Could not load the Radar.</b> '+esc(IR.err)+'</div>';
     body.innerHTML=h; return;
   }
   h+='<div class="ir-bar">';
@@ -5626,7 +5626,7 @@ function irListHtml(){
   if(!rows.length){
     var unscored=IR.items.filter(function(i){ return i.status==='new'&&i.relevance==null; }).length;
     var msg={top:'Nothing scoring 60+ in this window yet.',latest:'Nothing here yet.',watch:'No watchlist hits in this window.',saved:'Nothing saved.',assigned:'Nothing assigned from the Radar yet.',dismissed:'Nothing dismissed.'}[IR.tab];
-    return '<div class="ir-empty">'+msg+(IR.items.length===0?' The first run fills this within 30 minutes of deploying.':'')+(unscored&&IR.tab==='top'?' ('+unscored+' still being scored.)':'')+'</div>';
+    return '<div class="ir-empty">'+msg+(IR.items.length===0?' Press Scan now to fill it.':'')+(unscored&&IR.tab==='top'?' ('+unscored+' still being scored.)':'')+'</div>';
   }
   return rows.slice(0,150).map(irCardHtml).join('')+(rows.length>150?'<div class="ir-empty">Showing the first 150 of '+rows.length+' — narrow the filters.</div>':'');
 }
@@ -5697,7 +5697,7 @@ function irHealth(s){
   return '<span class="ir-health na">not run yet</span>';
 }
 function irSourcesPanel(){
-  var h='<div class="ir-panel"><h4>Sources</h4><p class="cap">What the Radar reads every 30 minutes. “Unverified” sources couldn’t be checked when the Radar was built — their health shows after the first run. A source with a warning or 0 items probably needs a different URL.</p>';
+  var h='<div class="ir-panel"><h4>Sources</h4><p class="cap">What the Radar reads — automatically at 6:30am Mon–Fri, and whenever you press Scan now. “Unverified” sources couldn’t be checked when the Radar was built — their health shows after the first run. A source with a warning or 0 items probably needs a different URL.</p>';
   var cats=['news','govt','company','social','think-tank'];
   cats.forEach(function(c){
     var rows=IR.sources.filter(function(s){ return s.category===c; }); if(!rows.length) return;
