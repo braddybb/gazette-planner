@@ -3349,7 +3349,7 @@ var VD_TEMPLATES = [
   {t:'Vertical first', x:'Reminder: the vertical goes up before the dotcom story.'},
   {t:'Nice work', x:'Nice work on your {s} — more like this.'}
 ];
-var VD = { projects:[], checklist:{}, series:[], myDesk:[], decisions:[], feedback:{} };
+var VD = { projects:[], checklist:{}, series:[], myDesk:[], decisions:[], feedback:{}, customFormats:[] };
 var VD_DATA = {};      // reporter|pub -> week -> slot -> planner row (last 6 weeks, slots 01-04)
 var VD_OUTPUT = {};    // reporter|pub -> slot -> row, for the viewed week
 var VD_EXPAND = {};
@@ -3512,14 +3512,15 @@ async function loadVideoDesk(){
     var r=await supa.from('system_flags').select('value').like('key','videodesk%').order('key',{ascending:false}).limit(1);
     var row=(r.data&&r.data[0])?r.data[0]:null;
     var parsed=(row&&row.value)?JSON.parse(row.value):null;
-    VD=Object.assign({projects:[],checklist:{},series:[],myDesk:[],decisions:[],feedback:{}},parsed||{});
+    VD=Object.assign({projects:[],checklist:{},series:[],myDesk:[],decisions:[],feedback:{},customFormats:[]},parsed||{});
     if(!Array.isArray(VD.projects))VD.projects=[];
     if(!Array.isArray(VD.series))VD.series=[];
     if(!Array.isArray(VD.myDesk))VD.myDesk=[];
     if(!VD.checklist||typeof VD.checklist!=='object')VD.checklist={};
     if(!Array.isArray(VD.decisions))VD.decisions=[];
     if(!VD.feedback||typeof VD.feedback!=='object')VD.feedback={};
-  }catch(e){ VD={projects:[],checklist:{},series:[],myDesk:[],decisions:[],feedback:{}}; }
+    if(!Array.isArray(VD.customFormats))VD.customFormats=[];
+  }catch(e){ VD={projects:[],checklist:{},series:[],myDesk:[],decisions:[],feedback:{},customFormats:[]}; }
   await vdLoadTasks();
   await vdLoadHelp();
   try{
@@ -3796,7 +3797,7 @@ function renderVideoDesk(){
   var live=VD.projects.filter(function(p){return p.stage<4;});
   var published=VD.projects.filter(function(p){return p.stage>=4;}).sort(function(a,b){return (b.stageAt||b.created||0)-(a.stageAt||a.created||0);});
   h+='<div class="vd-sec" id="vd-sec-pipeline"><div class="vd-sec-head"><div class="vd-sec-t">Pipeline</div><div class="vd-sec-sum">Approved → Shot → Edited → Published</div></div>';
-  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name"><div class="vd-add-row"><select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+'</select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+' ('+sl.n+')</option>';}).join('')+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+VD_FORMATS.map(function(f){return '<option>'+esc(f)+'</option>';}).join('')+'</select><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
+  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name"><div class="vd-add-row"><select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+'</select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+VD_SLOTS.map(function(sl){return '<option value="'+sl.n+'">'+vdSlotName(sl.n)+' ('+sl.n+')</option>';}).join('')+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+vdFmtOpts('')+'</select><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
   var shoots=live.filter(function(p){return p.stage===0&&p.shootDate;}).map(function(p){return {p:p,w:vdShootWhen(p)};}).filter(function(x){return x.w.d>=-1&&x.w.d<=7;}).sort(function(a,b){return a.w.d-b.w.d;});
   if(shoots.length){
     h+='<div class="vd-shoots"><div class="vd-shoots-h">Shoots coming up</div>'+shoots.map(function(x){
@@ -3870,11 +3871,11 @@ function renderVideoDesk(){
   // ---- performance placeholder ----
   h+=vdSecOpen('perf','What’s winning — by format','published, by format');
   var pubd=VD.projects.filter(function(p){return p.stage>=3;});
-  var fcount={}; VD_FORMATS.forEach(function(f){fcount[f]=pubd.filter(function(p){return p.format===f;}).length;});
+  var FMTS=vdFormats(); var fcount={}; FMTS.forEach(function(f){fcount[f]=pubd.filter(function(p){return p.format===f;}).length;});
   var untagged=pubd.filter(function(p){return !p.format;}).length;
-  var fmax=Math.max.apply(null,VD_FORMATS.map(function(f){return fcount[f];}).concat([1]));
+  var fmax=Math.max.apply(null,FMTS.map(function(f){return fcount[f];}).concat([1]));
   h+='<div class="vd-perf-note">Counts are real — published videos by the format they were tagged with. Watch-through &amp; engagement aren’t wired yet, so there are no performance numbers.</div>';
-  VD_FORMATS.forEach(function(fmt){ h+='<div class="vd-perf-row"><div class="vd-perf-name">'+esc(fmt)+'</div><div class="vd-perf-bar"><div class="vd-perf-fill" style="width:'+Math.round(fcount[fmt]/fmax*100)+'%"></div></div><div class="vd-perf-val">'+fcount[fmt]+' published</div></div>'; });
+  FMTS.forEach(function(fmt){ h+='<div class="vd-perf-row"><div class="vd-perf-name">'+esc(fmt)+'</div><div class="vd-perf-bar"><div class="vd-perf-fill" style="width:'+Math.round(fcount[fmt]/fmax*100)+'%"></div></div><div class="vd-perf-val">'+fcount[fmt]+' published</div></div>'; });
   if(untagged) h+='<div class="vd-sec-cap" style="margin-top:6px">'+untagged+' published video'+(untagged>1?'s':'')+' untagged — tag them in the Published list.</div>';
   h+='</div></div>';
 
@@ -3888,6 +3889,24 @@ function renderVideoDesk(){
   h+='</div></div>';
 
   document.getElementById('video-desk-body').innerHTML=h;
+}
+
+// ── Formats: the four built-ins plus any Nick adds from a tag dropdown ─────────
+function vdFormats(){
+  var out=VD_FORMATS.slice();
+  (VD.customFormats||[]).forEach(function(f){ if(out.indexOf(f)<0) out.push(f); });
+  VD.projects.forEach(function(p){ if(p.format&&out.indexOf(p.format)<0) out.push(p.format); });
+  return out;
+}
+function vdFmtOpts(cur){
+  return vdFormats().map(function(f){ return '<option'+(cur===f?' selected':'')+'>'+esc(f)+'</option>'; }).join('')+'<option value="__new__">+ New format…</option>';
+}
+// Asks for a name and registers it (call after vdClone() so a failed save rolls it back). Returns the name, or '' if cancelled.
+function vdAskFormat(){
+  var n=(prompt('Name the new format')||'').replace(/\s+/g,' ').trim().slice(0,40); if(!n) return '';
+  var ex=vdFormats().filter(function(f){ return f.toLowerCase()===n.toLowerCase(); })[0]; if(ex) return ex;
+  if(!Array.isArray(VD.customFormats)) VD.customFormats=[];
+  VD.customFormats.push(n); return n;
 }
 
 // ── Today · reporter help requests · decisions · fortnightly cadence ─────────
@@ -3949,6 +3968,7 @@ async function vdRemoveDecision(id){ var prev=vdClone(); VD.decisions=(VD.decisi
 
 async function vdTagToday(ri,n,val){
   var x=VD_INFO[ri]; if(!x) return; var row=(x.d[WEEK]||{})[n]; var prev=vdClone();
+  if(val==='__new__'){ val=vdAskFormat(); if(!val){ renderVideoDesk(); return; } }
   var p=vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK);
   if(!p){
     if(!val) return;
@@ -3962,7 +3982,7 @@ async function vdTagToday(ri,n,val){
 
 function vdFmtPick(ri,n){
   var x=VD_INFO[ri]; var proj=vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK); var cur=(proj&&proj.format)||'';
-  return '<select class="vd-serpick" onchange="vdTagToday('+ri+',\''+n+'\',this.value)" title="Format"><option value="">Tag format…</option>'+VD_FORMATS.map(function(f){ return '<option'+(cur===f?' selected':'')+'>'+esc(f)+'</option>'; }).join('')+'</select>';
+  return '<select class="vd-serpick" onchange="vdTagToday('+ri+',\''+n+'\',this.value)" title="Format"><option value="">Tag format…</option>'+vdFmtOpts(cur)+'</select>';
 }
 
 function vdTodayHtml(info,ds){
@@ -4118,16 +4138,16 @@ async function vdAddProject(){
   var rep=document.getElementById('vd-new-rep').value; var slot=document.getElementById('vd-new-slot').value;
   var dEl=document.getElementById('vd-new-date'); var sd=dEl&&/^\d{4}-\d{2}-\d{2}$/.test(dEl.value)?dEl.value:null;
   var fmtEl=document.getElementById('vd-new-fmt'); var fmt=fmtEl?fmtEl.value:'';
-  var prev=vdClone(); var now=Date.now(); var p={id:now.toString(36),title:t,stage:0,preshoot:{},created:now,stageAt:now};
+  var prev=vdClone(); if(fmt==='__new__'){ fmt=vdAskFormat(); } var now=Date.now(); var p={id:now.toString(36),title:t,stage:0,preshoot:{},created:now,stageAt:now};
   if(sd) p.shootDate=sd;
   if(fmt) p.format=fmt;
   if(rep){var pa=rep.split('|');p.reporter=pa[0];p.pub=pa[1];p.slot=slot||null;p.standalone=false;}else p.standalone=true;
   VD.projects.push(p); await vdCommit(prev,'Could not add.');
 }
 function vdFormatSelect(p){
-  return '<select class="vd-serpick" onchange="vdSetFormat(\''+p.id+'\',this.value)" title="Format"><option value="">Format: untagged</option>'+VD_FORMATS.map(function(f){return '<option'+(p.format===f?' selected':'')+'>'+esc(f)+'</option>';}).join('')+'</select>';
+  return '<select class="vd-serpick" onchange="vdSetFormat(\''+p.id+'\',this.value)" title="Format"><option value="">Format: untagged</option>'+vdFmtOpts(p.format)+'</select>';
 }
-async function vdSetFormat(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val) p.format=val; else delete p.format; await vdCommit(prev,'Could not save the format.'); }
+async function vdSetFormat(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val==='__new__'){ val=vdAskFormat(); if(!val){ renderVideoDesk(); return; } } if(val) p.format=val; else delete p.format; await vdCommit(prev,'Could not save the format.'); }
 async function vdSetShoot(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val&&/^\d{4}-\d{2}-\d{2}$/.test(val)) p.shootDate=val; else delete p.shootDate; await vdCommit(prev,'Could not save the shoot date.'); }
 async function vdSetSeries(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val) p.seriesId=val; else delete p.seriesId; await vdCommit(prev,'Could not save the series.'); }
 async function vdRemoveProject(id){ if(!confirm('Remove this video from the pipeline?'))return; var prev=vdClone(); VD.projects=VD.projects.filter(function(p){return p.id!==id;}); await vdCommit(prev); }
