@@ -8,7 +8,7 @@
 // Env vars: the same as the Friday summary (NICK_SLACK_ID, SLACK_BOT_TOKEN,
 // SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL).
 // ─────────────────────────────────────────────────────────────────────────────
-import { sydneyParts, mondayOf, checklistItems, groupReporters, activeSeriesCount, sget, loadTasks, sendDM } from "./video-digest.mjs";
+import { sydneyParts, mondayOf, checklistItems, groupReporters, activeSeriesCount, sget, loadTasks, loadAway, awayIdx, sendDM } from "./video-digest.mjs";
 
 export const config = { schedule: "0 22,23 * * 0" };
 
@@ -20,7 +20,7 @@ const dayName = (ymd) => { const d = new Date(utc(ymd)); return ["Sun","Mon","Tu
 
 export function shouldRun(now = new Date()) { const s = sydneyParts(now); return s.weekday === "Mon" && s.hour === 9; }
 
-export function buildPlan({ today, week, snapshot, tasks, stories }) {
+export function buildPlan({ today, week, snapshot, tasks, stories, away = [] }) {
   const snap = snapshot || { projects: [], checklist: {}, series: [] };
   const L = [];
   const prev = addDays(week, -7);
@@ -54,12 +54,23 @@ export function buildPlan({ today, week, snapshot, tasks, stories }) {
     L.push("*Stuck in the pipeline*"); stuck.forEach((x) => L.push(`• ${x.p.title} — ${st[x.p.stage]} ${x.age}d ago`)); L.push("");
   }
 
-  const reps = groupReporters(stories);
+  const allReps = groupReporters(stories);
+  const awayNow = [];
+  const reps = allReps.filter((r) => {
+    const idx = awayIdx(away, r.name, r.pub, week);
+    if (idx.length === 5) { awayNow.push(`${r.name} (all week)`); return false; }
+    if (idx.length) awayNow.push(`${r.name} (${idx.map((i) => ["Mon", "Tue", "Wed", "Thu", "Fri"][i]).join(", ")})`);
+    return true;
+  });
   const plan = [];
   reps.forEach((r) => {
+    const idx = awayIdx(away, r.name, r.pub, week);
+    const need = Math.round(4 * (5 - idx.length) / 5);
     const missing = ["01", "02", "03", "04"].filter((n) => !(r.slots[n] && r.slots[n].headline));
-    if (missing.length) plan.push(`• *${r.name}* — ${4 - missing.length}/4 planned (need: ${missing.map((n) => SLOT_NAMES[n]).join(", ")})`);
+    const planned = 4 - missing.length;
+    if (planned < need) plan.push(`• *${r.name}* — ${planned}/${need} planned (need: ${missing.slice(0, need - planned).map((n) => SLOT_NAMES[n]).join(", ")})`);
   });
+  if (awayNow.length) { L.push("*Away this week*"); awayNow.forEach((x) => L.push("• " + x)); L.push(""); }
   L.push(plan.length ? "*Planning — chase these by Wednesday*" : "*Planning*");
   if (plan.length) plan.forEach((x) => L.push(x)); else L.push("• All four videos planned for everyone 🎉");
   L.push("");
@@ -91,8 +102,9 @@ export default async () => {
     const snaps = await sget("system_flags?select=value&key=like.videodesk*&order=key.desc&limit=1");
     const snapshot = snaps[0] ? JSON.parse(snaps[0].value) : null;
     const tasks = await loadTasks();
+    const away = await loadAway().catch(() => []);
     const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(01,02,03,04)&select=reporter,publication,story_num,headline,filed,file_day`);
-    await sendDM(buildPlan({ today, week, snapshot, tasks, stories }));
+    await sendDM(buildPlan({ today, week, snapshot, tasks, stories, away }));
     return new Response("sent");
   } catch (e) { console.error("video-plan failed:", e); return new Response("failed: " + e.message, { status: 500 }); }
 };

@@ -28,6 +28,22 @@ export const ROSTER = [
   { name: "Darcie Humphreys", pub: "West Vic Brolga — Ballarat" }, { name: "Jacob Wallace", pub: "Gippsland Monitor" },
 ];
 export const QUIET_DAYS = 14;
+const addDaysYmd = (ymd, n) => new Date(Date.UTC(...ymd.split("-").map(Number).map((v, i) => (i === 1 ? v - 1 : v))) + n * 864e5).toISOString().slice(0, 10);
+// Away periods are written by the Editor Dashboard (insert-only in system_flags):
+//   away:<ts>-<id> {id,reporter,pub,from,to,reason}   awayend:<id>:<ts> {id}  (cancels one)
+export async function loadAway() {
+  const rows = await sget("system_flags?select=key,value&key=like.away*&order=key.asc&limit=1000");
+  const recs = {}, ended = {};
+  (rows || []).forEach((row) => { let v; try { v = JSON.parse(row.value); } catch { return; } if (!v || !v.id) return;
+    if (row.key.startsWith("awayend:")) ended[v.id] = true; else if (row.key.startsWith("away:")) recs[v.id] = v; });
+  return Object.values(recs).filter((a) => !ended[a.id]);
+}
+// Mon–Fri indexes (0–4) of the given week that this reporter is away.
+export function awayIdx(away, name, pub, week) {
+  const idx = [];
+  for (let d = 0; d < 5; d++) { const ymd = addDaysYmd(week, d); if ((away || []).some((a) => a.reporter === name && a.pub === pub && a.from <= ymd && ymd <= a.to)) idx.push(d); }
+  return idx;
+}
 export function groupReporters(stories) {
   const by = {};
   ROSTER.forEach((r) => { by[r.name + "|" + r.pub] = { name: r.name, pub: r.pub, slots: {} }; });
@@ -82,7 +98,7 @@ export function slotState(row) {
   return d >= 0 && d < 4 ? "overdue" : "due";
 }
 
-export function buildDigest({ today, week, snapshot, tasks, stories }) {
+export function buildDigest({ today, week, snapshot, tasks, stories, away = [] }) {
   const L = [];
   const snap = snapshot || { projects: [], checklist: {} };
   const wk = (snap.checklist || {})[week] || {};
@@ -94,24 +110,34 @@ export function buildDigest({ today, week, snapshot, tasks, stories }) {
 
   // reporters
   const repLines = [];
-  let filedTotal = 0, repCount = 0;
+  let filedTotal = 0, targetTotal = 0, repCount = 0;
+  const awayNames = [];
   groupReporters(stories).forEach((r) => {
+    const idx = awayIdx(away, r.name, r.pub, week);
+    if (idx.length === 5) { awayNames.push(r.name); return; }      // away all week: not counted
     repCount++;
+    const vt = Math.round(4 * (5 - idx.length) / 5);                // target scales with days away
+    let spare = 4 - vt;
     const bits = [];
     let filed = 0;
     ["01", "02", "03", "04"].forEach((n) => {
-      const st = slotState(r.slots[n]);
-      if (st === "filed") filed++;
-      else if (st === "overdue") bits.push(SLOT_NAMES[n] + " overdue");
+      const row = r.slots[n];
+      const st = slotState(row);
+      if (st === "filed") { filed++; return; }
+      const di = row && row.file_day ? DAYS.indexOf(row.file_day) : -1;
+      if (di > -1 && idx.includes(di)) return;                      // due on a day they're away
+      if (st === "unplanned" && spare > 0) { spare--; return; }
+      if (st === "overdue") bits.push(SLOT_NAMES[n] + " overdue");
       else if (st === "due") bits.push(SLOT_NAMES[n] + " due today");
       else bits.push(SLOT_NAMES[n] + " not planned");
     });
-    filedTotal += filed;
-    if (filed < 4) repLines.push(`• *${r.name}* ${filed}/4 — ${bits.join(", ")}`);
+    filedTotal += filed; targetTotal += vt;
+    if (filed < vt && bits.length) repLines.push(`• *${r.name}* ${filed}/${vt} — ${bits.join(", ")}`);
   });
   if (repCount) {
-    L.push(`*Video output — ${filedTotal}/${repCount * 4} filed*`);
-    if (repLines.length) repLines.forEach((x) => L.push(x)); else L.push("• Everyone is at 4/4 🎉");
+    L.push(`*Video output — ${filedTotal}/${targetTotal} filed*`);
+    if (repLines.length) repLines.forEach((x) => L.push(x)); else L.push("• Everyone is on target 🎉");
+    if (awayNames.length) L.push("_Away this week (not counted):_ " + awayNames.join(", "));
     L.push("");
   }
 
@@ -176,7 +202,8 @@ export default async () => {
     const snapshot = snaps[0] ? JSON.parse(snaps[0].value) : null;
     const tasks = await loadTasks();
     const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(01,02,03,04)&select=reporter,publication,story_num,headline,filed,file_day`);
-    const text = buildDigest({ today, week, snapshot, tasks, stories });
+    const away = await loadAway().catch(() => []);
+    const text = buildDigest({ today, week, snapshot, tasks, stories, away });
     await sendDM(text);
     return new Response("sent");
   } catch (e) { console.error("video-digest failed:", e); return new Response("failed: " + e.message, { status: 500 }); }
