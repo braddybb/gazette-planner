@@ -722,7 +722,13 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-chip span[onclick]{cursor:pointer}
 .vd-chip .x{opacity:.5;font-weight:700;cursor:pointer}
 .vd-chip .x:hover{opacity:1}
-.vd-series-ct{flex:0 0 36px;text-align:right;font-size:12px;font-weight:700}
+.vd-series-ct{flex:0 0 64px;text-align:right;font-size:12px;font-weight:700}
+.vd-tagged{font-size:12px;font-weight:700;color:var(--vd-green);background:#E3EFE8;border-radius:20px;padding:4px 11px;white-space:nowrap}
+.vd-fmtlib{background:#FAFAF7;border:1px solid #ECECEC;border-radius:10px;padding:10px 12px;margin:0 0 12px}
+.vd-fmtlib-h{font-size:12px;font-weight:700;color:#555;margin-bottom:7px}
+.vd-fmtlib-h span{font-weight:400;color:#A0A098}
+.vd-fmtlib .vd-add-row{margin-top:8px}
+.vd-fmtlib .vd-add-row input{flex:1;min-width:0;font-family:inherit;font-size:12.5px;border:1px solid #DDD;background:#fff;border-radius:7px;padding:7px 10px}
 .vd-series-empty{flex:1;font-size:12.5px;color:#AAA;font-style:italic}
 .vd-perf-note{font-size:12px;color:#999;margin-bottom:12px;background:#FAFAF8;border:1px dashed #DDD;border-radius:8px;padding:9px 12px;line-height:1.5}
 .vd-perf-row{display:flex;align-items:center;gap:14px;padding:9px 2px;border-bottom:1px dotted #DADADA}
@@ -3850,9 +3856,14 @@ function renderVideoDesk(){
   h+='</div>';
 
   // ---- series ----
-  h+=vdSecOpen('series','Series — everyone runs two',healthy+'/'+seriesTarget+' healthy');
+  h+=vdSecOpen('series','Series — everyone runs at least two',healthy+'/'+seriesTarget+' healthy');
   h+='<div class="vd-newbanner '+(newThisWeek>=1?'ok':'no')+'">'+(newThisWeek>=1?'✓ '+newThisWeek+' new series started this week':'No new series this week — aim for at least 1 across the team')+'</div>';
-  h+='<div class="vd-add"><input id="vd-series-title" placeholder="New series name"><div class="vd-add-row"><select id="vd-series-rep">'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+'</option>';}).join('')+'</select><button class="vd-btn sm" onclick="vdAddSeries()">+ Start series</button></div></div>';
+  h+='<div class="vd-add"><input id="vd-series-title" list="vd-fmt-list" placeholder="New series name (or pick a format)"><datalist id="vd-fmt-list">'+vdFormats().map(function(f){return '<option value="'+esc(f)+'">';}).join('')+'</datalist><div class="vd-add-row"><select id="vd-series-rep">'+locals.map(function(rep){var v=rep.name+'|'+rep.pub; return '<option value="'+esc(v)+'"'+(VD_LAST_SERIES_REP===v?' selected':'')+'>'+esc(rep.name)+'</option>';}).join('')+'</select><button class="vd-btn sm" onclick="vdAddSeries()">+ Start series</button></div></div>';
+  var _pubd=VD.projects.filter(function(p){return p.stage>=3;});
+  h+='<div class="vd-fmtlib"><div class="vd-fmtlib-h">Formats <span>— the same list you tag videos with. Click one to start a series from it.</span></div><div class="vd-chips">'+vdFormats().map(function(f,fi){
+    var n=_pubd.filter(function(p){return p.format===f;}).length; var ci=(VD.customFormats||[]).indexOf(f);
+    return '<span class="vd-chip active"><span onclick="vdUseFormat('+fi+')" title="Start a series from this">'+esc(f)+' · '+n+'</span>'+(ci>-1&&!n?'<span class="x" onclick="vdRemoveFormat('+ci+')" title="Remove (no videos use it)">×</span>':'')+'</span>';
+  }).join('')+'</div><div class="vd-add-row"><input id="vd-fmt-new" placeholder="Add a new format…" onkeydown="if(event.key===\'Enter\')vdAddFormat()"><button class="vd-btn ghost sm" onclick="vdAddFormat()">+ Add format</button></div></div>';
   locals.forEach(function(rep){
     var mine=vdSeriesOf(rep); var act=vdActiveSeries(rep).length;
     h+='<div class="vd-series-row"><div class="vd-series-name">'+esc(rep.name)+'</div><div class="vd-chips">';
@@ -3863,7 +3874,7 @@ function renderVideoDesk(){
       var tail=ss.stalled?(ss.manual?' — stalled':' — quiet '+Math.floor(ss.idle/7)+'w'):' ✓';
       h+='<span class="vd-chip '+(ss.stalled?'stalled':'active')+'"><span onclick="vdToggleSeries(\''+s.id+'\')" title="Click to '+(ss.stalled?'mark active':'mark stalled')+'">'+label+tail+'</span><span class="x" onclick="vdRemoveSeries(\''+s.id+'\')">×</span></span>';
     });
-    h+='</div><div class="vd-series-ct" style="color:'+(act>=2?'var(--vd-green)':'var(--vd-rust)')+'">'+act+'/2</div></div>';
+    h+='</div><div class="vd-series-ct" style="color:'+(act>=2?'var(--vd-green)':'var(--vd-rust)')+'">'+(act>2?act+' running':act+'/2')+'</div></div>';
   });
   h+='<div class="vd-sec-cap" style="margin-top:8px">Tag a pipeline video to a series and each published episode is counted. A series with episodes logged goes “quiet” after '+VD_SERIES_QUIET_DAYS+' days without a new one.</div>';
   h+='</div></div>';
@@ -3902,11 +3913,27 @@ function vdFmtOpts(cur){
   return vdFormats().map(function(f){ return '<option'+(cur===f?' selected':'')+'>'+esc(f)+'</option>'; }).join('')+'<option value="__new__">+ New format…</option>';
 }
 // Asks for a name and registers it (call after vdClone() so a failed save rolls it back). Returns the name, or '' if cancelled.
-function vdAskFormat(){
-  var n=(prompt('Name the new format')||'').replace(/\s+/g,' ').trim().slice(0,40); if(!n) return '';
-  var ex=vdFormats().filter(function(f){ return f.toLowerCase()===n.toLowerCase(); })[0]; if(ex) return ex;
+function vdNormFormat(raw){
+  var n=String(raw||'').replace(/\s+/g,' ').trim().slice(0,40); if(!n) return '';
+  var ex=vdFormats().filter(function(f){ return f.toLowerCase()===n.toLowerCase(); })[0];
+  return ex||n;
+}
+function vdRegisterFormat(name){
+  if(!name||vdFormats().indexOf(name)>-1) return;
   if(!Array.isArray(VD.customFormats)) VD.customFormats=[];
-  VD.customFormats.push(n); return n;
+  VD.customFormats.push(name);
+}
+function vdAskFormat(){ var n=vdNormFormat(prompt('Name the new format')); vdRegisterFormat(n); return n; }
+
+function vdUseFormat(i){ var f=vdFormats()[i]; var el=document.getElementById('vd-series-title'); if(el&&f){ el.value=f; el.focus(); el.scrollIntoView({behavior:'smooth',block:'center'}); } }
+async function vdAddFormat(){
+  var el=document.getElementById('vd-fmt-new'); var n=vdNormFormat(el?el.value:''); if(!n) return;
+  var prev=vdClone(); vdRegisterFormat(n); await vdCommit(prev,'Could not save the format.');
+}
+async function vdRemoveFormat(ci){
+  var prev=vdClone(); var f=(VD.customFormats||[])[ci]; if(!f) return;
+  if(VD.projects.some(function(p){return p.format===f;})){ alert('Videos are tagged with that format, so it can’t be removed.'); return; }
+  VD.customFormats.splice(ci,1); await vdCommit(prev);
 }
 
 // ── Today · reporter help requests · decisions · fortnightly cadence ─────────
@@ -3969,6 +3996,7 @@ async function vdRemoveDecision(id){ var prev=vdClone(); VD.decisions=(VD.decisi
 async function vdTagToday(ri,n,val){
   var x=VD_INFO[ri]; if(!x) return; var row=(x.d[WEEK]||{})[n]; var prev=vdClone();
   if(val==='__new__'){ val=vdAskFormat(); if(!val){ renderVideoDesk(); return; } }
+  vdRegisterFormat(val);
   var p=vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK);
   if(!p){
     if(!val) return;
@@ -3980,10 +4008,33 @@ async function vdTagToday(ri,n,val){
   await vdCommit(prev,'Could not save the format.');
 }
 
+// Today panel tagging: pick a format, press Confirm; the row then reads "✓ <format>" until changed.
+var VD_PEND={}, VD_RETAG={};
+var VD_LAST_SERIES_REP='';   // keeps the reporter picked when starting several series in a row
+function vdTagKey(ri,n){ return ri+'_'+n; }
+function vdTagged(ri,n){ var x=VD_INFO[ri]; var p=x?vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK):null; return (p&&p.format)||''; }
 function vdFmtPick(ri,n){
-  var x=VD_INFO[ri]; var proj=vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK); var cur=(proj&&proj.format)||'';
-  return '<select class="vd-serpick" onchange="vdTagToday('+ri+',\''+n+'\',this.value)" title="Format"><option value="">Tag format…</option>'+vdFmtOpts(cur)+'</select>';
+  var key=vdTagKey(ri,n); var cur=vdTagged(ri,n);
+  if(cur&&!VD_RETAG[key]) return '<span class="vd-tagged">✓ '+esc(cur)+'</span><button class="vd-btn ghost sm" onclick="vdRetag('+ri+',\''+n+'\')">Change</button>';
+  var pend=VD_PEND[key]||'';
+  var fmts=vdFormats(); if(pend&&fmts.indexOf(pend)<0) fmts.push(pend);
+  var opts=fmts.map(function(f){ return '<option'+(pend===f?' selected':'')+'>'+esc(f)+'</option>'; }).join('')+'<option value="__new__">+ New format…</option>';
+  return '<select class="vd-serpick" onchange="vdPickTag('+ri+',\''+n+'\',this.value)" title="Format"><option value="">Pick a format…</option>'+opts+'</select>'
+    +'<button class="vd-btn sm"'+(pend?'':' disabled')+' onclick="vdConfirmTag('+ri+',\''+n+'\')">Confirm</button>'
+    +(VD_RETAG[key]?'<button class="vd-btn ghost sm" onclick="vdCancelRetag('+ri+',\''+n+'\')">Cancel</button>':'');
 }
+function vdPickTag(ri,n,val){
+  var key=vdTagKey(ri,n);
+  if(val==='__new__'){ val=vdNormFormat(prompt('Name the new format')); }
+  VD_PEND[key]=val||''; renderVideoDesk();
+}
+async function vdConfirmTag(ri,n){
+  var key=vdTagKey(ri,n); var val=VD_PEND[key]; if(!val) return;
+  delete VD_PEND[key]; delete VD_RETAG[key];
+  await vdTagToday(ri,n,val);
+}
+function vdRetag(ri,n){ var key=vdTagKey(ri,n); VD_RETAG[key]=true; VD_PEND[key]=vdTagged(ri,n); renderVideoDesk(); }
+function vdCancelRetag(ri,n){ var key=vdTagKey(ri,n); delete VD_RETAG[key]; delete VD_PEND[key]; renderVideoDesk(); }
 
 function vdTodayHtml(info,ds){
   if(ds.state!=='current'||ds.idx>4) return '';
@@ -4014,7 +4065,8 @@ function vdTodayHtml(info,ds){
     });
   }
   if(filed.length){
-    h+='<div class="vd-today-grp">Filed today ('+filed.length+') — tag the format</div>';
+    var taggedN=filed.filter(function(o){ return vdTagged(o.ri,o.sl.n); }).length;
+    h+='<div class="vd-today-grp">Filed today ('+filed.length+') — '+(taggedN===filed.length?'all tagged ✓':taggedN+' of '+filed.length+' tagged')+'</div>';
     filed.forEach(function(o){
       h+='<div class="vd-today-row"><span class="who">'+esc(vdFirst(o.x.rep.name))+'</span><span class="what">'+esc(vdSlotName(o.sl.n))+(o.row&&o.row.headline?' <em>· '+esc(o.row.headline)+'</em>':'')+'</span>'+vdFmtPick(o.ri,o.sl.n)+'</div>';
     });
@@ -4186,7 +4238,7 @@ async function vdPush(id){
     await saveVD(); await loadVideoDesk();
   }catch(e){ alert('Could not push to planner. Check your connection.'); }
 }
-async function vdAddSeries(){ var t=document.getElementById('vd-series-title').value.trim(); var rep=document.getElementById('vd-series-rep').value; if(!t||!rep){alert('Pick a reporter and name the series.');return;} var prev=vdClone(); var pa=rep.split('|'); VD.series.push({id:Date.now().toString(36),reporter:pa[0],pub:pa[1],title:t,started:WEEK,status:'active'}); vdLog('Series started',t+' — '+vdFirst(pa[0])); await vdCommit(prev); }
+async function vdAddSeries(){ var t=document.getElementById('vd-series-title').value.trim(); var rep=document.getElementById('vd-series-rep').value; if(!t||!rep){alert('Pick a reporter and name the series.');return;} var prev=vdClone(); VD_LAST_SERIES_REP=rep; var pa=rep.split('|'); VD.series.push({id:Date.now().toString(36),reporter:pa[0],pub:pa[1],title:t,started:WEEK,status:'active'}); vdLog('Series started',t+' — '+vdFirst(pa[0])); await vdCommit(prev); }
 async function vdToggleSeries(id){
   var prev=vdClone(); var s=VD.series.filter(function(x){return x.id===id;})[0]; if(!s) return;
   var ss=vdSeriesState(s);
