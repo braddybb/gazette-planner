@@ -3380,7 +3380,7 @@ async function dbDeleteStory(num) {
 async function deleteExtraSilent(num) {
   let ok = false;
   try { ok = await dbDeleteStory(num); } catch (e) { console.warn('Delete from DB failed:', e); }
-  if (ok) delete DATA[num];
+  if (ok) { delete DATA[num]; clearPlanGate(num); }
   return ok;
 }
 
@@ -3428,6 +3428,7 @@ let ok = false;
 try { ok = await dbDeleteStory(num); } catch(err) { console.warn('Delete from DB failed:', err); }
 if (!ok) { alert('Could not delete this story \u2014 it is still saved. Check your connection and try again. If it keeps happening, tell Brad.'); return; }
 delete DATA[num];
+clearPlanGate(num); // also removes the saved-on-this-computer draft, or the card would reappear on reload
 renderGrid();
 updateProgress();
 }
