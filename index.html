@@ -3330,7 +3330,12 @@ try {
 if (!alreadyThere) await upsertRow(row);
 // Clear/remove the current card now that it has moved on
 if (parseInt(num, 10) > baseCount) {
-await deleteExtraSilent(num);
+const removed = await deleteExtraSilent(num);
+if (!removed) {
+alert('The story was copied to next week, but could not be removed from this week. Delete it from this week by hand \u2014 do not send it again.');
+renderGrid(); updateProgress(); refreshNextWeekBadges();
+return;
+}
 } else {
 DATA[num] = blankStory(num);
 await manualSave(num);
@@ -3348,23 +3353,35 @@ console.error(err);
 
 // Quiet variant of deleteExtra for internal use (no confirm dialog, since
 // sendToNextWeek already confirmed with the user once).
-async function deleteExtraSilent(num) {
-try {
-const { data: { session } } = await supa.auth.getSession();
-const token = session ? session.access_token : SUPA_KEY;
-await fetch(SUPA_URL + '/rest/v1/' + TABLE +
-'?reporter=eq.' + encodeURIComponent(USER.name) +
-'&publication=eq.' + encodeURIComponent(USER.pub) +
-'&week_of=eq.' + encodeURIComponent(WEEK) +
-'&story_num=eq.' + encodeURIComponent(num), {
-method: 'DELETE',
-headers: {
-'apikey': SUPA_KEY,
-'Authorization': 'Bearer ' + token,
+// Delete one story row for the current reporter/week and CONFIRM it is gone.
+// Supabase answers 200 with nothing deleted when a security rule blocks the delete,
+// so a plain fetch looks like it worked. Returns true only if the row is really gone.
+async function dbDeleteStory(num) {
+  const { data: { session } } = await supa.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
+  const q = '?reporter=eq.' + encodeURIComponent(USER.name) +
+    '&publication=eq.' + encodeURIComponent(USER.pub) +
+    '&week_of=eq.' + encodeURIComponent(WEEK) +
+    '&story_num=eq.' + encodeURIComponent(num);
+  const h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token };
+  const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE + q, { method: 'DELETE', headers: Object.assign({ 'Prefer': 'return=representation' }, h) });
+  if (!res.ok) return false;
+  let gone = []; try { gone = await res.json(); } catch (e) {}
+  if (Array.isArray(gone) && gone.length) return true;
+  // nothing deleted: fine if the row never existed (unsaved card), a failure if it is still there
+  const chk = await fetch(SUPA_URL + '/rest/v1/' + TABLE + q + '&select=story_num', { headers: h });
+  if (!chk.ok) return false;
+  const left = await chk.json();
+  return !(Array.isArray(left) && left.length);
 }
-});
-} catch (e) { console.warn('Delete from DB failed:', e); }
-delete DATA[num];
+
+// Quiet variant of deleteExtra for internal use (no confirm dialog, since
+// sendToNextWeek already confirmed with the user once). Returns true if removed.
+async function deleteExtraSilent(num) {
+  let ok = false;
+  try { ok = await dbDeleteStory(num); } catch (e) { console.warn('Delete from DB failed:', e); }
+  if (ok) delete DATA[num];
+  return ok;
 }
 
 // Small transient toast for quick confirmations
@@ -3407,22 +3424,9 @@ e.stopPropagation();
 const st = DATA[num];
 const name = (st && st.headline) || 'this extra story';
 if (!confirm('Delete "' + name + '"? This removes it completely.')) return;
-// Delete from Supabase if it has a real ID (not just local)
-try {
-const { data: { session } } = await supa.auth.getSession();
-const token = session ? session.access_token : SUPA_KEY;
-await fetch(SUPA_URL + '/rest/v1/' + TABLE +
-'?reporter=eq.' + encodeURIComponent(USER.name) +
-'&publication=eq.' + encodeURIComponent(USER.pub) +
-'&week_of=eq.' + encodeURIComponent(WEEK) +
-'&story_num=eq.' + encodeURIComponent(num), {
-method: 'DELETE',
-headers: {
-'apikey': SUPA_KEY,
-'Authorization': 'Bearer ' + token,
-}
-});
-} catch(e) { console.warn('Delete from DB failed:', e); }
+let ok = false;
+try { ok = await dbDeleteStory(num); } catch(err) { console.warn('Delete from DB failed:', err); }
+if (!ok) { alert('Could not delete this story \u2014 it is still saved. Check your connection and try again. If it keeps happening, tell Brad.'); return; }
 delete DATA[num];
 renderGrid();
 updateProgress();
