@@ -3264,12 +3264,16 @@ setTimeout(() => overlay.remove(), 1400);
 // Delete an extra story card entirely (removes from DB + DOM)
 // Move a story card forward into next week's planner — copies the content
 // across, then clears (base slots) or removes (extras) the current card.
+let _sendingNext = false;
 async function sendToNextWeek(num, e) {
 e.stopPropagation();
+if (_sendingNext) return; // a second click while the first is still saving would create a duplicate
 const st = DATA[num];
 if (!storyHasContent(st)) { return; } // nothing to send
 const label = st.headline || 'this story';
 if (!confirm('Send "' + label + '" to next week\u2019s planner?')) return;
+_sendingNext = true;
+try {
 
 const cur = new Date(WEEK + 'T00:00:00');
 cur.setDate(cur.getDate() + 7);
@@ -3283,11 +3287,15 @@ const nextWeek = `${yyyy}-${mm}-${dd}`;
 // week. We check what's already filed for next week first.
 const baseCount = STORIES.length; // 8 for National Account, 10 for local mastheads
 let destNum = num;
+let alreadyThere = false;
 try {
 const existing = await supaFetch('GET',
 `${TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&week_of=eq.${encodeURIComponent(nextWeek)}&select=story_num,headline`
 ) || [];
 const usedNums = existing.map(r => r.story_num);
+// Same headline already in next week? Don't make another copy.
+const hl = (st.headline || '').trim().toLowerCase();
+if (hl && existing.some(r => (r.headline || '').trim().toLowerCase() === hl)) alreadyThere = true;
 const destTaken = existing.find(r => r.story_num === num && r.headline);
 if (parseInt(num, 10) > baseCount || destTaken) {
 // find next free extra slot in the destination week
@@ -3319,7 +3327,7 @@ updated_at: new Date().toISOString(),
 };
 
 try {
-await upsertRow(row);
+if (!alreadyThere) await upsertRow(row);
 // Clear/remove the current card now that it has moved on
 if (parseInt(num, 10) > baseCount) {
 await deleteExtraSilent(num);
@@ -3330,11 +3338,12 @@ await manualSave(num);
 renderGrid();
 updateProgress();
 refreshNextWeekBadges();
-showToast('Sent to ' + formatWeek(nextWeek));
+showToast(alreadyThere ? 'Already in ' + formatWeek(nextWeek) + ' \u2014 removed from this week' : 'Sent to ' + formatWeek(nextWeek));
 } catch (err) {
 alert('Could not send to next week. Check your connection and try again.');
 console.error(err);
 }
+} finally { _sendingNext = false; }
 }
 
 // Quiet variant of deleteExtra for internal use (no confirm dialog, since
