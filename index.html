@@ -3247,6 +3247,7 @@ clearDistWarning(num);
 }
 
 DATA[num].filed = checked;
+LOCAL_FILED_AT[num] = Date.now();
 const card = document.getElementById('card-' + num);
 const pill = document.getElementById('fpill-' + num);
 const ok   = document.getElementById('fok-' + num);
@@ -3509,6 +3510,25 @@ updateProgress({ silent: true });
 // Supabase Realtime — live updates
 let supabaseClient = null;
 let realtimeChannel = null;
+const LOCAL_FILED_AT = {};
+// An editor can mark a story filed (or not filed) from the Editor Dashboard. Mirror it here live.
+function syncFiledFromEditor(num, filed) {
+if (!DATA[num] || !!DATA[num].filed === !!filed) return;
+if (Date.now() - (LOCAL_FILED_AT[num] || 0) < 8000) return; // reporter just changed it here; ignore the echo
+DATA[num].filed = !!filed;
+const card = document.getElementById('card-' + num);
+const pill = document.getElementById('fpill-' + num);
+const ok = document.getElementById('fok-' + num);
+const cb = document.querySelector('#card-' + num + ' .filed-label input[type=checkbox]');
+if (card) card.className = 'story-card' + (filed ? ' is-filed' : '');
+if (pill) pill.classList.toggle('show', !!filed);
+if (ok) ok.classList.toggle('show', !!filed);
+if (cb) cb.checked = !!filed;
+refreshCardState(num);
+setFiledTime(num, filed ? Date.now() : null);
+refreshFiledStamp(num);
+updateProgress();
+}
 
 function initRealtime() {
 if (!USER || !WEEK) return;
@@ -3527,8 +3547,9 @@ filter: 'reporter=eq.' + USER.name
 const row = payload.new;
 if (!row || row.week_of !== WEEK) return;
 const num = row.story_num;
-// ONLY sync editor notes — never overwrite reporter's own in-progress data
+// ONLY sync editor notes and the editor's filed flag — never overwrite reporter's own in-progress data
 if (!DATA[num]) DATA[num] = blankStory(num);
+if (typeof row.filed === 'boolean') syncFiledFromEditor(num, row.filed);
 const newNotes = parseEditorNotes(row);
 const existingSig = JSON.stringify(DATA[num].editor_notes || []);
 if (JSON.stringify(newNotes) !== existingSig) {
