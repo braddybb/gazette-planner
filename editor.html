@@ -3585,7 +3585,7 @@ async function loadBankRollup() {
         const items = byReporter[r.name] || [];
         if (!items.length) return;
         html += '<div class="rollup-reporter-block wr-reporter-card">';
-        html += '<div class="wr-reporter-name">' + esc(r.name) + '<span class="bank-fill-tag">' + items.length + '/3</span></div>';
+        html += '<div class="wr-reporter-name">' + esc(r.name) + '<span class="bank-fill-tag">' + items.length + (items.length===1?' item':' items') + '</span></div>';
         html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
         items.forEach(i => {
           html += '<div class="rollup-bank-row"><div class="rollup-bank-top">' +
