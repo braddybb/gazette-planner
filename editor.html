@@ -142,6 +142,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .today-panel .vd-today{margin-bottom:0}
 .today-tog{margin-left:auto;background:none;border:0;font-size:12px;color:#8A8A82;cursor:pointer}
 .today-row{cursor:pointer}
+.today-done{font:inherit;font-size:11.5px;font-weight:600;color:#2E6B4F;background:#fff;border:1px solid #BFD9CB;border-radius:6px;padding:3px 9px;cursor:pointer;white-space:nowrap}
+.today-done:hover{background:#E3EFE8}
+.today-done:disabled{opacity:.6;cursor:default}
+.dr-markfiled{font:inherit;font-size:12px;font-weight:600;border-radius:6px;padding:5px 12px;cursor:pointer;margin:0 0 10px;border:1px solid #BFD9CB;background:#fff;color:#2E6B4F}
+.dr-markfiled.undo{border-color:#DDD;color:#666}
 .today-row:hover{background:#FAFAF6}
 .today-row .vd-iss{flex:0 0 auto}
 .rep-progress{padding:12px 16px;border-bottom:0.5px solid var(--border)}
@@ -392,7 +397,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rep-away-btn{font:inherit;font-size:11px;color:#444;background:#fff;border:0.5px solid #DDD;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap}
 .rep-away-btn:hover{background:#F1EFF9;border-color:#C9C2E6;color:#4B3F8F}
 .dr-away{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
-.away-badge{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#ECEAF6;color:#4B3F8F;letter-spacing:.02em}
+.away-badge{display:block;width:fit-content;margin:5px 0 0;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#ECEAF6;color:#4B3F8F;letter-spacing:.02em}
 .pc-bar.away{background:#D9D6EA}
 .vd-bar-fill.lvlaway{background:#D9D6EA}.vd-rep-tally.lvlaway{color:#4B3F8F}
 .away-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:300}
@@ -1992,6 +1997,23 @@ function renderGrid() {
   });
 }
 
+// Editor marks a story filed (or un-files it). Writes planner_stories.filed, which is the same
+// flag the reporter's planner reads, so the card shows as filed on their side too.
+async function editorSetFiled(reporter, pub, num, filed) {
+  const key = reporter + '|' + pub;
+  const cur = (ALL_DATA[key] || {})[num];
+  if (!cur) return false;
+  try {
+    await editorUpsert({ reporter: reporter, publication: pub, week_of: WEEK, story_num: num, filed: !!filed, updated_at: new Date().toISOString() });
+  } catch (e) { alert('Could not update this story — it has not been changed. ' + e.message); return false; }
+  ALL_DATA[key][num] = Object.assign({}, cur, { filed: !!filed });
+  try { renderGrid(); } catch (e) {}
+  try { renderNetworkBar(); } catch (e) {}
+  const r = window._assignReporter;
+  if (r && document.getElementById('drilldown').style.display === 'block') renderDrillBody(r);
+  return true;
+}
+
 function renderTodayPanel() {
   const el = document.getElementById('today-panel'); if (!el) return;
   const ds = vdDayState();
@@ -2012,7 +2034,7 @@ function renderTodayPanel() {
     if (!any) idle.push(r);
   });
   const first = n => String(n).split(' ')[0];
-  const row = o => '<div class="vd-today-row today-row" data-i="' + o.i + '"><span class="who">' + esc(first(o.r.name)) + '</span><span class="what">' + esc(o.x.def.lbl || 'Story ' + o.x.def.n) + (o.x.st && o.x.st.headline ? ' <em>· ' + esc(o.x.st.headline) + '</em>' : '') + '</span><span class="dr-chip ' + o.x.status.cls + '">' + esc(o.x.status.label) + '</span></div>';
+  const row = o => '<div class="vd-today-row today-row" data-i="' + o.i + '"><span class="who">' + esc(first(o.r.name)) + '</span><span class="what">' + esc(o.x.def.lbl || 'Story ' + o.x.def.n) + (o.x.st && o.x.st.headline ? ' <em>· ' + esc(o.x.st.headline) + '</em>' : '') + '</span><span class="dr-chip ' + o.x.status.cls + '">' + esc(o.x.status.label) + '</span><button class="today-done" title="Mark as filed — shows as filed in their planner">Mark filed</button></div>';
   const rows = [];
   const mk = list => list.map(o => { o.i = rows.length; rows.push(o); return row(o); }).join('');
   let body = '';
@@ -2022,7 +2044,14 @@ function renderTodayPanel() {
   if (!od.length && !due.length) body = '<div class="vd-today-empty">Nothing overdue or due today across the network.</div>' + (idle.length ? '<div class="vd-today-grp">Nothing due or filed today</div><div class="vd-today-empty">' + idle.map(r => esc(first(r.name))).join(', ') + '</div>' : '');
   el.innerHTML = '<div class="vd-today"><div class="vd-today-head"><div class="vd-today-title">Today</div><div class="vd-today-date">' + esc(vdDayLabel(vdToday())) + ' · ' + (od.length + due.length) + ' to chase</div><button class="today-tog">' + (collapsed ? 'Show' : 'Hide') + '</button></div>' + (collapsed ? '' : body) + '</div>';
   el.querySelector('.today-tog').onclick = () => { try { localStorage.setItem('gz_today_collapsed', collapsed ? '0' : '1'); } catch (e) {} renderTodayPanel(); };
-  el.querySelectorAll('.today-row').forEach(d => { d.onclick = () => openDrill(rows[+d.dataset.i].r); });
+  el.querySelectorAll('.today-row').forEach(d => {
+    const o = rows[+d.dataset.i];
+    d.onclick = () => openDrill(o.r);
+    d.querySelector('.today-done').onclick = async (e) => {
+      e.stopPropagation(); const b = e.currentTarget; b.disabled = true; b.textContent = 'Saving…';
+      if (!(await editorSetFiled(o.r.name, o.r.pub, o.x.def.n, true))) { b.disabled = false; b.textContent = 'Mark filed'; }
+    };
+  });
 }
 
 function buildRepCard(r) {
@@ -2546,6 +2575,7 @@ function buildDrillCard(s, st, r_name, r_pub, r_week, status) {
       '<span class="dr-caret">▸</span>' +
     '</div>' +
     '<div class="dr-detail">' +
+      (st && st.headline && st.status !== 'abandoned' ? '<button class="dr-markfiled' + (st.filed ? ' undo' : '') + '" data-mf="' + esc(s.n) + '">' + (st.filed ? 'Mark as not filed' : 'Mark as filed') + '</button>' : '') +
       (st && st.status === 'abandoned' ? '<div class="dr-abandon"><b>Abandoned by reporter.</b> ' + esc(st.abandon_reason || 'No reason recorded.') + '</div>' : '') +
       '<div class="dr-grid">' +
         '<div class="dr-f wide"><div class="dr-fl">Angle</div><div class="dr-fv' + (angle?'':' empty') + '">' + (angle ? esc(angle) : '—') + '</div></div>' +
@@ -2566,6 +2596,8 @@ function buildDrillCard(s, st, r_name, r_pub, r_week, status) {
   noteForm.dataset.num = s.n;
   renderNoteForm(noteForm, enotes);
   div.querySelector('.dr-detail').appendChild(noteForm);
+  const mfBtn = div.querySelector('.dr-markfiled');
+  if (mfBtn) mfBtn.onclick = async function(e){ e.stopPropagation(); mfBtn.disabled = true; mfBtn.textContent = 'Saving…'; DRILL_OPEN[key] = true; if (!(await editorSetFiled(r_name, r_pub, s.n, !(st && st.filed)))) { mfBtn.disabled = false; mfBtn.textContent = (st && st.filed) ? 'Mark as not filed' : 'Mark as filed'; } };
 
   div.querySelector('.dr-main').addEventListener('click', function(){
     const open = div.classList.toggle('open');
