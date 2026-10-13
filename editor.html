@@ -138,6 +138,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rep-pub{font-size:11px;color:#666;margin-top:2px}
 .rep-filed-big{font-size:22px;font-weight:600;color:#fff}
 .rep-filed-sub{font-size:10px;color:#555;text-align:right;margin-top:1px}
+.rep-days{display:flex;gap:5px;margin-top:9px;align-items:center}
+.rep-days .rd{flex:1;text-align:center;font-size:9.5px;font-weight:700;color:#A0A098;letter-spacing:.04em}
+.rep-days .rd i{display:block;width:9px;height:9px;border-radius:50%;margin:3px auto 0;background:var(--blue);box-sizing:border-box}
+.rep-days .rd.empty i{background:transparent;border:1.5px solid #C9C9C0}
+.rep-days .rd.late i{background:transparent;border:1.5px solid #D8442F}
+.rep-days .rd.late{color:#D8442F}
+.rep-days .rd.away i{background:#D9D9D2;border:0}
+.rep-days .rd.today{color:var(--ink)}
+.rep-days .rd.today i{box-shadow:0 0 0 2px rgba(0,0,0,.12)}
+.today-panel{margin:0 0 18px}
+.today-panel .vd-today{margin-bottom:0}
+.today-tog{margin-left:auto;background:none;border:0;font-size:12px;color:#8A8A82;cursor:pointer}
+.today-row{cursor:pointer}
+.today-row:hover{background:#FAFAF6}
+.today-row .vd-iss{flex:0 0 auto}
 .rep-progress{padding:12px 16px;border-bottom:0.5px solid var(--border)}
 .rep-track{height:5px;background:var(--grey-lt);border-radius:3px;overflow:hidden;margin-bottom:10px}
 .rep-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s ease}
@@ -362,6 +377,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dr-sep{padding:9px 16px;background:#F5F4F0;border-bottom:1px dotted #E2E2E2;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888}
 .dr-none{padding:28px;text-align:center;color:#999;font-size:13px}
 .dr-abandon{margin-top:8px;background:#F1F0EC;border-left:3px solid #999;border-radius:6px;padding:9px 12px;font-size:12.5px;color:#444;line-height:1.5}
+.dr-days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+.dr-day{border:1px solid #ECECEC;background:#fff;border-radius:10px;padding:8px 10px;min-width:0}
+.dr-day .dn{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8A8A82}
+.dr-day .dd{font-size:11px;color:#A0A098}
+.dr-day .dc{font-size:13px;font-weight:700;margin-top:4px;color:#1B180B}
+.dr-day.today{border-color:#2F46A8;box-shadow:0 0 0 1px #2F46A8 inset}
+.dr-day.empty{background:#FFF7E8;border-color:#F0D9A8}
+.dr-day.empty .dc{color:#8A5A12}
+.dr-day.empty.late{background:#FBEAE4;border-color:#EDC4B5}.dr-day.empty.late .dc{color:#B4532A}
+.dr-day.away{background:#F1EFF9;border-color:#DDD8EF}.dr-day.away .dc{color:#4B3F8F}
+@media(max-width:700px){.dr-days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rep-away-btn{font:inherit;font-size:11px;color:#444;background:#fff;border:0.5px solid #DDD;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap}
+.rep-away-btn:hover{background:#F1EFF9;border-color:#C9C2E6;color:#4B3F8F}
 .dr-away{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
 .away-badge{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#ECEAF6;color:#4B3F8F;letter-spacing:.02em}
 .pc-bar.away{background:#D9D6EA}
@@ -1056,6 +1084,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
   <div id="ecal-container"></div>
 
   <div id="main-view">
+    <div class="today-panel" id="today-panel"></div>
     <div class="reporter-grid" id="reporter-grid"></div>
   </div>
 
@@ -1932,6 +1961,7 @@ function renderNetworkBar() {
 }
 
 function renderGrid() {
+  try { renderTodayPanel(); } catch (e) { console.error(e); }
   const grid = document.getElementById('reporter-grid');
   grid.innerHTML = '';
   REGION_ORDER.forEach(region => {
@@ -1955,6 +1985,59 @@ function renderGrid() {
     section.appendChild(row);
     grid.appendChild(section);
   });
+}
+
+function repDaysStrip(r) {
+  const ds = vdDayState();
+  if (ds.state === 'future') return '';
+  const all = drillAll(r), ai = awayInfo(r.name, r.pub);
+  const has = v => !!(v && String(v).trim());
+  let h = '';
+  for (let i = 0; i < 5; i++) {
+    const day = DAYS[i];
+    const n = all.filter(x => x.st && has(x.st.headline) && x.st.file_day === day && x.st.status !== 'abandoned').length;
+    const isAway = ai.idx.indexOf(i) > -1;
+    let cls = 'rd';
+    if (ds.state === 'current' && ds.idx === i) cls += ' today';
+    if (isAway) cls += ' away';
+    else if (!n) { cls += ' empty'; if (ds.state === 'past' || (ds.state === 'current' && ds.idx >= i)) cls += ' late'; }
+    const tip = isAway ? 'Away' : (n ? n + (n === 1 ? ' story' : ' stories') + ' planned' : 'Nothing planned');
+    h += '<span class="' + cls + '" title="' + day + ': ' + tip + '">' + day.charAt(0) + '<i></i></span>';
+  }
+  return '<div class="rep-days">' + h + '</div>';
+}
+
+function renderTodayPanel() {
+  const el = document.getElementById('today-panel'); if (!el) return;
+  const ds = vdDayState();
+  if (ds.state !== 'current' || ds.idx > 4) { el.innerHTML = ''; return; }
+  let collapsed = false; try { collapsed = localStorage.getItem('gz_today_collapsed') === '1'; } catch (e) {}
+  const od = [], due = [], idle = [];
+  REPORTERS.forEach(r => {
+    const ai = awayInfo(r.name, r.pub);
+    if (ai.full || ai.idx.indexOf(ds.idx) > -1) return;
+    const all = drillAll(r);
+    let any = false;
+    all.forEach(x => {
+      const k = x.status.k;
+      if (k === 'overdue') { od.push({ r, x }); any = true; }
+      else if (k === 'due') { due.push({ r, x }); any = true; }
+      else if (k === 'filed' && x.st && x.st.file_day === DAYS[ds.idx]) any = true;
+    });
+    if (!any) idle.push(r);
+  });
+  const first = n => String(n).split(' ')[0];
+  const row = o => '<div class="vd-today-row today-row" data-i="' + o.i + '"><span class="who">' + esc(first(o.r.name)) + '</span><span class="what">' + esc(o.x.def.lbl || 'Story ' + o.x.def.n) + (o.x.st && o.x.st.headline ? ' <em>· ' + esc(o.x.st.headline) + '</em>' : '') + '</span><span class="dr-chip ' + o.x.status.cls + '">' + esc(o.x.status.label) + '</span></div>';
+  const rows = [];
+  const mk = list => list.map(o => { o.i = rows.length; rows.push(o); return row(o); }).join('');
+  let body = '';
+  if (od.length) body += '<div class="vd-today-grp">Overdue (' + od.length + ')</div>' + mk(od);
+  if (due.length) body += '<div class="vd-today-grp">Due today (' + due.length + ')</div>' + mk(due);
+  if (idle.length) body += '<div class="vd-today-grp">Nothing due or filed today</div><div class="vd-today-empty">' + idle.map(r => esc(first(r.name))).join(', ') + '</div>';
+  if (!od.length && !due.length) body = '<div class="vd-today-empty">Nothing overdue or due today across the network.</div>' + (idle.length ? '<div class="vd-today-grp">Nothing due or filed today</div><div class="vd-today-empty">' + idle.map(r => esc(first(r.name))).join(', ') + '</div>' : '');
+  el.innerHTML = '<div class="vd-today"><div class="vd-today-head"><div class="vd-today-title">Today</div><div class="vd-today-date">' + esc(vdDayLabel(vdToday())) + ' · ' + (od.length + due.length) + ' to chase</div><button class="today-tog">' + (collapsed ? 'Show' : 'Hide') + '</button></div>' + (collapsed ? '' : body) + '</div>';
+  el.querySelector('.today-tog').onclick = () => { try { localStorage.setItem('gz_today_collapsed', collapsed ? '0' : '1'); } catch (e) {} renderTodayPanel(); };
+  el.querySelectorAll('.today-row').forEach(d => { d.onclick = () => openDrill(rows[+d.dataset.i].r); });
 }
 
 function buildRepCard(r) {
@@ -2026,6 +2109,7 @@ function buildRepCard(r) {
         <div class="rep-pub">${r.pub}${awayI.any ? ` <span class="away-badge" title="${esc(awayI.reason || '')}">${esc(awayI.label)}${awayI.back ? ' · back ' + esc(vdDayLabel(awayI.back)) : ''}</span>` : ''}</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
+        <button class="rep-away-btn" title="Mark ${esc(r.name)} away for a stretch">${awayI.any ? 'Away…' : 'Mark away'}</button>
         <a href="/?as=${encodeURIComponent(r.name)}&pub=${encodeURIComponent(r.pub)}"
            target="_blank" rel="noopener" onclick="event.stopPropagation()"
            style="font-size:11px;color:#fff;text-decoration:none;white-space:nowrap;background:var(--blue);border:0.5px solid var(--blue);border-radius:6px;padding:4px 8px">
@@ -2040,9 +2124,12 @@ function buildRepCard(r) {
     <div class="rep-progress">
       <div class="rep-track"><div class="rep-fill" style="width:${pct}%"></div></div>
       <div class="rep-pills">${pillsHtml}</div>
+      ${repDaysStrip(r)}
     </div>
     <div class="rep-stories">${storyRows}</div>
   `;
+  const awayBtn = card.querySelector('.rep-away-btn');
+  if (awayBtn) awayBtn.onclick = (e) => { e.stopPropagation(); openAwayModal(r.name, r.pub); };
   return card;
 }
 
@@ -2313,14 +2400,38 @@ function renderDrillSummary(r, all){
   if (inc) chips += '<span class="dr-chip amber">'+inc+' incomplete</span>';
   if (notPlanned) chips += '<span class="dr-chip grey">'+notPlanned+' not planned</span>';
   if (assignedOpen) chips += '<span class="dr-chip purple">'+assignedOpen+' assigned open</span>';
+  var dayInfo = drillDays(r, all, ai);
+  if (dayInfo.emptyDays.length) chips += '<span class="dr-chip amber">Nothing planned '+dayInfo.emptyDays.join(', ')+'</span>';
   if (!chips) chips = '<span class="dr-chip ok">Nothing outstanding</span>';
   var filters = [['all','All'],['attention','Needs attention'],['unfiled','Unfiled'],['filed','Filed'],['assigned','Assigned'],['video','Video']];
   el.innerHTML =
     '<div class="dr-sum-top"><div class="dr-sum-count"><b>'+filed+'</b> of '+(ai.any?scaledBase(r):base.length)+' filed'+(ai.full?' · away':'')+'</div>'+
     '<div class="dr-sum-bar"><div class="dr-sum-fill" style="width:'+pct+'%"></div></div></div>'+
     '<div class="dr-chips">'+chips+'</div>'+
+    dayInfo.html+
     awayBarHtml(r, ai)+
     '<div class="dr-filters">'+filters.map(function(f){ return '<button class="dr-filter'+(DRILL_FILTER===f[0]?' on':'')+'" onclick="setDrillFilter(\''+f[0]+'\')">'+f[1]+'</button>'; }).join('')+'</div>';
+}
+// Week at a glance: how many stories are planned for each filing day, so empty days stand out.
+function drillDays(r, all, ai){
+  var ds = vdDayState();
+  var has = function(v){ return !!(v && String(v).trim()); };
+  var empty = [], cells = '';
+  for (var i = 0; i < 5; i++) {
+    var day = DAYS[i];
+    var n = all.filter(function(x){ var st = x.st; return st && has(st.headline) && st.file_day === day && st.status !== 'abandoned'; }).length;
+    var isAway = ai && ai.idx.indexOf(i) > -1;
+    var cls = 'dr-day', txt;
+    if (ds.state === 'current' && ds.idx === i) cls += ' today';
+    if (isAway) { cls += ' away'; txt = 'Away'; }
+    else if (n) { txt = n + (n === 1 ? ' story' : ' stories'); }
+    else {
+      cls += ' empty'; txt = 'Nothing planned'; empty.push(day);
+      if (ds.state === 'past' || (ds.state === 'current' && ds.idx >= i)) cls += ' late';
+    }
+    cells += '<div class="'+cls+'"><div class="dn">'+day+'</div><div class="dd">'+esc(vdShortDate(vdAddDays(WEEK, i)))+'</div><div class="dc">'+txt+'</div></div>';
+  }
+  return { html: '<div class="dr-days">'+cells+'</div>', emptyDays: empty };
 }
 function awayBarHtml(r, ai){
   var h='<div class="dr-away">';
