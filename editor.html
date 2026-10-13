@@ -990,8 +990,74 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .ir-pick button.rep span{color:#8A8A82;font-size:12px}
 @media(max-width:700px){#impact-radar-view{padding:1rem}.ir-card{flex-direction:column;gap:8px}.ir-score{flex-basis:auto;width:44px}}
 
+
+/* ── Video Desk redesign: tabs, status strip, calmer cards ── */
+#video-desk-view{max-width:1120px;padding:0 2rem 3rem;--vd-ink:#16150F;--vd-mute:#6B685C;--vd-line:#E6E4DC;--vd-blue:#1B3FD6;font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--vd-ink)}
+#video-desk-view .back-btn{margin:14px 0 0}
+.vd-top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--vd-line);margin:0 -2rem 24px;padding:0 2rem}
+.vd-top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 0 12px}
+.vd-top-l{display:flex;align-items:baseline;gap:14px}
+.vd-top-l h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em;font-family:inherit}
+.vd-top-l span{font-size:14px;color:var(--vd-mute)}
+.vd-top-r{display:flex;gap:8px}
+.vd-strip{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:14px}
+.vd-chip2{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--vd-line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;color:var(--vd-ink);cursor:pointer}
+.vd-chip2:hover{border-color:#C9C6BA;background:#FBFAF7}
+.vd-chip2 b{font-weight:600}
+.vd-dot2{width:7px;height:7px;border-radius:50%;display:inline-block}
+.vd-tabs{display:flex;gap:28px}
+.vd-tabbtn{background:none;border:0;border-bottom:2px solid transparent;padding:10px 0 12px;font:inherit;font-size:14px;font-weight:500;color:var(--vd-mute);cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.vd-tabbtn:hover{color:var(--vd-ink)}
+.vd-tabbtn.on{color:var(--vd-ink);border-bottom-color:var(--vd-blue)}
+.vd-tabbtn .n{font-size:11px;background:#EFEDE6;border-radius:999px;padding:1px 7px;color:#4F4C42}
+.vd-panel{display:none}
+.vd-panel.on{display:block}
+.vd-cols{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.vd-colmain{flex:1 1 620px;min-width:0}
+.vd-colside{flex:1 1 300px;max-width:380px;min-width:0}
+/* cards: one calm treatment */
+#video-desk-view .vd-today,#video-desk-view .vd-ne,#video-desk-view .vd-sec{background:#fff;border:1px solid var(--vd-line);border-left:1px solid var(--vd-line);border-radius:12px;box-shadow:none;padding:6px 20px 14px;margin-bottom:24px}
+#video-desk-view .vd-ne.clear{background:#fff}
+#video-desk-view .vd-sec-head{padding-top:10px}
+#video-desk-view .vd-sec-t,#video-desk-view .vd-today-title,#video-desk-view .vd-ne-title{font-size:13px;font-weight:600;letter-spacing:.01em;text-transform:none;color:var(--vd-ink);font-family:inherit}
+#video-desk-view .vd-sec-sum,#video-desk-view .vd-sec-cap,#video-desk-view .vd-today-date{color:var(--vd-mute);font-size:12.5px}
+#video-desk-view .vd-today-grp,#video-desk-view .vd-ne-group{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;color:var(--vd-mute)}
+#video-desk-view .vd-today-row,#video-desk-view .vd-ne-row,#video-desk-view .vd-ne-task{border-bottom:0;border-top:1px solid #F0EEE7}
+#video-desk-view .vd-iss{border-radius:6px;font-weight:500;padding:2px 8px;font-size:12px}
+#video-desk-view .vd-btn{border-radius:8px;font-family:inherit;font-weight:500}
+#video-desk-view input,#video-desk-view select,#video-desk-view textarea{font-family:inherit}
+#video-desk-view .vd-btn.on{background:#EFEDE6;color:var(--vd-ink);border-color:#D9D6CB}
+/* collapsed add forms */
+.vd-addbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:4px 0 12px}
+.vd-addbar-t{font-size:13.5px;color:var(--vd-mute);max-width:640px}
+.vd-collapse{display:none}
+.vd-collapse.open{display:block}
+/* output rows: lighter, segmented */
+#video-desk-view .vd-rep{border:0;border-top:1px solid #F0EEE7;border-radius:0;background:none;box-shadow:none;margin:0}
+#video-desk-view .vd-rep-head{padding:12px 4px}
+#video-desk-view .vd-rep-head .vd-bar,#video-desk-view .vd-rep-head .vd-trend{display:none}
+.vd-seg{flex:0 0 auto;display:flex;gap:3px;align-items:center}
+.vd-seg i{display:block;width:22px;height:8px;border-radius:3px;background:#E9E7DF}
+.vd-seg i.f{background:#2E6B4F}
+.vd-seg i.o{background:#C2410C}
+.vd-seg i.a{background:#E2B15A}
+.vd-trendrow{display:flex;align-items:center;gap:12px;padding:2px 0 10px;font-size:12px;color:var(--vd-mute)}
+.vd-trendrow .vd-trend{display:flex}
+/* production: five-step tracker */
+#video-desk-view .vd-proj{border:0;border-top:1px solid #F0EEE7;border-radius:0;background:none;box-shadow:none;padding:16px 4px;margin:0}
+#video-desk-view .vd-proj.standalone,#video-desk-view .vd-proj.pushed{background:none;border-left:0}
+#video-desk-view .vd-stages{display:flex;align-items:center;gap:0;margin:12px 0 4px}
+#video-desk-view .vd-stage{background:none;border:0;padding:0 6px 0 0;font-size:12px;color:#8A877B;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+#video-desk-view .vd-stage:before{content:'';width:11px;height:11px;border-radius:50%;background:#E9E7DF;display:inline-block}
+#video-desk-view .vd-stage.done{color:#2E6B4F}
+#video-desk-view .vd-stage.done:before{background:#2E6B4F}
+#video-desk-view .vd-stage.cur{color:var(--vd-ink);font-weight:600}
+#video-desk-view .vd-stage.cur:before{background:var(--vd-blue);box-shadow:0 0 0 3px #E7ECFB}
+#video-desk-view .vd-arrow{color:#D0CDC1;margin-right:6px;font-size:12px}
+@media(max-width:700px){#video-desk-view{padding:0 1rem 3rem}.vd-top{margin:0 -1rem 16px;padding:0 1rem}.vd-seg i{width:14px}.vd-tabs{gap:18px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -3562,7 +3628,7 @@ var VD_TEMPLATES = [
   {t:'Vertical first', x:'Reminder: the vertical goes up before the dotcom story.'},
   {t:'Nice work', x:'Nice work on your {s} — more like this.'}
 ];
-var VD = { projects:[], checklist:{}, series:[], myDesk:[], decisions:[], feedback:{}, customFormats:[], customChecks:[] };
+var VD = { projects:[], checklist:{}, series:[], myDesk:[], decisions:[], feedback:{}, customFormats:[], customChecks:[], contributors:[] };
 var VD_DATA = {};      // reporter|pub -> week -> slot -> planner row (last 6 weeks, slots 01-04)
 var VD_OUTPUT = {};    // reporter|pub -> slot -> row, for the viewed week
 var VD_EXPAND = {};
@@ -3709,7 +3775,7 @@ function vdMaybeOpen(){
   }catch(e){}
 }
 function openVideoDesk(){ hideAllViews(); document.getElementById('video-desk-view').style.display='block'; loadVideoDesk(); }
-function closeVideoDesk(){ document.getElementById('video-desk-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
+function closeVideoDesk(){ document.getElementById('video-desk-view').style.display='none'; document.getElementById('main-view').style.display='block'; if(VD_WEEK_DIRTY){ VD_WEEK_DIRTY=false; loadWeek(); } }
 
 async function vdLoadTasks(){
   try{
@@ -3732,7 +3798,8 @@ async function loadVideoDesk(){
     var r=await supa.from('system_flags').select('value').like('key','videodesk%').order('key',{ascending:false}).limit(1);
     var row=(r.data&&r.data[0])?r.data[0]:null;
     var parsed=(row&&row.value)?JSON.parse(row.value):null;
-    VD=Object.assign({projects:[],checklist:{},series:[],myDesk:[],decisions:[],feedback:{},customFormats:[],customChecks:[]},parsed||{});
+    VD=Object.assign({projects:[],checklist:{},series:[],myDesk:[],decisions:[],feedback:{},customFormats:[],customChecks:[],contributors:[]},parsed||{});
+    if(!Array.isArray(VD.contributors))VD.contributors=[];
     if(!Array.isArray(VD.customChecks))VD.customChecks=[];
     if(!Array.isArray(VD.projects))VD.projects=[];
     if(!Array.isArray(VD.series))VD.series=[];
@@ -3832,6 +3899,38 @@ function vdRecordHtml(){
   return {html:h,sum:due?ticked+'/'+due+' ticked in past weeks':'No past weeks yet'};
 }
 
+
+// ── Video Desk layout: three tabs (Today / Output / Production), one status strip ──
+var VD_TAB=(function(){ try{ var t=localStorage.getItem('vd_tab'); if(t==='today'||t==='output'||t==='prod') return t; }catch(e){} return 'today'; })();
+var VD_ADD={video:false,series:false};
+var VD_WEEK_DIRTY=false;
+function vdSetTab(t,scrollId){
+  if(t!=='today'&&t!=='output'&&t!=='prod') t='today';
+  VD_TAB=t; try{ localStorage.setItem('vd_tab',t); }catch(e){}
+  var v=document.getElementById('video-desk-view'); if(!v) return;
+  v.querySelectorAll('.vd-panel').forEach(function(el){ el.classList.toggle('on',el.getAttribute('data-tab')===t); });
+  v.querySelectorAll('.vd-tabbtn').forEach(function(el){ el.classList.toggle('on',el.getAttribute('data-tab')===t); });
+  if(scrollId){ var el=document.getElementById(scrollId); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+  else window.scrollTo(0,0);
+}
+function vdAddToggle(k){
+  VD_ADD[k]=!VD_ADD[k];
+  var el=document.getElementById('vd-add-'+k); if(el) el.classList.toggle('open',VD_ADD[k]);
+  var b=document.getElementById('vd-addbtn-'+k); if(b) b.classList.toggle('on',VD_ADD[k]);
+  if(VD_ADD[k]&&el){ var i=el.querySelector('input'); if(i) i.focus(); }
+}
+function vdShiftWeek(d){
+  var cur=new Date(WEEK+'T00:00:00'); cur.setDate(cur.getDate()+7*d);
+  var nx=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+  WEEK=nx; VD_WEEK_DIRTY=true;
+  try{ document.getElementById('week-inp').value=nx; localStorage.setItem('gz_editor_week',nx); }catch(e){}
+  loadVideoDesk();
+}
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'||!e.target||!e.target.id) return;
+  if(e.target.id==='vd-new-title') vdAddProject();
+  else if(e.target.id==='vd-series-title') vdAddSeries();
+});
 function renderVideoDesk(){
   var locals=vdLocalReporters();
   var ds=vdDayState();
@@ -3909,8 +4008,8 @@ function renderVideoDesk(){
   info.forEach(function(x,ri){ if(issuesBy[ri].length){ var sc=0; issuesBy[ri].forEach(function(i){ sc=Math.max(sc,i.sev); }); needRows.push({ri:ri,x:x,issues:issuesBy[ri],score:sc*10+issuesBy[ri].length}); } });
   needRows.sort(function(a,b){return b.score-a.score;});
 
-  var h='';
-  h+='<div class="vd-head"><div class="vd-head-title">🎬 Video Desk</div><div style="display:flex;align-items:center;gap:14px"><div class="vd-head-week">Week of '+esc(vdWeekLabel())+'</div><button class="vd-head-refresh" onclick="loadVideoDesk()" title="Refresh">↻</button></div></div>';
+  var h=''; var parts={};
+  h='';
 
   h+=vdTodayHtml(info,ds);
 
@@ -3964,6 +4063,7 @@ function renderVideoDesk(){
   }
   h+='</div>';
 
+  parts.todayMain=h; h='';
   // ---- weekly checklist ----
   var wk=VD.checklist[WEEK]||{};
   var due=vdChecksFor(WEEK).filter(function(c){return c.active===undefined||c.active;});
@@ -3974,10 +4074,12 @@ function renderVideoDesk(){
   h+='</div>';
 
   h+=vdCadenceHtml();
+  parts.todayAside=h; h='';
 
   // ---- desk record ----
   var rec=vdRecordHtml();
   h+=vdSecOpen('record','Desk record — the checklist over time',esc(rec.sum))+rec.html+'</div></div>';
+  parts.record=h; h='';
 
   // ---- output per reporter ----
   h+='<div class="vd-sec"><div class="vd-sec-head"><div class="vd-sec-t">Network video-first output</div><div class="vd-sec-sum">'+totalFiled+'/'+slotTotal+' · target 4 each · 7 for National</div></div>';
@@ -3987,15 +4089,15 @@ function renderVideoDesk(){
     var open=VD_EXPAND[ri]?' open':'';
     h+='<div class="vd-rep'+open+'" id="vd-rep-'+ri+'">';
     h+='<div class="vd-rep-head" onclick="vdToggleRep('+ri+')"><div class="vd-rep-info"><div class="vd-rep-name">'+esc(rep.name)+'</div><div class="vd-rep-pub">'+esc(rep.pub)+'</div></div>';
-    h+='<div class="vd-bar"><div class="vd-bar-fill lvl'+lv+'" style="width:'+pct+'%"></div></div>';
-    h+='<div class="vd-trend">'+x.trend.map(function(t,ti){
+    h+='<div class="vd-seg">'+x.slots.map(function(sl){ var q=x.st[sl.n]; return '<i class="'+(q==='filed'?'f':(q==='overdue'?'o':(q==='late-unplanned'?'a':'')))+'" title="'+esc(sl.lbl)+'"></i>'; }).join('')+'</div>';
+    var trendH='<div class="vd-trend">'+x.trend.map(function(t,ti){
       var cur=ti===x.trend.length-1;
       if(t.c===null) return '<div class="vd-tb na" title="'+esc(t.w)+(t.away?': away — not counted':': before the 4-video rule')+'"></div>';
       var cls=cur?'cur':'lvl'+t.lvl;
       return '<div class="vd-tb '+cls+'" style="height:'+(4+t.c*5)+'px" title="Week of '+esc(t.w)+': '+t.c+'/'+t.tg+'"></div>';
     }).join('')+'</div>';
     h+='<div class="vd-rep-tally lvl'+lv+'">'+(x.ai.full?'Away':x.filed+'/'+x.vt)+'</div><div class="vd-rep-caret">▸</div></div>';
-    h+='<div class="vd-rep-detail">';
+    h+='<div class="vd-rep-detail"><div class="vd-trendrow"><span>Last '+VD_TREND_WEEKS+' weeks</span>'+trendH+'</div>';
     x.slots.forEach(function(sl){
       var s=(VD_OUTPUT[x.key]||{})[sl.n]; var proj=vdProjectFor(rep.name,rep.pub,sl.n);
       h+='<div class="vd-slot"><div class="vd-slot-lbl">'+sl.lbl+'</div>';
@@ -4018,17 +4120,21 @@ function renderVideoDesk(){
   });
   h+='</div>';
 
+  parts.output=h; h='';
   // ---- pipeline (live) + published log ----
   var live=VD.projects.filter(function(p){return p.stage<4;});
   var published=VD.projects.filter(function(p){return p.stage>=4;}).sort(function(a,b){return (b.stageAt||b.created||0)-(a.stageAt||a.created||0);});
   h+='<div class="vd-sec" id="vd-sec-pipeline"><div class="vd-sec-head"><div class="vd-sec-t">Videos in production</div><div class="vd-sec-sum">Approved → Shot → Edited → Published</div></div>';
   h+='<div class="vd-sec-cap">Every video the desk is tracking, from the day it’s approved to the day it’s live. <b>Add</b> a video when it’s approved, <b>move it along</b> as it’s shot, edited and published, then add the link. Pick a reporter and slot to <b>push it onto their planner</b>, or leave it standalone for desk-only projects. Published videos are kept in the Published list below.</div>';
-  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name"><div class="vd-add-row"><select id="vd-new-rep"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){return '<option value="'+esc(rep.name)+'|'+esc(rep.pub)+'">'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+'</select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+vdSlotOptLabels()+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+vdFmtOpts('')+'</select><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
+  h+='<div class="vd-addbar"><span class="vd-addbar-t">Approved a new video? Add it here, then move it along as it\u2019s shot, edited and published.</span><button class="vd-btn'+(VD_ADD.video?' on':'')+'" id="vd-addbtn-video" onclick="vdAddToggle(\'video\')">+ New video</button></div>';
+  h+='<div class="vd-collapse'+(VD_ADD.video?' open':'')+'" id="vd-add-video">';
+  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name" value="'+esc(VD_NEW_DRAFT.title||'')+'"><div class="vd-add-row"><select id="vd-new-rep" onchange="vdPickRep(this)"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){var v=rep.name+'|'+rep.pub; return '<option value="'+esc(v)+'"'+(VD_NEW_DRAFT.rep===v?' selected':'')+'>'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+((VD.contributors||[]).length?'<optgroup label="Contributors">'+VD.contributors.map(function(c){var v='c:'+c; return '<option value="'+esc(v)+'"'+(VD_NEW_DRAFT.rep===v?' selected':'')+'>'+esc(c)+' · contributor</option>';}).join('')+'</optgroup>':'')+'<option value="__contrib__">+ Add a contributor…</option></select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+vdSlotOptLabels()+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+vdFmtOpts('')+'</select><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
+  h+='</div>';
   var shoots=live.filter(function(p){return p.stage===0&&p.shootDate;}).map(function(p){return {p:p,w:vdShootWhen(p)};}).filter(function(x){return x.w.d>=-1&&x.w.d<=7;}).sort(function(a,b){return a.w.d-b.w.d;});
   if(shoots.length){
     h+='<div class="vd-shoots"><div class="vd-shoots-h">Shoots coming up</div>'+shoots.map(function(x){
       var cls=x.w.d<0?'amber':(x.w.d<=1?'blue':'grey');
-      return '<div class="vd-shoot"><span class="vd-iss '+cls+'">'+esc(x.w.text)+'</span><span class="vd-shoot-t">'+esc(x.p.title)+'</span><span class="vd-shoot-who">'+esc(x.p.standalone?'Standalone':vdFirst(x.p.reporter))+(vdPreshootDone(x.p)?' · pre-shoot ✓':' · pre-shoot open')+'</span></div>';
+      return '<div class="vd-shoot"><span class="vd-iss '+cls+'">'+esc(x.w.text)+'</span><span class="vd-shoot-t">'+esc(x.p.title)+'</span><span class="vd-shoot-who">'+esc(x.p.standalone?(x.p.contributor?vdFirst(x.p.contributor):'Standalone'):vdFirst(x.p.reporter))+(vdPreshootDone(x.p)?' · pre-shoot ✓':' · pre-shoot open')+'</span></div>';
     }).join('')+'</div>';
   }
   var ordered=live.slice().sort(function(a,b){return (b.standalone?1:0)-(a.standalone?1:0)||(a.created||0)-(b.created||0);});
@@ -4036,7 +4142,7 @@ function renderVideoDesk(){
   ordered.forEach(function(p){
     var cls=p.pushed?' pushed':(p.standalone?' standalone':'');
     var age=vdAgeDays(p);
-    var meta=p.standalone?'Standalone project':(esc(p.reporter)+' · '+esc(p.pub)+(p.slot?' · '+vdSlotName(p.slot,p.pub):''));
+    var meta=p.standalone?(p.contributor?esc(p.contributor)+' · contributor':'Standalone project'):(esc(p.reporter)+' · '+esc(p.pub)+(p.slot?' · '+vdSlotName(p.slot,p.pub):''));
     h+='<div class="vd-proj'+cls+'"><div class="vd-proj-top"><div><div class="vd-proj-title">'+esc(p.title)+'</div><div class="vd-proj-meta">'+meta+(p.pushed?' · ✓ on planner':'')+(age>=1?' · '+age+' day'+(age>1?'s':'')+' at this stage':'')+'</div></div><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
     h+='<div class="vd-stages">'; VD_STAGES.forEach(function(nm,i){ if(i>0)h+='<span class="vd-arrow">›</span>'; var c=i<p.stage?'done':(i===p.stage?'cur':''); h+='<span class="vd-stage '+c+'">'+nm.replace('Published — ','Pub: ')+'</span>'; }); h+='</div>';
     if(p.stage===0){
@@ -4068,22 +4174,26 @@ function renderVideoDesk(){
       published.forEach(function(p){
         var okUrl=p.url&&/^https?:\/\//i.test(p.url);
         var ser=p.seriesId?VD.series.filter(function(s){return s.id===p.seriesId;})[0]:null;
-        var who=(p.standalone?'Standalone':(p.reporter||''))+(ser?' · '+ser.title:'');
+        var who=(p.standalone?(p.contributor||'Standalone'):(p.reporter||''))+(ser?' · '+ser.title:'');
         h+='<div class="vd-pubrow" data-text="'+esc((p.title+' '+who).toLowerCase())+'"><div class="vd-pub-main"><div class="vd-pub-title">'+esc(p.title)+'</div><div class="vd-pub-meta">'+esc(who)+'</div></div>'+vdFormatSelect(p)+(okUrl?'<a class="vd-link" href="'+esc(p.url)+'" target="_blank" rel="noopener">Watch ↗</a>':'<button class="vd-btn ghost sm" onclick="vdPromptUrl(\''+p.id+'\')">+ Add link</button>')+'<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')" title="Move back to the pipeline">Reopen</button><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
       });
     }
   }
   h+='</div>';
 
+  parts.prodA=h; h='';
   // ---- series ----
   h+=vdSecOpen('series','Series — everyone runs at least two',healthy+'/'+seriesTarget+' healthy');
   h+='<div class="vd-newbanner '+(newThisWeek>=1?'ok':'no')+'">'+(newThisWeek>=1?'✓ '+newThisWeek+' new series started this week':'No new series this week — aim for at least 1 across the team')+'</div>';
+  h+='<div class="vd-addbar"><span class="vd-addbar-t">Start a series or manage the format list.</span><button class="vd-btn'+(VD_ADD.series?' on':'')+'" id="vd-addbtn-series" onclick="vdAddToggle(\'series\')">+ New series / formats</button></div>';
+  h+='<div class="vd-collapse'+(VD_ADD.series?' open':'')+'" id="vd-add-series">';
   h+='<div class="vd-add"><input id="vd-series-title" list="vd-fmt-list" placeholder="New series name (or pick a format)"><datalist id="vd-fmt-list">'+vdFormats().map(function(f){return '<option value="'+esc(f)+'">';}).join('')+'</datalist><div class="vd-add-row"><select id="vd-series-rep">'+locals.map(function(rep){var v=rep.name+'|'+rep.pub; return '<option value="'+esc(v)+'"'+(VD_LAST_SERIES_REP===v?' selected':'')+'>'+esc(rep.name)+'</option>';}).join('')+'</select><button class="vd-btn sm" onclick="vdAddSeries()">+ Start series</button></div></div>';
   var _pubd=VD.projects.filter(function(p){return p.stage>=3;});
   h+='<div class="vd-fmtlib"><div class="vd-fmtlib-h">Formats <span>— the same list you tag videos with. Click one to start a series from it.</span></div><div class="vd-chips">'+vdFormats().map(function(f,fi){
     var n=_pubd.filter(function(p){return p.format===f;}).length; var ci=(VD.customFormats||[]).indexOf(f);
     return '<span class="vd-chip active"><span onclick="vdUseFormat('+fi+')" title="Start a series from this">'+esc(f)+' · '+n+'</span>'+(ci>-1&&!n?'<span class="x" onclick="vdRemoveFormat('+ci+')" title="Remove (no videos use it)">×</span>':'')+'</span>';
   }).join('')+'</div><div class="vd-add-row"><input id="vd-fmt-new" placeholder="Add a new format…" onkeydown="if(event.key===\'Enter\')vdAddFormat()"><button class="vd-btn ghost sm" onclick="vdAddFormat()">+ Add format</button></div></div>';
+  h+='</div>';
   locals.forEach(function(rep){
     var mine=vdSeriesOf(rep); var act=vdActiveSeries(rep).length;
     h+='<div class="vd-series-row"><div class="vd-series-name">'+esc(rep.name)+'</div><div class="vd-chips">';
@@ -4099,6 +4209,7 @@ function renderVideoDesk(){
   h+='<div class="vd-sec-cap" style="margin-top:8px">Tag a pipeline video to a series and each published episode is counted. A series with episodes logged goes “quiet” after '+VD_SERIES_QUIET_DAYS+' days without a new one.</div>';
   h+='</div></div>';
 
+  parts.series=h; h='';
   // ---- performance placeholder ----
   h+=vdSecOpen('perf','What’s winning — by format','published, by format');
   var pubd=VD.projects.filter(function(p){return p.stage>=3;});
@@ -4110,6 +4221,7 @@ function renderVideoDesk(){
   if(untagged) h+='<div class="vd-sec-cap" style="margin-top:6px">'+untagged+' published video'+(untagged>1?'s':'')+' untagged — tag them in the Published list.</div>';
   h+='</div></div>';
 
+  parts.perf=h; h='';
   h+=vdDecisionsHtml();
 
   // ---- my desk (retired: use Tasks in Needs your eye; kept only while it still holds jobs) ----
@@ -4121,6 +4233,19 @@ function renderVideoDesk(){
   h+='</div></div>';
   }
 
+
+  var odN=0; info.forEach(function(x){ x.problems.forEach(function(q){ if(q.st==='overdue') odN++; }); });
+  var shootN=VD.projects.filter(function(p){ if(!(p.stage===0&&p.shootDate)) return false; var w=vdShootWhen(p); return w.d>=0&&w.d<=7; }).length;
+  var liveN=VD.projects.filter(function(p){return p.stage<4;}).length;
+  var chip=function(dot,n,txt,tab,sc,act){ return '<button class="vd-chip2" onclick="'+(act||('vdSetTab(\''+tab+'\''+(sc?',\''+sc+'\'':'')+')'))+'"><span class="vd-dot2" style="background:'+dot+'"></span><b>'+n+'</b> '+txt+'</button>'; };
+  var hd='<div class="vd-top"><div class="vd-top-row"><div class="vd-top-l"><h1>Video Desk</h1><span>Week of '+esc(vdWeekLabel())+'</span></div><div class="vd-top-r"><button class="vd-btn ghost sm" onclick="vdShiftWeek(-1)" aria-label="Previous week">‹</button><button class="vd-btn ghost sm" onclick="vdShiftWeek(1)" aria-label="Next week">›</button><button class="vd-btn ghost sm" onclick="loadVideoDesk()" aria-label="Refresh">↻ Refresh</button></div></div>';
+  hd+='<div class="vd-strip">'+chip('#2E6B4F',totalFiled+'/'+slotTotal,'filed','output')+chip(odN?'#C2410C':'#B9B6A9',odN,'overdue','today')+chip('#1B3FD6',shootN,'shoot'+(shootN===1?'':'s')+' this week','prod','vd-sec-pipeline')+chip(healthy>=seriesTarget?'#2E6B4F':'#B7791F',healthy+'/'+seriesTarget,'series healthy','output','vd-sec-series')+(untag.length?chip('#B7791F',untag.length,'need'+(untag.length===1?'s':'')+' a format tag','',null,'vdOpenPublished()'):'')+'</div>';
+  hd+='<div class="vd-tabs"><button class="vd-tabbtn'+(VD_TAB==='today'?' on':'')+'" data-tab="today" onclick="vdSetTab(\'today\')">Today'+(attn?' <span class="n">'+attn+'</span>':'')+'</button><button class="vd-tabbtn'+(VD_TAB==='output'?' on':'')+'" data-tab="output" onclick="vdSetTab(\'output\')">Output</button><button class="vd-tabbtn'+(VD_TAB==='prod'?' on':'')+'" data-tab="prod" onclick="vdSetTab(\'prod\')">Production'+(liveN?' <span class="n">'+liveN+'</span>':'')+'</button></div></div>';
+  var panel=function(t,inner){ return '<div class="vd-panel'+(VD_TAB===t?' on':'')+'" data-tab="'+t+'">'+inner+'</div>'; };
+  h=hd
+   +panel('today','<div class="vd-cols"><div class="vd-colmain">'+parts.todayMain+'</div><aside class="vd-colside">'+parts.todayAside+'</aside></div>')
+   +panel('output',parts.output+parts.series+parts.perf+parts.record)
+   +panel('prod',parts.prodA+h);
   document.getElementById('video-desk-body').innerHTML=h;
 }
 
@@ -4232,6 +4357,7 @@ async function vdTagToday(ri,n,val){
 
 // Today panel tagging: pick a format, press Confirm; the row then reads "✓ <format>" until changed.
 var VD_PEND={}, VD_RETAG={};
+var VD_NEW_DRAFT={title:'',rep:''};   // keeps what was typed in the add-video form across a re-render
 var VD_LAST_SERIES_REP='';   // keeps the reporter picked when starting several series in a row
 function vdTagKey(ri,n){ return ri+'_'+n; }
 function vdTagged(ri,n){ var x=VD_INFO[ri]; var p=x?vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK):null; return (p&&p.format)||''; }
@@ -4277,7 +4403,7 @@ function vdTodayHtml(info,ds){
     h+='<div class="vd-today-grp">Shooting</div>';
     shoots.forEach(function(o){
       var p=o.p; var ready=vdPreshootDone(p);
-      h+='<div class="vd-today-row"><span class="vd-iss '+(o.w.d===0?'blue':'grey')+'">'+esc(o.w.text)+'</span><span class="who">'+esc(p.standalone?'Standalone':vdFirst(p.reporter))+'</span><span class="what">'+esc(p.title)+' <em>· '+(ready?'pre-shoot ✓':'pre-shoot open')+'</em></span>'+(o.w.d===0&&ready?'<button class="vd-btn ghost sm" onclick="vdAdvance(\''+esc(p.id)+'\')">Shot ✓</button>':'')+'</div>';
+      h+='<div class="vd-today-row"><span class="vd-iss '+(o.w.d===0?'blue':'grey')+'">'+esc(o.w.text)+'</span><span class="who">'+esc(p.standalone?(p.contributor?vdFirst(p.contributor):'Standalone'):vdFirst(p.reporter))+'</span><span class="what">'+esc(p.title)+' <em>· '+(ready?'pre-shoot ✓':'pre-shoot open')+'</em></span>'+(o.w.d===0&&ready?'<button class="vd-btn ghost sm" onclick="vdAdvance(\''+esc(p.id)+'\')">Shot ✓</button>':'')+'</div>';
     });
   }
   if(tofile.length){
@@ -4432,6 +4558,17 @@ async function vdRemoveCheck(k){
   await vdCommit(prev,'Could not remove the checklist item.');
 }
 async function vdToggleCheck(k){ var prev=vdClone(); if(!VD.checklist[WEEK])VD.checklist[WEEK]={}; VD.checklist[WEEK][k]=!VD.checklist[WEEK][k]; await vdCommit(prev); }
+async function vdPickRep(sel){
+  if(sel.value!=='__contrib__') return;
+  var name=(prompt('Contributor’s name (someone who isn’t one of the seven reporters)')||'').replace(/\s+/g,' ').trim().slice(0,80);
+  var ti=document.getElementById('vd-new-title'); VD_NEW_DRAFT.title=ti?ti.value:'';
+  if(!name){ VD_NEW_DRAFT.rep=''; renderVideoDesk(); return; }
+  var prev=vdClone(); if(!Array.isArray(VD.contributors)) VD.contributors=[];
+  var hit=VD.contributors.filter(function(c){ return c.toLowerCase()===name.toLowerCase(); })[0];
+  if(!hit){ VD.contributors.push(name); hit=name; }
+  VD_NEW_DRAFT.rep='c:'+hit;
+  await vdCommit(prev,'Could not save the contributor.');
+}
 async function vdAddProject(){
   var t=document.getElementById('vd-new-title').value.trim(); if(!t){alert('Give the video a title.');return;}
   var rep=document.getElementById('vd-new-rep').value; var slot=document.getElementById('vd-new-slot').value;
@@ -4440,7 +4577,9 @@ async function vdAddProject(){
   var prev=vdClone(); if(fmt==='__new__'){ fmt=vdAskFormat(); } var now=Date.now(); var p={id:now.toString(36),title:t,stage:0,preshoot:{},created:now,stageAt:now};
   if(sd) p.shootDate=sd;
   if(fmt) p.format=fmt;
-  if(rep){var pa=rep.split('|');p.reporter=pa[0];p.pub=pa[1];p.slot=slot||null;p.standalone=false;}else p.standalone=true;
+  if(rep&&rep.indexOf('c:')===0){ p.standalone=true; p.contributor=rep.slice(2); }
+  else if(rep){var pa=rep.split('|');p.reporter=pa[0];p.pub=pa[1];p.slot=slot||null;p.standalone=false;}else p.standalone=true;
+  VD_NEW_DRAFT={title:'',rep:''};
   VD.projects.push(p); await vdCommit(prev,'Could not add.');
 }
 function vdFormatSelect(p){
@@ -4497,9 +4636,10 @@ async function vdAddDesk(){ var l=document.getElementById('vd-desk-lbl').value.t
 async function vdRemoveDesk(id){ var prev=vdClone(); VD.myDesk=VD.myDesk.filter(function(j){return j.id!==id;}); await vdCommit(prev); }
 function vdToggleRep(ri){ VD_EXPAND[ri]=!VD_EXPAND[ri]; renderVideoDesk(); }
 function vdToggleFlags(){ VD_FLAGS_OPEN=!VD_FLAGS_OPEN; renderVideoDesk(); }
-function vdJump(ri){ VD_EXPAND[ri]=true; renderVideoDesk(); var el=document.getElementById('vd-rep-'+ri); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+function vdJump(ri){ VD_EXPAND[ri]=true; renderVideoDesk(); vdSetTab('output'); var el=document.getElementById('vd-rep-'+ri); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
 function vdScrollTo(id){
   var key=id.indexOf('vd-sec-')===0?id.slice(7):'';
+  vdSetTab(id==='vd-sec-pipeline'?'prod':(/^vd-sec-(series|record|perf)$/.test(id)?'output':VD_TAB));
   if(key&&VD_COLLAPSED[key]){ VD_COLLAPSED[key]=false; vdSaveCollapsed(); renderVideoDesk(); }
   var el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
 }
