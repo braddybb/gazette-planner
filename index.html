@@ -253,6 +253,8 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .bank-st.ok{color:#2E6B4F}.bank-st.bad{color:#B4532A}
 .bank-clear{background:none;border:none;color:var(--grey-md,#999);font-size:11.5px;cursor:pointer;font-family:inherit;padding:0;margin-top:2px}
 .bank-clear:hover{color:#cc0000}
+.bank-add{grid-column:1/-1;justify-self:start;background:#fff;border:1px dashed #C9C6BA;color:var(--blue,#3A5BDF);font-family:inherit;font-size:13.5px;font-weight:600;border-radius:10px;padding:10px 16px;cursor:pointer}
+.bank-add:hover{background:#F6F5F1}
 .bank-back{background:none;border:none;color:var(--blue,#3A5BDF);font-size:14px;cursor:pointer;padding:0;margin-bottom:8px}
 .res-wrap{padding:1.75rem 2rem;max-width:800px;margin:0 auto}
 .res-intro{color:var(--grey-md,#888);font-size:13.5px;margin:0 0 16px;max-width:62ch}
@@ -1169,7 +1171,7 @@ padding:5px 12px;border-radius:999px}
 <div class="bank-wrap">
 <button class="bank-back" onclick="showStoriesView()">&#8592; Back to my week</button>
 <h2 style="margin:0 0 6px">&#127974; The Bank</h2>
-<p class="bank-intro">Evergreen stories — videos, articles, anything that isn’t time-sensitive — kept ready to run when you’re sick or away. Keep all three topped up.</p>
+<p class="bank-intro">Evergreen stories — videos, articles, anything that isn’t time-sensitive — kept ready to run when you’re sick or away. Keep at least three topped up — add as many as you like.</p>
 <div class="bank-meter">
 <div class="bank-meter-bar"><div class="bank-meter-fill" id="bank-meter-fill" style="width:0%"></div></div>
 <div class="bank-meter-label" id="bank-meter-label">0 / 3</div>
@@ -2312,6 +2314,10 @@ loadFOIRequests();
 // ── The Bank — up to 3 evergreen stories, stored as planner_stories rows under a 'bank' week ──
 const BANK_WEEK = 'bank';
 const BANK_SLOTS = ['01','02','03'];
+let BANK_SHOWN = 3;
+// Three slots to start; reporters can keep adding more (up to 30). Filled slots always show.
+function bankSlots(){ let m = Math.max(3, BANK_SHOWN); Object.keys(BANK).forEach(k => { if ((BANK[k].headline||'').trim()) m = Math.max(m, parseInt(k,10)||0); }); m = Math.min(m,30); const out=[]; for (let i=1;i<=m;i++) out.push(String(i).padStart(2,'0')); return out; }
+function bankAddSlot(){ BANK_SHOWN = Math.min(30, bankSlots().length+1); renderBankCards(); const inputs = document.querySelectorAll('#bank-slots .bank-card input[type=text]'); if (inputs.length) inputs[inputs.length-1].focus(); }
 let BANK = {};
 function bankRowFor(num){ return BANK[num] || { reporter:USER.name, publication:USER.pub, week_of:BANK_WEEK, story_num:num, headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false }; }
 async function bankFetch(){
@@ -2330,23 +2336,23 @@ const busy = Object.keys(bankSaveTimers).some(n => bankSaveTimers[n]);
 const typing = document.activeElement && document.activeElement.closest && document.activeElement.closest('#bank-slots');
 const fresh = {};
 (rows||[]).forEach(r => { fresh[r.story_num] = r; });
-if (busy || typing) { BANK_SLOTS.forEach(n => { if (!bankSaveTimers[n] && !BANK[n] && fresh[n]) BANK[n] = fresh[n]; }); updateBankBadge(); return; }
+if (busy || typing) { Object.keys(fresh).forEach(n => { if (!bankSaveTimers[n] && !BANK[n] && fresh[n]) BANK[n] = fresh[n]; }); updateBankBadge(); return; }
 BANK = fresh;
 updateBankBadge();
 if (document.getElementById('bank-view').style.display === 'block') renderBankCards();
 } catch(e){ console.warn('Bank load failed (non-critical):', e); }
 }
-function bankFilledCount(){ return BANK_SLOTS.filter(n => BANK[n] && (BANK[n].headline||'').trim()).length; }
+function bankFilledCount(){ return bankSlots().filter(n => BANK[n] && (BANK[n].headline||'').trim()).length; }
 function updateBankBadge(){
 const n = bankFilledCount();
 const label = document.getElementById('bank-nav-label');
 const nav = document.getElementById('bank-nav');
-if (label) label.textContent = n>=3 ? 'Bank full' : ('Bank '+n+'/3');
+if (label) label.textContent = n>3 ? ('Bank full · '+n) : (n>=3 ? 'Bank full' : ('Bank '+n+'/3'));
 if (nav) nav.classList.toggle('full', n>=3);
 const fill = document.getElementById('bank-meter-fill');
 const ml = document.getElementById('bank-meter-label');
 if (fill) fill.style.width = Math.round(n/3*100)+'%';
-if (ml) ml.textContent = n>=3 ? '100% full' : (n+' / 3');
+if (ml) ml.textContent = n>3 ? (n+' items · full') : (n>=3 ? '100% full' : (n+' / 3'));
 }
 function showBankView(){
 document.getElementById('stories-view').style.display='none';
@@ -2389,7 +2395,7 @@ function renderBankCards(){
 const wrap = document.getElementById('bank-slots');
 if (!wrap) return;
 const types = ['','Video','Article','Other'];
-wrap.innerHTML = BANK_SLOTS.map((num,i) => {
+wrap.innerHTML = bankSlots().map((num,i) => {
 const r = bankRowFor(num);
 const filled = (r.headline||'').trim() ? ' filled' : '';
 const opts = types.map(t => '<option value="'+t+'"'+(r.format===t?' selected':'')+'>'+(t||'Type…')+'</option>').join('');
@@ -2401,13 +2407,13 @@ return '<div class="bank-card'+filled+'">'+
 '<div class="bank-field"><div class="cl">Where it’s stored / details</div><textarea placeholder="Link, Drive folder, what’s left to do…" oninput="bankField(\''+num+'\',\'notes\',this.value)">'+esc(r.notes||'')+'</textarea></div>'+
 '<button class="bank-clear" onclick="bankClear(\''+num+'\')">Clear this slot</button>'+
 '</div>';
-}).join('');
+}).join('') + '<button class="bank-add" onclick="bankAddSlot()">+ Add another item</button>';
 }
 let bankSaveTimers = {};
 function bankField(num, field, val){
 const r = bankRowFor(num);
 r[field] = val; BANK[num] = r;
-if (field==='headline'){ updateBankBadge(); const cards=document.querySelectorAll('.bank-card'); const c=cards[BANK_SLOTS.indexOf(num)]; if(c) c.classList.toggle('filled',(val||'').trim()!==''); }
+if (field==='headline'){ updateBankBadge(); const cards=document.querySelectorAll('.bank-card'); const c=cards[bankSlots().indexOf(num)]; if(c) c.classList.toggle('filled',(val||'').trim()!==''); }
 clearTimeout(bankSaveTimers[num]);
 bankSaveTimers[num] = setTimeout(()=>saveBankSlot(num), 600);
 }
