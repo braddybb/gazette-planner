@@ -8,13 +8,13 @@
 // Netlify cron is UTC, so it fires at both 21:45 and 22:45 UTC Sun–Thu and the
 // function checks it is really 8am-hour Mon–Fri in Sydney (right across daylight
 // saving). Reads: videodesk% snapshot, videotask% / videohelp% rows, this week's
-// planner_stories (slots 01–04), away records.
+// planner_stories (slots 01–04, or 01–07 for the National Account), away records.
 //
 // Env vars: the same four as video-digest.mjs (SUPABASE_URL,
 // SUPABASE_SERVICE_ROLE_KEY, SLACK_BOT_TOKEN, NICK_SLACK_ID). Optional URL.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { sget, loadTasks, loadAway, awayIdx, groupReporters, sendDM, sydneyParts, mondayOf, QUIET_DAYS } from "./video-digest.mjs";
+import { sget, loadTasks, loadAway, awayIdx, groupReporters, sendDM, sydneyParts, mondayOf, QUIET_DAYS, slotsFor, slotName, SLOT_QUERY } from "./video-digest.mjs";
 
 export const config = { schedule: "45 21,22 * * 0-4" };
 
@@ -58,7 +58,7 @@ export function buildDaily({ today, week, weekday, snapshot, tasks = [], help = 
   const items = [];
 
   if (help.length) {
-    items.push(`*${help.length} reporter request${help.length > 1 ? "s" : ""} waiting:* ` + list(help.map((h) => `${first(h.reporter)} (${h.type || "help"}, ${SLOT_NAMES[h.slot] || "video"})`)));
+    items.push(`*${help.length} reporter request${help.length > 1 ? "s" : ""} waiting:* ` + list(help.map((h) => `${first(h.reporter)} (${h.type || "help"}, ${slotName(h.slot, h.pub)})`)));
   }
   const quiet = quietSeries(snap, now);
   if (quiet.length) items.push(`*Keep or end?* ` + list(quiet.map((s) => `${s.title} (${first(s.reporter)})`)) + " — quiet " + QUIET_DAYS + "+ days");
@@ -81,9 +81,10 @@ export function buildDaily({ today, week, weekday, snapshot, tasks = [], help = 
     groupReporters(stories).forEach((r) => {
       const away_ = awayIdx(away, r.name, r.pub, week);
       if (away_.length === 5) return;
-      let spare = 4 - Math.round(4 * (5 - away_.length) / 5);
+      const SL = slotsFor(r.pub);
+      let spare = SL.length - Math.round(SL.length * (5 - away_.length) / 5);
       const mine = { od: 0, due: 0, unp: 0 };
-      ["01", "02", "03", "04"].forEach((n) => {
+      SL.forEach((n) => {
         const row = r.slots[n];
         if (row && row.filed) return;
         const has = !!(row && row.headline);
@@ -113,7 +114,7 @@ export default async () => {
     const snaps = await sget("system_flags?select=value&key=like.videodesk*&order=key.desc&limit=1");
     const snapshot = snaps[0] ? JSON.parse(snaps[0].value) : null;
     const [tasks, help, away] = await Promise.all([loadTasks().catch(() => []), loadHelp().catch(() => []), loadAway().catch(() => [])]);
-    const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(01,02,03,04)&select=reporter,publication,story_num,headline,filed,file_day`);
+    const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(${SLOT_QUERY})&select=reporter,publication,story_num,headline,filed,file_day`);
     const text = buildDaily({ today, week, weekday: s.weekday, snapshot, tasks, help, stories, away });
     if (!text) return new Response("nothing waiting — no DM sent");
     await sendDM(text);

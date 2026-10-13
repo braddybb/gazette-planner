@@ -5,7 +5,7 @@
 // Netlify cron is UTC, so it fires at both 22:00 and 23:00 UTC on Thursdays and
 // the function itself checks that it is really Friday 9am in Sydney (this keeps
 // it right across daylight saving). Reads: the latest videodesk% snapshot,
-// videotask% rows, and this week's planner_stories (slots 01–04, local mastheads).
+// videotask% rows, and this week's planner_stories (slots 01–04, or 01–07 for the National Account).
 //
 // Env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SLACK_BOT_TOKEN (chat:write),
 // and NICK_SLACK_ID (Nick's Slack member ID, e.g. U01ABC2DEF3) — the only new one.
@@ -19,6 +19,12 @@ const BOT_TOKEN    = process.env.SLACK_BOT_TOKEN;
 const NICK_ID      = process.env.NICK_SLACK_ID;
 
 const SLOT_NAMES = { "01": "Original 1", "02": "Original 2", "03": "Video flip", "04": "Impact video" };
+// The National Account has seven video slots: YouTube ×2, Editorial focus, Original ×3, Impact.
+const NAT_SLOT_NAMES = { "01": "YouTube 1", "02": "YouTube 2", "03": "Editorial focus", "04": "Original 1", "05": "Original 2", "06": "Original 3", "07": "Impact" };
+export const isNat = (pub) => /national/i.test(pub || "");
+export const slotsFor = (pub) => (isNat(pub) ? ["01", "02", "03", "04", "05", "06", "07"] : ["01", "02", "03", "04"]);
+export const slotName = (n, pub) => (isNat(pub) ? NAT_SLOT_NAMES[n] : SLOT_NAMES[n]) || "video";
+export const SLOT_QUERY = "01,02,03,04,05,06,07";
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 // The six local mastheads (National Account is deliberately left out). Used so a reporter
 // with NO planner rows at all still shows up as behind, instead of being invisible.
@@ -26,6 +32,7 @@ export const ROSTER = [
   { name: "Douglas Connor", pub: "Mid North Coaster" }, { name: "Huw Bradshaw", pub: "North Shore Lorikeet" },
   { name: "Matthew Sims", pub: "Eastern Melburnian" }, { name: "Zara Cuthbertson", pub: "West Vic Brolga — Wannon" },
   { name: "Darcie Humphreys", pub: "West Vic Brolga — Ballarat" }, { name: "Jacob Wallace", pub: "Gippsland Monitor" },
+  { name: "Archie Milligan", pub: "National Account" },
 ];
 export const QUIET_DAYS = 14;
 const addDaysYmd = (ymd, n) => new Date(Date.UTC(...ymd.split("-").map(Number).map((v, i) => (i === 1 ? v - 1 : v))) + n * 864e5).toISOString().slice(0, 10);
@@ -48,7 +55,6 @@ export function groupReporters(stories) {
   const by = {};
   ROSTER.forEach((r) => { by[r.name + "|" + r.pub] = { name: r.name, pub: r.pub, slots: {} }; });
   (stories || []).forEach((s) => {
-    if (/^National Account/.test(s.publication || "")) return;
     const k = s.reporter + "|" + s.publication;
     (by[k] = by[k] || { name: s.reporter, pub: s.publication, slots: {} }).slots[s.story_num] = s;
   });
@@ -86,7 +92,7 @@ export function checklistItems(week) {
     { k: "brandpub", lbl: "Publish a video to Gazette brand channels" },
     { k: "casestudy", lbl: "Case study of the week" },
     { k: "flag", lbl: "Send Friday end-of-week report" },
-    ...(f === 0 ? [{ k: "feedback", lbl: "Reporter video feedback round" }] : [{ k: "pubteam", lbl: "Report to publishing team" }]),
+    ...(f === 1 ? [{ k: "feedback", lbl: "Reporter video feedback round" }] : [{ k: "pubteam", lbl: "Report to publishing team" }]),
   ];
 }
 
@@ -116,20 +122,21 @@ export function buildDigest({ today, week, snapshot, tasks, stories, away = [] }
     const idx = awayIdx(away, r.name, r.pub, week);
     if (idx.length === 5) { awayNames.push(r.name); return; }      // away all week: not counted
     repCount++;
-    const vt = Math.round(4 * (5 - idx.length) / 5);                // target scales with days away
-    let spare = 4 - vt;
+    const SL = slotsFor(r.pub), NS = SL.length;
+    const vt = Math.round(NS * (5 - idx.length) / 5);                // target scales with days away
+    let spare = NS - vt;
     const bits = [];
     let filed = 0;
-    ["01", "02", "03", "04"].forEach((n) => {
+    SL.forEach((n) => {
       const row = r.slots[n];
       const st = slotState(row);
       if (st === "filed") { filed++; return; }
       const di = row && row.file_day ? DAYS.indexOf(row.file_day) : -1;
       if (di > -1 && idx.includes(di)) return;                      // due on a day they're away
       if (st === "unplanned" && spare > 0) { spare--; return; }
-      if (st === "overdue") bits.push(SLOT_NAMES[n] + " overdue");
-      else if (st === "due") bits.push(SLOT_NAMES[n] + " due today");
-      else bits.push(SLOT_NAMES[n] + " not planned");
+      if (st === "overdue") bits.push(slotName(n, r.pub) + " overdue");
+      else if (st === "due") bits.push(slotName(n, r.pub) + " due today");
+      else bits.push(slotName(n, r.pub) + " not planned");
     });
     filedTotal += filed; targetTotal += vt;
     if (filed < vt && bits.length) repLines.push(`• *${r.name}* ${filed}/${vt} — ${bits.join(", ")}`);
@@ -201,7 +208,7 @@ export default async () => {
     const snaps = await sget("system_flags?select=value&key=like.videodesk*&order=key.desc&limit=1");
     const snapshot = snaps[0] ? JSON.parse(snaps[0].value) : null;
     const tasks = await loadTasks();
-    const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(01,02,03,04)&select=reporter,publication,story_num,headline,filed,file_day`);
+    const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(${SLOT_QUERY})&select=reporter,publication,story_num,headline,filed,file_day`);
     const away = await loadAway().catch(() => []);
     const text = buildDigest({ today, week, snapshot, tasks, stories, away });
     await sendDM(text);
