@@ -138,16 +138,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rep-pub{font-size:11px;color:#666;margin-top:2px}
 .rep-filed-big{font-size:22px;font-weight:600;color:#fff}
 .rep-filed-sub{font-size:10px;color:#555;text-align:right;margin-top:1px}
-.rep-days{display:flex;gap:5px;margin-top:9px;align-items:center}
-.rep-days .rd{flex:1;text-align:center;font-size:9.5px;font-weight:700;color:#A0A098;letter-spacing:.04em}
-.rep-days .rd i{display:block;width:9px;height:9px;border-radius:50%;margin:3px auto 0;background:var(--blue);box-sizing:border-box}
-.rep-days .rd.empty i{background:transparent;border:1.5px solid #C9C9C0}
-.rep-days .rd.late i{background:transparent;border:1.5px solid #D8442F}
-.rep-days .rd.late{color:#D8442F}
-.rep-days .rd.away i{background:#D9D9D2;border:0}
-.rep-days .rd.today{color:var(--ink)}
-.rep-days .rd.today i{box-shadow:0 0 0 2px rgba(0,0,0,.12)}
-.today-panel{margin:0 0 18px}
+.today-panel{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0}
 .today-panel .vd-today{margin-bottom:0}
 .today-tog{margin-left:auto;background:none;border:0;font-size:12px;color:#8A8A82;cursor:pointer}
 .today-row{cursor:pointer}
@@ -388,6 +379,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dr-day.empty.late{background:#FBEAE4;border-color:#EDC4B5}.dr-day.empty.late .dc{color:#B4532A}
 .dr-day.away{background:#F1EFF9;border-color:#DDD8EF}.dr-day.away .dc{color:#4B3F8F}
 @media(max-width:700px){.dr-days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rep-header{position:relative}
+.rep-id{min-width:0}
+.rep-menu-wrap{position:relative;flex:0 0 auto}
+.rep-menu-btn{background:transparent;border:0;color:#9a9a92;font-size:20px;line-height:1;width:30px;height:30px;border-radius:8px;cursor:pointer}
+.rep-menu-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.rep-menu{position:absolute;right:0;top:34px;z-index:20;background:#fff;border:0.5px solid #DDD;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:5px;min-width:140px}
+.rep-menu button,.rep-menu a{display:block;width:100%;text-align:left;box-sizing:border-box;font:inherit;font-size:12.5px;color:#222;background:none;border:0;border-radius:6px;padding:7px 10px;cursor:pointer;text-decoration:none}
+.rep-menu button:hover,.rep-menu a:hover{background:#F3F2EC}
+.rep-sumline{display:flex;justify-content:space-between;font-size:12px;color:#777;margin-bottom:7px}
+.rep-gap{color:#8A6209;font-weight:600}
 .rep-away-btn{font:inherit;font-size:11px;color:#444;background:#fff;border:0.5px solid #DDD;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap}
 .rep-away-btn:hover{background:#F1EFF9;border-color:#C9C2E6;color:#4B3F8F}
 .dr-away{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
@@ -478,8 +479,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 /* ── Editorial Calendar Strip (editor, dark) ── */
 .ecal-section{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0}
 .ecal-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
-.ecal-head h2{font-size:14px;font-weight:700;letter-spacing:-.01em;color:#fff;margin:0}
-.ecal-head .ecal-sub{font-size:11px;color:#888}
+.ecal-head{cursor:pointer;user-select:none}.ecal-head h2{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#555;margin:0}.ecal-tog{margin-left:auto;font-size:12px;color:#8A8A82}
+.ecal-head .ecal-sub{font-size:12px;color:#A0A098}
 .ecal-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 14px;scroll-snap-type:x mandatory}
 .ecal-strip::-webkit-scrollbar{height:6px}
 .ecal-strip::-webkit-scrollbar-track{background:transparent}
@@ -1081,10 +1082,9 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
   <div class="dupe-warning" id="dupe-warning" style="display:none"></div>
 
-  <div id="ecal-container"></div>
-
   <div id="main-view">
     <div class="today-panel" id="today-panel"></div>
+    <div id="ecal-container"></div>
     <div class="reporter-grid" id="reporter-grid"></div>
   </div>
 
@@ -1882,9 +1882,10 @@ function renderEditorCalendar() {
     return '';
   }
 
-  let h = '<div class="ecal-section">';
-  h += '<div class="ecal-head"><h2>On the radar</h2><span class="ecal-sub">Upcoming Victorian reporting moments across the network</span></div>';
-  h += '<div class="ecal-strip">';
+  let open = false; try { open = localStorage.getItem('gz_ecal_open') === '1'; } catch (e) {}
+  let h = '<div class="ecal-section" style="padding-bottom:.5rem">';
+  h += '<div class="ecal-head" onclick="toggleEcal()"><h2>On the radar</h2><span class="ecal-sub">' + moments.length + ' upcoming Victorian reporting moments</span><span class="ecal-tog">' + (open ? 'Hide' : 'Show') + '</span></div>';
+  h += open ? '<div class="ecal-strip">' : '<div class="ecal-strip" style="display:none">';
   moments.forEach((m, i) => {
     const brandTags = m.brands.join(' · ');
     h += '<div class="ecal-card" id="ecal-card-' + i + '">';
@@ -1902,6 +1903,10 @@ function renderEditorCalendar() {
   container.innerHTML = h;
 }
 
+function toggleEcal() {
+  let open = false; try { open = localStorage.getItem('gz_ecal_open') === '1'; localStorage.setItem('gz_ecal_open', open ? '0' : '1'); } catch (e) { open = false; }
+  renderEditorCalendar();
+}
 function toggleEcalWhy(i) {
   const card = document.getElementById('ecal-card-' + i);
   if (!card) return;
@@ -1985,26 +1990,6 @@ function renderGrid() {
     section.appendChild(row);
     grid.appendChild(section);
   });
-}
-
-function repDaysStrip(r) {
-  const ds = vdDayState();
-  if (ds.state === 'future') return '';
-  const all = drillAll(r), ai = awayInfo(r.name, r.pub);
-  const has = v => !!(v && String(v).trim());
-  let h = '';
-  for (let i = 0; i < 5; i++) {
-    const day = DAYS[i];
-    const n = all.filter(x => x.st && has(x.st.headline) && x.st.file_day === day && x.st.status !== 'abandoned').length;
-    const isAway = ai.idx.indexOf(i) > -1;
-    let cls = 'rd';
-    if (ds.state === 'current' && ds.idx === i) cls += ' today';
-    if (isAway) cls += ' away';
-    else if (!n) { cls += ' empty'; if (ds.state === 'past' || (ds.state === 'current' && ds.idx >= i)) cls += ' late'; }
-    const tip = isAway ? 'Away' : (n ? n + (n === 1 ? ' story' : ' stories') + ' planned' : 'Nothing planned');
-    h += '<span class="' + cls + '" title="' + day + ': ' + tip + '">' + day.charAt(0) + '<i></i></span>';
-  }
-  return '<div class="rep-days">' + h + '</div>';
 }
 
 function renderTodayPanel() {
@@ -2102,34 +2087,33 @@ function buildRepCard(r) {
     pollIdx.length ? `<span class="rpill rpill-poll">${poll}/${pollIdx.length} audience poll</span>` : '',
   ].join('');
 
+  const emptyLate = (() => { const ds = vdDayState(); if (ds.state === 'future') return 0; const all = drillAll(r); let n = 0; for (let i = 0; i < 5; i++) { if (awayI.idx.indexOf(i) > -1) continue; if (!(ds.state === 'past' || (ds.state === 'current' && ds.idx >= i))) continue; if (!all.some(x => x.st && x.st.headline && String(x.st.headline).trim() && x.st.file_day === DAYS[i] && x.st.status !== 'abandoned')) n++; } return n; })();
+  const sumLine = awayI.full ? 'Away — not counted' : (filed + extrasFiled) + ' of ' + baseCount + ' filed' + (extrasFiled ? ' · ' + extrasFiled + ' extra' : '');
   card.innerHTML = `
     <div class="rep-header">
-      <div>
+      <div class="rep-id">
         <div class="rep-name">${r.name}${goldStarBadgeHtml(r.name)}</div>
         <div class="rep-pub">${r.pub}${awayI.any ? ` <span class="away-badge" title="${esc(awayI.reason || '')}">${esc(awayI.label)}${awayI.back ? ' · back ' + esc(vdDayLabel(awayI.back)) : ''}</span>` : ''}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="rep-away-btn" title="Mark ${esc(r.name)} away for a stretch">${awayI.any ? 'Away…' : 'Mark away'}</button>
-        <a href="/?as=${encodeURIComponent(r.name)}&pub=${encodeURIComponent(r.pub)}"
-           target="_blank" rel="noopener" onclick="event.stopPropagation()"
-           style="font-size:11px;color:#fff;text-decoration:none;white-space:nowrap;background:var(--blue);border:0.5px solid var(--blue);border-radius:6px;padding:4px 8px">
-          Open planner ↗
-        </a>
-        <div style="text-align:right">
-          <div class="rep-filed-big">${filed + extrasFiled}</div>
-          <div class="rep-filed-sub">${awayI.full ? 'away — not counted' : 'of ' + baseCount + ' filed'}${extrasFiled ? ` (${filed} base +${extrasFiled} extra)` : ''}</div>
+      <div class="rep-menu-wrap">
+        <button class="rep-menu-btn" title="Actions" aria-label="Actions">&#8943;</button>
+        <div class="rep-menu" style="display:none">
+          <button class="rep-away-btn">${awayI.any ? 'Away…' : 'Mark away'}</button>
+          <a href="/?as=${encodeURIComponent(r.name)}&pub=${encodeURIComponent(r.pub)}" target="_blank" rel="noopener">Open planner &#8599;</a>
         </div>
       </div>
     </div>
     <div class="rep-progress">
+      <div class="rep-sumline"><span>${sumLine}</span>${emptyLate ? `<span class="rep-gap">${emptyLate} empty ${emptyLate === 1 ? 'day' : 'days'}</span>` : ''}</div>
       <div class="rep-track"><div class="rep-fill" style="width:${pct}%"></div></div>
-      <div class="rep-pills">${pillsHtml}</div>
-      ${repDaysStrip(r)}
     </div>
     <div class="rep-stories">${storyRows}</div>
   `;
+  const menuBtn = card.querySelector('.rep-menu-btn'), menu = card.querySelector('.rep-menu');
+  menuBtn.onclick = (e) => { e.stopPropagation(); const show = menu.style.display === 'none'; document.querySelectorAll('.rep-menu').forEach(m => m.style.display = 'none'); menu.style.display = show ? 'block' : 'none'; };
+  menu.onclick = (e) => { e.stopPropagation(); if (!e.target.closest('.rep-away-btn')) menu.style.display = 'none'; };
   const awayBtn = card.querySelector('.rep-away-btn');
-  if (awayBtn) awayBtn.onclick = (e) => { e.stopPropagation(); openAwayModal(r.name, r.pub); };
+  if (awayBtn) awayBtn.onclick = (e) => { e.stopPropagation(); menu.style.display = 'none'; openAwayModal(r.name, r.pub); };
   return card;
 }
 
