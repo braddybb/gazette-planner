@@ -2492,6 +2492,7 @@ function renderDrillSummary(r, all){
   var filed = base.filter(function(x){ return x.status.k==='filed'; }).length;
   var cnt = function(k){ return all.filter(function(x){ return x.status.k===k; }).length; };
   var overdue = cnt('overdue'), due = cnt('due'), inc = cnt('incomplete');
+  var extrasFiled = all.filter(function(x){ return x.extra && x.status.k==='filed'; }).length;
   var notPlanned = all.filter(function(x){ return !x.extra && x.status.k==='empty'; }).length;
   var assignedOpen = all.filter(function(x){ return x.assigned && x.status.k!=='filed' && x.status.k!=='abandoned'; }).length;
   var tgt = ai.any ? scaledBase(r) : base.length;
@@ -2507,7 +2508,7 @@ function renderDrillSummary(r, all){
   if (!chips) chips = '<span class="dr-chip ok">Nothing outstanding</span>';
   var filters = [['all','All'],['attention','Needs attention'],['unfiled','Unfiled'],['filed','Filed'],['assigned','Assigned'],['video','Video']];
   el.innerHTML =
-    '<div class="dr-sum-top"><div class="dr-sum-count"><b>'+filed+'</b> of '+(ai.any?scaledBase(r):base.length)+' filed'+(ai.full?' · away':'')+'</div>'+
+    '<div class="dr-sum-top"><div class="dr-sum-count"><b>'+(filed+extrasFiled)+'</b> of '+(ai.any?scaledBase(r):base.length)+' filed'+(extrasFiled?' · '+extrasFiled+' extra':'')+(ai.full?' · away':'')+'</div>'+
     '<div class="dr-sum-bar"><div class="dr-sum-fill" style="width:'+pct+'%"></div></div></div>'+
     '<div class="dr-chips">'+chips+'</div>'+
     dayInfo.html+
