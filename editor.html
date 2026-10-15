@@ -72,6 +72,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 /* ── HEADER ── */
 #dashboard{display:none}
 .app-header{background:var(--ink);padding:0 2rem;display:flex;align-items:center;height:52px;gap:1.5rem;position:sticky;top:0;z-index:100}
+@media(max-width:1750px){.app-header{gap:.6rem;padding:0 1rem}.app-header .app-divider{display:none}}
+@media(max-width:1380px){.app-header .perf-nav-link{display:none}}
 .app-wordmark{font-size:11px;font-weight:600;letter-spacing:.15em;color:#666;text-transform:uppercase}
 .app-divider{width:1px;height:16px;background:#333}
 .header-title{font-size:13px;color:#ccc;font-weight:500}
