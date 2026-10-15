@@ -963,6 +963,28 @@ padding:5px 12px;border-radius:999px}
 .badge-chip.gold-star{background:#FFF6D8;border:0.5px solid #E8CE7A;color:#8A6A00}
 .badge-chip .badge-ico{font-size:13px;line-height:1}
 
+
+#patch-nav,#patch-nav span{white-space:nowrap}
+@media(max-width:1480px){#patch-nav-label{display:none}}
+.pt-wrap{max-width:820px}
+.pt-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+.pt-chip{border:1px solid #D9D6CC;background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer;color:#4a4a44;font-family:inherit}
+.pt-chip.on{background:#1B1B18;color:#fff;border-color:#1B1B18}
+.pt-card{background:#fff;border:1px solid #E5E3DA;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.pt-top{display:flex;gap:10px;align-items:flex-start}
+.pt-score{min-width:38px;height:38px;border-radius:9px;background:#EFEDE4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#3a3a34}
+.pt-score.hi{background:#1F7A4D;color:#fff}.pt-score.mid{background:#F0D98A;color:#4a3a00}
+.pt-title{font-size:14.5px;font-weight:600;line-height:1.35;color:#1B1B18;text-decoration:none}
+.pt-title:hover{text-decoration:underline}
+.pt-meta{font-size:11.5px;color:#8a887e;margin-top:3px}
+.pt-why{font-size:13px;color:#3a3a34;margin:8px 0 0}
+.pt-angle{font-size:13px;color:#1F5C3E;background:#EDF5F0;border-radius:8px;padding:7px 10px;margin:8px 0 0}
+.pt-actions{display:flex;gap:8px;margin-top:10px}
+.pt-btn{border:1px solid #D9D6CC;background:#fff;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.pt-btn.pri{background:#1B1B18;color:#fff;border-color:#1B1B18}
+.pt-btn:disabled{opacity:.55;cursor:default}
+.pt-mention{display:inline-block;background:#FFF1C9;color:#6b5000;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600;margin-left:6px}
+.pt-empty{padding:28px 8px;color:#8a887e;font-size:13.5px;text-align:center}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1049,6 +1071,9 @@ padding:5px 12px;border-radius:999px}
 </button>
 <button class="bank-nav" id="res-nav" onclick="showResourcesView()" title="Onboarding docs and resources">
 <span>&#128218;</span><span id="res-nav-label">Resources</span>
+</button>
+<button class="bank-nav" id="patch-nav" onclick="showPatchView()" title="Local news, council, court and politician leads for your patch">
+<span>&#128205;</span><span id="patch-nav-label">Patch</span>
 </button>
 <button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
 <span>&#128196;</span><span>FOI</span>
@@ -1189,6 +1214,15 @@ padding:5px 12px;border-radius:999px}
 <div class="bank-meter-label" id="bank-meter-label">0 / 3</div>
 </div>
 <div class="bank-slots" id="bank-slots"></div>
+</div>
+</div>
+<div id="patch-view" style="display:none">
+<div class="res-wrap pt-wrap">
+<button class="bank-back" onclick="showStoriesView()">&#8592; Back to my week</button>
+<h2 style="margin:0 0 6px">&#128205; Your patch</h2>
+<p class="res-intro" id="pt-intro">What happened in your patch in the last few days: council, planning, courts, police, health and your local politicians. Scored for how story-ready it is. Updated each weekday morning.</p>
+<div class="pt-bar" id="pt-bar"></div>
+<div id="pt-list"></div>
 </div>
 </div>
 <div id="resources-view" style="display:none">
@@ -2312,12 +2346,14 @@ catch(e) { console.error('Could not update FOI status:', e); }
 
 function showStoriesView() {
 document.getElementById('stories-view').style.display = 'block';
+document.getElementById('patch-view').style.display = 'none';
 document.getElementById('foi-view').style.display = 'none';
 document.getElementById('bank-view').style.display = 'none';
 document.getElementById('resources-view').style.display = 'none';
 }
 function showFOIView() {
 document.getElementById('stories-view').style.display = 'none';
+document.getElementById('patch-view').style.display = 'none';
 document.getElementById('foi-view').style.display = 'block';
 document.getElementById('bank-view').style.display = 'none';
 document.getElementById('resources-view').style.display = 'none';
@@ -2367,10 +2403,59 @@ const ml = document.getElementById('bank-meter-label');
 if (fill) fill.style.width = Math.round(n/3*100)+'%';
 if (ml) ml.textContent = n>3 ? (n+' items · full') : (n>=3 ? '100% full' : (n+' / 3'));
 }
+
+// ── Patch Radar (reporter side): leads scored for this reporter's patch, from patch_items ──
+let PATCH_ITEMS = [], PATCH_FILTER = 'top', PATCH_LOADED = false, PATCH_PITCHED = {}, PATCH_HIDDEN = {};
+function ptStore(k, v){ try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify(v)); } catch(e){ return v === undefined ? {} : null; } }
+function showPatchView(){
+['stories-view','foi-view','bank-view','resources-view'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+document.getElementById('patch-view').style.display = 'block';
+PATCH_PITCHED = ptStore('pt_pitched_' + USER.name); PATCH_HIDDEN = ptStore('pt_hidden_' + USER.name);
+loadPatchItems();
+}
+async function loadPatchItems(){
+const list = document.getElementById('pt-list'); if (!PATCH_LOADED) list.innerHTML = '<div class="pt-empty">Loading your patch…</div>';
+try {
+const since = new Date(Date.now() - 5 * 864e5).toISOString();
+const { data, error } = await supa.from('patch_items').select('id,title,url,source_name,category,published_at,fetched_at,relevance,kind,why,angle,mentions,patches')
+.contains('patches', [USER.pub]).gte('fetched_at', since).not('scored_at', 'is', null).gte('relevance', 40).order('relevance', { ascending: false }).limit(150);
+if (error) throw error;
+PATCH_ITEMS = data || []; PATCH_LOADED = true; renderPatch();
+} catch(e){ console.warn('Patch load failed:', e); list.innerHTML = '<div class="pt-empty">Your patch isn’t switched on yet. Ask your editor.</div>'; }
+}
+function ptAgo(ts){ if (!ts) return ''; const m = Math.round((Date.now() - Date.parse(ts)) / 60000); if (m < 60) return Math.max(m,1) + 'm ago'; const h = Math.round(m / 60); if (h < 36) return h + 'h ago'; return Math.round(h / 24) + 'd ago'; }
+function renderPatch(){
+const bar = document.getElementById('pt-bar'), list = document.getElementById('pt-list');
+const kinds = ['top', 'council', 'planning / development', 'court / crime', 'police / emergency', 'health', 'state politics', 'federal politics'];
+const vis = PATCH_ITEMS.filter(r => !PATCH_HIDDEN[r.id]);
+bar.innerHTML = kinds.filter(k => k === 'top' || vis.some(r => r.kind === k)).map(k => '<button class="pt-chip' + (PATCH_FILTER === k ? ' on' : '') + '" onclick="ptFilter(\'' + k + '\')">' + (k === 'top' ? 'Top picks' : k.charAt(0).toUpperCase() + k.slice(1)) + '</button>').join('');
+let rows = PATCH_FILTER === 'top' ? vis.filter(r => r.relevance >= 65).slice(0, 25) : vis.filter(r => r.kind === PATCH_FILTER);
+if (!rows.length){ list.innerHTML = '<div class="pt-empty">' + (PATCH_ITEMS.length ? 'Nothing here right now.' : 'Nothing scored for your patch yet. The first scan runs on a weekday morning.') + '</div>'; return; }
+list.innerHTML = rows.map(r => {
+const cls = r.relevance >= 80 ? 'hi' : (r.relevance >= 60 ? 'mid' : '');
+const pitched = !!PATCH_PITCHED[r.id];
+return '<div class="pt-card"><div class="pt-top"><div class="pt-score ' + cls + '">' + r.relevance + '</div><div style="flex:1;min-width:0"><a class="pt-title" href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.title) + ' <span class="res-ext">&#8599;</span></a>' +
+'<div class="pt-meta">' + esc(r.source_name) + ' · ' + esc(r.kind || '') + ' · ' + ptAgo(r.published_at || r.fetched_at) + ((r.mentions || []).length ? '<span class="pt-mention">' + esc(r.mentions.slice(0,2).join(', ')) + '</span>' : '') + '</div></div></div>' +
+(r.why ? '<div class="pt-why">' + esc(r.why) + '</div>' : '') + (r.angle ? '<div class="pt-angle"><b>Angle:</b> ' + esc(r.angle) + '</div>' : '') +
+'<div class="pt-actions"><button class="pt-btn pri" ' + (pitched ? 'disabled' : '') + ' onclick="ptPitch(\'' + r.id + '\')">' + (pitched ? 'On your to-do list ✓' : 'Pitch this') + '</button><button class="pt-btn" onclick="ptHide(\'' + r.id + '\')">Not for me</button></div></div>';
+}).join('');
+}
+function ptFilter(k){ PATCH_FILTER = k; renderPatch(); }
+function ptHide(id){ PATCH_HIDDEN[id] = 1; ptStore('pt_hidden_' + USER.name, PATCH_HIDDEN); renderPatch(); }
+async function ptPitch(id){
+const r = PATCH_ITEMS.find(x => x.id === id); if (!r || PATCH_PITCHED[id]) return;
+PATCH_PITCHED[id] = 1; renderPatch();
+try {
+const [row] = await supaFetch('POST', 'reporter_todos', { reporter: USER.name, publication: USER.pub, item: 'Pitch: ' + r.title + (r.angle ? ' — ' + r.angle : '') + ' ' + r.url, done: false });
+if (row && typeof TODOS !== 'undefined') { TODOS.push(row); if (typeof renderTodos === 'function') renderTodos(); }
+ptStore('pt_pitched_' + USER.name, PATCH_PITCHED);
+} catch(e){ delete PATCH_PITCHED[id]; renderPatch(); alert('Could not add that to your to-do list. Try again.'); }
+}
 function showBankView(){
 document.getElementById('stories-view').style.display='none';
 document.getElementById('foi-view').style.display='none';
 document.getElementById('resources-view').style.display='none';
+document.getElementById('patch-view').style.display='none';
 document.getElementById('bank-view').style.display='block';
 renderBankCards();
 loadBank();
@@ -2418,6 +2503,7 @@ function showResourcesView(){
 document.getElementById('stories-view').style.display='none';
 document.getElementById('foi-view').style.display='none';
 document.getElementById('bank-view').style.display='none';
+document.getElementById('patch-view').style.display='none';
 document.getElementById('resources-view').style.display='block';
 loadResources();
 }
