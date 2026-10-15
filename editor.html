@@ -5953,7 +5953,8 @@ var IR_WIN={'24h':24,'3d':72,'7d':168};
 function irEl(){ return document.getElementById('impact-radar-view'); }
 
 // ── Patch Radar admin: scan, source health, on/off, add. Reporters read the results in their planner ("Your patch"). ──
-var PR={sources:[],runs:[],items:0,err:'',scanning:false,msg:'',patch:'all'};
+var PR={sources:[],runs:[],items:0,err:'',scanning:false,msg:'',patch:'all',tab:'results',rpatch:'Mid North Coaster',rows:[],counts:{},unscored:0};
+var PR_PATCHES=['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','National Account'];
 function openPatchRadar(){ hideAllViews(); document.getElementById('patch-radar-view').style.display='block'; prLoad(); }
 function closePatchRadar(){ document.getElementById('patch-radar-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
 async function prLoad(){
@@ -5961,10 +5962,22 @@ async function prLoad(){
   try{
     var a=await supa.from('patch_sources').select('*').order('name'); if(a.error) throw a.error; PR.sources=a.data||[];
     var b=await supa.from('patch_runs').select('*').order('started_at',{ascending:false}).limit(3); PR.runs=(b.data)||[];
-    var c=await supa.from('patch_items').select('id',{count:'exact',head:true}).gte('fetched_at',new Date(Date.now()-7*864e5).toISOString()); PR.items=c.count||0;
+    var since=new Date(Date.now()-7*864e5).toISOString();
+    var c=await supa.from('patch_items').select('patches,scored_at,relevance').gte('fetched_at',since).limit(5000); var cr=c.data||[]; PR.items=cr.length; PR.counts={}; PR.unscored=0;
+    cr.forEach(function(r){ if(!r.scored_at) PR.unscored++; (r.patches||[]).forEach(function(p){ var o=PR.counts[p]||(PR.counts[p]={all:0,scored:0,top:0}); o.all++; if(r.scored_at){ o.scored++; if(r.relevance>=70) o.top++; } }); });
+    var d=await supa.from('patch_items').select('id,title,url,source_name,kind,relevance,why,angle,mentions,published_at,fetched_at,patches').contains('patches',[PR.rpatch]).gte('fetched_at',since).not('scored_at','is',null).gte('relevance',40).order('relevance',{ascending:false}).limit(60); PR.rows=d.data||[];
   }catch(e){ var m=String((e&&(e.message||e.code))||e); PR.err=/relation|does not exist|schema cache|PGRST205|42P01/i.test(m)?'setup':m; }
   prRender();
 }
+function prResultsHtml(){
+  var h='<div class="ir-panel"><h4>Results by patch</h4><p class="cap">What reporters see under “Patch”, scored 40+. '+PR.unscored+' collected item'+(PR.unscored===1?' is':'s are')+' still waiting to be scored; each scan scores the next batch.</p><div class="ir-form" style="margin-bottom:10px">';
+  PR_PATCHES.forEach(function(p){ var o=PR.counts[p]||{all:0,scored:0,top:0}; h+='<button class="vd-btn sm" style="'+(PR.rpatch===p?'':'opacity:.55')+'" onclick="prPickPatch(\''+esc(p).replace(/'/g,'')+'\')">'+esc(p)+' · '+o.top+' top / '+o.scored+' scored / '+o.all+'</button>'; });
+  h+='</div>';
+  if(!PR.rows.length) h+='<div class="ir-empty">Nothing scored 40+ for this patch yet.'+(PR.unscored?' Press Scan patches to score the next batch.':'')+'</div>';
+  PR.rows.forEach(function(r){ h+='<div class="ir-row" style="align-items:flex-start"><span class="ir-tag" style="min-width:30px;text-align:center"><b>'+r.relevance+'</b></span><div style="flex:1;min-width:0"><a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer" style="font-weight:600;color:inherit">'+esc(r.title)+' ↗</a><div class="cap" style="margin:2px 0">'+esc(r.source_name)+' · '+esc(r.kind||'')+((r.mentions||[]).length?' · '+esc(r.mentions.join(', ')):'')+'</div>'+(r.why?'<div style="font-size:12.5px">'+esc(r.why)+'</div>':'')+(r.angle?'<div style="font-size:12.5px;color:#1F5C3E"><b>Angle:</b> '+esc(r.angle)+'</div>':'')+'</div></div>'; });
+  return h+'</div>';
+}
+function prPickPatch(p){ PR.rpatch=p; prLoad(); }
 function prHealth(s){
   if(s.last_error) return '<span class="ir-health bad" title="'+esc(s.last_error)+'">⚠ '+esc(s.last_error.slice(0,70))+'</span>';
   if(s.last_ok) return '<span class="ir-health ok">✓ '+(s.last_count||0)+' for patches · '+esc(vdAgo(Date.parse(s.last_ok)))+(s.config&&s.config.feed_url?' · feed':' · page')+'</span>';
@@ -5976,6 +5989,8 @@ function prRender(){
   if(PR.msg) h+='<div class="ir-banner" style="cursor:default">'+esc(PR.msg)+'</div>';
   if(PR.err){ el.innerHTML=h+(PR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>patch-tables.sql</code>, then <code>patch-seed.sql</code>, in the Supabase SQL editor, then refresh.</div>':'<div class="ir-setup"><b>Could not load.</b> '+esc(PR.err)+'</div>'); return; }
   var r=PR.runs[0]; if(r) h+='<p class="cap" style="margin:0 0 12px">Last scan '+esc(vdAgo(Date.parse(r.started_at)))+(r.finished_at?' — '+(r.inserted||0)+' new, '+(r.scored||0)+' scored':' — running')+'. Runs automatically at 7:15am Mon–Fri; reporters see the results under “Your patch”.</p>';
+  h+='<div class="ir-form" style="margin:0 0 12px"><button class="vd-btn sm" style="'+(PR.tab==='results'?'':'opacity:.55')+'" onclick="PR.tab=\'results\';prRender()">Results</button><button class="vd-btn sm" style="'+(PR.tab==='sources'?'':'opacity:.55')+'" onclick="PR.tab=\'sources\';prRender()">Sources</button></div>';
+  if(PR.tab==='results'){ el.innerHTML=h+prResultsHtml(); return; }
   var bad=PR.sources.filter(function(s){ return s.last_error; }).length, ok=PR.sources.filter(function(s){ return s.last_ok&&!s.last_error; }).length;
   h+='<div class="ir-panel"><h4>Sources — '+PR.sources.length+' ('+ok+' working'+(bad?', '+bad+' failing':'')+')</h4><p class="cap">Shared sources only keep items that name a place or politician from a patch. “Page” sources have no feed, so the headline links are read. Failing sources probably need a different address — edit the address and the next scan retries.</p>';
   var pats=['all'].concat(['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','National Account']);
