@@ -1088,6 +1088,26 @@ details.vd-more summary::-webkit-details-marker{display:none}
 .res-edit-act{grid-column:1/-1;display:flex;gap:8px}
 .res-edit-act button{font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:7px 14px;cursor:pointer;border:1px solid #3A5BDF;background:#3A5BDF;color:#fff}
 .res-edit-act .res-edit-cancel{background:#fff;color:#444;border-color:#D9D6CB}
+
+.sp-card{background:#fff;border:1px solid #E6E4DC;border-radius:12px;padding:16px 18px;margin:0 0 18px}
+.sp-title{font-weight:700;font-size:15px}
+.sp-sub{font-size:12.5px;color:#6B685C;margin:4px 0 10px;max-width:60ch}
+.sp-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.sp-row select{font-family:inherit;font-size:13.5px;border:1px solid #D9D6CB;border-radius:8px;padding:8px 10px;min-width:260px}
+.sp-cats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.sp-cat{display:inline-flex;align-items:center;gap:6px;border:1px solid #E6E4DC;border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
+.sp-cat span{font-size:11px;color:#8A877B}
+.sp-go{font-family:inherit;font-size:13.5px;font-weight:600;background:#3A5BDF;color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}
+.sp-go:disabled{opacity:.45;cursor:default}
+.sp-count{font-size:12.5px;color:#6B685C}
+.sp-a{padding:8px 0;border-top:1px solid #F0EEE7}
+.sp-a-top{display:flex;gap:12px;align-items:baseline;font-size:13.5px}
+.sp-a-top span{color:#6B685C;font-size:12.5px;flex:1}
+.sp-x{background:none;border:0;color:#999;font-size:12px;cursor:pointer;font-family:inherit}
+.sp-x:hover{color:#c00}
+.sp-bar{height:6px;border-radius:99px;background:#EFEDE6;overflow:hidden;margin:6px 0 3px}
+.sp-bar div{height:100%;background:#2E6B4F}
+.sp-a-cats{font-size:11.5px;color:#8A877B}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1287,6 +1307,7 @@ details.vd-more summary::-webkit-details-marker{display:none}
       <input id="res-new-note" placeholder="Short note (optional)">
       <button onclick="addResource()">Add</button>
     </div>
+    <div id="res-starter"></div>
     <div id="res-admin-list"></div>
   </div>
 
@@ -4849,6 +4870,72 @@ async function loadResourcesAdmin() {
     if (!Array.isArray(RESOURCES)) RESOURCES = [];
   } catch(e) { RESOURCES = []; }
   renderResourcesAdmin();
+  await loadReadingLists();
+  renderStarterPack();
+}
+
+// ── Starter reading lists: one click gives a new starter every resource in the chosen categories ──
+// Insert-only rows in system_flags:
+//   readlist:<ts>            {reporter, cats:[...], removed?:true}   (latest per reporter wins)
+//   readdone:<slug>:<ts>     {reporter, id, done}                    (written from the reporter's planner)
+var READLISTS = {}, READDONE = {};
+var STARTER_DEFAULT_CATS = ['video','onboarding','cadet to killer'];
+function resKey(r){ return r.id || r.url; }
+function resCat(r){ return ((r.category||'').trim()) || 'General'; }
+function readItemsFor(rep){ const L = READLISTS[rep]; if (!L) return []; return RESOURCES.filter(r => L.cats.indexOf(resCat(r)) > -1); }
+async function loadReadingLists(){
+  READLISTS = {}; READDONE = {};
+  try {
+    const a = await supa.from('system_flags').select('key,value').like('key','readlist%').order('key',{ascending:true}).limit(2000);
+    (a.data||[]).forEach(row => { let v; try { v = JSON.parse(row.value); } catch(e){ return; } if (!v || !v.reporter) return;
+      if (v.removed) delete READLISTS[v.reporter]; else READLISTS[v.reporter] = { cats: v.cats || [], ts: v.ts || 0 }; });
+    const b = await supa.from('system_flags').select('key,value').like('key','readdone%').order('key',{ascending:true}).limit(10000);
+    (b.data||[]).forEach(row => { let v; try { v = JSON.parse(row.value); } catch(e){ return; } if (!v || !v.reporter || !v.id) return;
+      (READDONE[v.reporter] = READDONE[v.reporter] || {})[v.id] = !!v.done; });
+  } catch(e){ console.warn('Reading lists load failed', e); }
+}
+function renderStarterPack(){
+  const el = document.getElementById('res-starter'); if (!el) return;
+  const cats = []; RESOURCES.forEach(r => { const c = resCat(r); if (cats.indexOf(c) < 0) cats.push(c); });
+  const keep = {}; el.querySelectorAll('.sp-cat input').forEach(i => { keep[i.value] = i.checked; });
+  const selRep = (document.getElementById('sp-rep') || {}).value || '';
+  let h = '<div class="sp-card"><div class="sp-title">Starter reading list</div><div class="sp-sub">Give a new starter everything in the categories you tick. They see it as a checklist at the top of their Resources page, and you can follow their progress here.</div>';
+  h += '<div class="sp-row"><select id="sp-rep" onchange="renderStarterPack()"><option value="">Choose a reporter…</option>' + REPORTERS.map(r => '<option value="' + esc(r.name) + '"' + (selRep === r.name ? ' selected' : '') + '>' + esc(r.name) + ' · ' + esc(r.pub) + '</option>').join('') + '</select></div>';
+  h += '<div class="sp-cats">' + cats.map(c => { const on = (c in keep) ? keep[c] : (STARTER_DEFAULT_CATS.indexOf(c.toLowerCase()) > -1); const n = RESOURCES.filter(r => resCat(r) === c).length;
+    return '<label class="sp-cat"><input type="checkbox" value="' + esc(c) + '"' + (on ? ' checked' : '') + ' onchange="updateStarterCount()"> ' + esc(c) + ' <span>' + n + '</span></label>'; }).join('') + '</div>';
+  h += '<div class="sp-row"><button class="sp-go" id="sp-go" onclick="assignReadingList()">Assign reading list</button><span id="sp-count" class="sp-count"></span></div>';
+  const assigned = Object.keys(READLISTS);
+  if (assigned.length) {
+    h += '<div class="sp-assigned"><div class="sp-sub" style="margin:14px 0 6px">Assigned</div>' + assigned.map(rep => {
+      const items = readItemsFor(rep); const done = items.filter(r => (READDONE[rep]||{})[resKey(r)]).length; const pct = items.length ? Math.round(done / items.length * 100) : 0;
+      return '<div class="sp-a"><div class="sp-a-top"><b>' + esc(rep) + '</b><span>' + done + ' of ' + items.length + ' read' + (items.length && done === items.length ? ' ✓' : '') + '</span><button class="sp-x" onclick="removeReadingList(\'' + esc(rep).replace(/'/g, "\\'") + '\')">Remove</button></div><div class="sp-bar"><div style="width:' + pct + '%"></div></div><div class="sp-a-cats">' + esc(READLISTS[rep].cats.join(' · ')) + '</div></div>';
+    }).join('') + '</div>';
+  }
+  el.innerHTML = h + '</div>';
+  updateStarterCount();
+}
+function starterCats(){ return Array.from(document.querySelectorAll('#res-starter .sp-cat input:checked')).map(i => i.value); }
+function updateStarterCount(){
+  const c = document.getElementById('sp-count'); if (!c) return;
+  const cats = starterCats(); const n = RESOURCES.filter(r => cats.indexOf(resCat(r)) > -1).length;
+  c.textContent = n + ' item' + (n === 1 ? '' : 's') + ' will be assigned';
+  const rep = (document.getElementById('sp-rep') || {}).value; const b = document.getElementById('sp-go');
+  if (b) { b.disabled = !rep || !n; b.textContent = rep && READLISTS[rep] ? 'Update reading list' : 'Assign reading list'; }
+}
+async function assignReadingList(){
+  const rep = document.getElementById('sp-rep').value; const cats = starterCats(); if (!rep || !cats.length) return;
+  const n = RESOURCES.filter(r => cats.indexOf(resCat(r)) > -1).length;
+  try {
+    const res = await supa.from('system_flags').insert({ key: 'readlist:' + Date.now(), value: JSON.stringify({ reporter: rep, cats: cats, ts: Date.now() }) });
+    if (res.error) { alert('Could not assign the list. Try again.'); return; }
+  } catch(e){ alert('Could not assign the list. Try again.'); return; }
+  notifySlack(slackMention(rep) + ':books: You’ve been given a reading list: ' + n + ' resources (' + cats.join(', ') + '). Open *Resources* in your planner to start.');
+  await loadReadingLists(); renderStarterPack();
+}
+async function removeReadingList(rep){
+  if (!confirm('Remove ' + rep + '’s reading list?')) return;
+  try { const res = await supa.from('system_flags').insert({ key: 'readlist:' + Date.now(), value: JSON.stringify({ reporter: rep, removed: true }) }); if (res.error) { alert('Could not remove it. Try again.'); return; } } catch(e){ alert('Could not remove it. Try again.'); return; }
+  await loadReadingLists(); renderStarterPack();
 }
 var RES_EDIT = null;
 function renderResourcesAdmin() {
@@ -4884,7 +4971,7 @@ async function saveResourceEdit(id) {
   r.category = document.getElementById('res-ed-cat').value.trim();
   r.note = document.getElementById('res-ed-note').value.trim();
   const ok = await saveResourcesList();
-  if (ok) { RES_EDIT = null; renderResourcesAdmin(); }
+  if (ok) { RES_EDIT = null; renderResourcesAdmin(); renderStarterPack(); }
   else { Object.assign(r, JSON.parse(prev)); alert('Could not save the change. Try again.'); }
 }
 async function addResource() {
@@ -4899,13 +4986,14 @@ async function addResource() {
   if (ok) {
     ['res-new-title','res-new-url','res-new-cat','res-new-note'].forEach(i => document.getElementById(i).value = '');
     renderResourcesAdmin();
+    renderStarterPack();
   } else { RESOURCES.pop(); alert('Could not save the resource. Try again.'); }
 }
 async function removeResource(id) {
   const prev = RESOURCES.slice();
   RESOURCES = RESOURCES.filter(r => r.id !== id);
   const ok = await saveResourcesList();
-  if (ok) renderResourcesAdmin(); else { RESOURCES = prev; alert('Could not remove. Try again.'); }
+  if (ok) { renderResourcesAdmin(); renderStarterPack(); } else { RESOURCES = prev; alert('Could not remove. Try again.'); }
 }
 async function saveResourcesList() {
   try {
