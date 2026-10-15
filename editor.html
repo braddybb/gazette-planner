@@ -920,6 +920,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
 /* ── Impact Radar ── */
 #impact-radar-view{display:none;padding:1.25rem 2rem 3rem;max-width:980px;margin:0 auto;--ir-green:#2E6B4F;--ir-rust:#B4532A}
+#patch-radar-view{display:none;padding:1.25rem 2rem 3rem;max-width:1500px;margin:0 auto}
 .ir-head{background:var(--ink);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 .ir-head-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#fff}
 .ir-head-right{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#b9b9b4}
@@ -1108,6 +1109,49 @@ details.vd-more summary::-webkit-details-marker{display:none}
 .sp-bar{height:6px;border-radius:99px;background:#EFEDE6;overflow:hidden;margin:6px 0 3px}
 .sp-bar div{height:100%;background:#2E6B4F}
 .sp-a-cats{font-size:11.5px;color:#8A877B}
+
+
+.prb-seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.prb-seg button{font:600 12.5px inherit;font-family:inherit;padding:7px 12px;border-radius:999px;background:#fff;border:1px solid #E8E7E1;color:#4a4a44;cursor:pointer;display:flex;gap:7px;align-items:center}
+.prb-seg button i{font-style:normal;font-size:11px;color:#77776F;font-weight:600}
+.prb-seg button.on{background:#1B1B18;color:#fff;border-color:#1B1B18}.prb-seg button.on i{color:#cfcfc6}
+.prb-seg button em{font-style:normal;background:#2E6B4F;color:#fff;border-radius:999px;font-size:10.5px;padding:1px 7px}
+.prb-seg button.on em{background:#fff;color:#1B1B18}
+.prb-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:start}
+.prb-col{background:#EFEEE8;border-radius:14px;padding:10px}
+.prb-ch{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;padding:4px 6px 10px;color:#4a4a44;text-transform:uppercase;letter-spacing:.04em}
+.prb-ch span{background:#fff;border-radius:999px;padding:1px 8px;font-size:11px;color:#77776F}
+.prb-n{background:#fff;border:1px solid #E8E7E1;border-radius:11px;padding:11px 12px;margin-bottom:9px}
+.prb-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.prb-sc{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:28px;border-radius:8px;font-weight:700;font-size:13px;background:#EFEEE9;color:#55554d}
+.prb-sc.hi{background:#2E6B4F;color:#fff}.prb-sc.mid{background:#FBEBCF;color:#8A5A12}
+.prb-k{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:#EFEEE9;color:#77776F}
+.prb-k.council{background:#E4E9FA;color:#2F46A8}.prb-k.court,.prb-k.police{background:#F6E3DA;color:#B4532A}.prb-k.env{background:#E6F1EA;color:#2E6B4F}.prb-k.biz{background:#FBEBCF;color:#8A5A12}.prb-k.health{background:#EBDDF5;color:#6A3A8C}.prb-k.plan{background:#E0F0F0;color:#1F6B6B}.prb-k.pol{background:#E4E9FA;color:#2F46A8}
+.prb-t{font-weight:600;font-size:13px;line-height:1.35;margin:7px 0 4px}.prb-t a{color:inherit;text-decoration:none}.prb-t a:hover{text-decoration:underline}
+.prb-m{font-size:11px;color:#77776F}.prb-w{font-size:12px;color:#3a3a34;margin-top:6px;line-height:1.4}
+.prb-ang{font-size:11.5px;color:#1F5C3E;margin-top:5px;line-height:1.4}
+.prb-empty{padding:24px 8px;color:#8a887e;font-size:13.5px}
+
+.prb-seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.prb-seg button{font:600 12.5px inherit;font-family:inherit;padding:7px 12px;border-radius:999px;background:#fff;border:1px solid #E8E7E1;color:#4a4a44;cursor:pointer;display:flex;gap:7px;align-items:center}
+.prb-seg button i{font-style:normal;font-size:11px;color:#77776F;font-weight:600}
+.prb-seg button.on{background:#1B1B18;color:#fff;border-color:#1B1B18}.prb-seg button.on i{color:#cfcfc6}
+.prb-seg button em{font-style:normal;background:#2E6B4F;color:#fff;border-radius:999px;font-size:10.5px;padding:1px 7px}
+.prb-seg button.on em{background:#fff;color:#1B1B18}
+.prb-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:start}
+.prb-col{background:#EFEEE8;border-radius:14px;padding:10px}
+.prb-ch{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;padding:4px 6px 10px;color:#4a4a44;text-transform:uppercase;letter-spacing:.04em}
+.prb-ch span{background:#fff;border-radius:999px;padding:1px 8px;font-size:11px;color:#77776F}
+.prb-n{background:#fff;border:1px solid #E8E7E1;border-radius:11px;padding:11px 12px;margin-bottom:9px}
+.prb-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.prb-sc{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:28px;border-radius:8px;font-weight:700;font-size:13px;background:#EFEEE9;color:#55554d}
+.prb-sc.hi{background:#2E6B4F;color:#fff}.prb-sc.mid{background:#FBEBCF;color:#8A5A12}
+.prb-k{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:#EFEEE9;color:#77776F}
+.prb-k.council{background:#E4E9FA;color:#2F46A8}.prb-k.court,.prb-k.police{background:#F6E3DA;color:#B4532A}.prb-k.env{background:#E6F1EA;color:#2E6B4F}.prb-k.biz{background:#FBEBCF;color:#8A5A12}.prb-k.health{background:#EBDDF5;color:#6A3A8C}.prb-k.plan{background:#E0F0F0;color:#1F6B6B}.prb-k.pol{background:#E4E9FA;color:#2F46A8}
+.prb-t{font-weight:600;font-size:13px;line-height:1.35;margin:7px 0 4px}.prb-t a{color:inherit;text-decoration:none}.prb-t a:hover{text-decoration:underline}
+.prb-m{font-size:11px;color:#77776F}.prb-w{font-size:12px;color:#3a3a34;margin-top:6px;line-height:1.4}
+.prb-ang{font-size:11.5px;color:#1F5C3E;margin-top:5px;line-height:1.4}
+.prb-empty{padding:24px 8px;color:#8a887e;font-size:13.5px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -5965,17 +6009,23 @@ async function prLoad(){
     var since=new Date(Date.now()-7*864e5).toISOString();
     var c=await supa.from('patch_items').select('patches,scored_at,relevance').gte('fetched_at',since).limit(5000); var cr=c.data||[]; PR.items=cr.length; PR.counts={}; PR.unscored=0;
     cr.forEach(function(r){ if(!r.scored_at) PR.unscored++; (r.patches||[]).forEach(function(p){ var o=PR.counts[p]||(PR.counts[p]={all:0,scored:0,top:0}); o.all++; if(r.scored_at){ o.scored++; if(r.relevance>=70) o.top++; } }); });
-    var d=await supa.from('patch_items').select('id,title,url,source_name,kind,relevance,why,angle,mentions,published_at,fetched_at,patches').contains('patches',[PR.rpatch]).gte('fetched_at',since).not('scored_at','is',null).gte('relevance',40).order('relevance',{ascending:false}).limit(60); PR.rows=d.data||[];
+    var d=await supa.from('patch_items').select('id,title,url,source_name,kind,relevance,why,angle,mentions,published_at,fetched_at,patches').contains('patches',[PR.rpatch]).gte('fetched_at',since).not('scored_at','is',null).gte('relevance',40).order('relevance',{ascending:false}).limit(120); PR.rows=d.data||[];
   }catch(e){ var m=String((e&&(e.message||e.code))||e); PR.err=/relation|does not exist|schema cache|PGRST205|42P01/i.test(m)?'setup':m; }
   prRender();
 }
+var PRB_COLS=[['Top picks',null],['Council & planning',['council','planning / development']],['Police, courts & health',['court / crime','police / emergency','health']],['Environment & jobs',['environment / infrastructure','business / jobs']],['Politics & other',['state politics','federal politics','local news','other']]];
+var PRB_CLS={'council':'council','planning / development':'plan','court / crime':'court','police / emergency':'police','health':'health','environment / infrastructure':'env','business / jobs':'biz','state politics':'pol','federal politics':'pol'};
 function prResultsHtml(){
-  var h='<div class="ir-panel"><h4>Results by patch</h4><p class="cap">What reporters see under “Patch”, scored 40+. '+PR.unscored+' collected item'+(PR.unscored===1?' is':'s are')+' still waiting to be scored; each scan scores the next batch.</p><div class="ir-form" style="margin-bottom:10px">';
-  PR_PATCHES.forEach(function(p){ var o=PR.counts[p]||{all:0,scored:0,top:0}; h+='<button class="vd-btn sm" style="'+(PR.rpatch===p?'':'opacity:.55')+'" onclick="prPickPatch(\''+esc(p).replace(/'/g,'')+'\')">'+esc(p)+' · '+o.top+' top / '+o.scored+' scored / '+o.all+'</button>'; });
-  h+='</div>';
-  if(!PR.rows.length) h+='<div class="ir-empty">Nothing scored 40+ for this patch yet.'+(PR.unscored?' Press Scan patches to score the next batch.':'')+'</div>';
-  PR.rows.forEach(function(r){ h+='<div class="ir-row" style="align-items:flex-start"><span class="ir-tag" style="min-width:30px;text-align:center"><b>'+r.relevance+'</b></span><div style="flex:1;min-width:0"><a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer" style="font-weight:600;color:inherit">'+esc(r.title)+' ↗</a><div class="cap" style="margin:2px 0">'+esc(r.source_name)+' · '+esc(r.kind||'')+((r.mentions||[]).length?' · '+esc(r.mentions.join(', ')):'')+'</div>'+(r.why?'<div style="font-size:12.5px">'+esc(r.why)+'</div>':'')+(r.angle?'<div style="font-size:12.5px;color:#1F5C3E"><b>Angle:</b> '+esc(r.angle)+'</div>':'')+'</div></div>'; });
-  return h+'</div>';
+  var h='<div class="prb-seg">'+PR_PATCHES.map(function(p){ var o=PR.counts[p]||{all:0,scored:0,top:0}; return '<button class="'+(PR.rpatch===p?'on':'')+'" onclick="prPickPatch(\''+esc(p).replace(/'/g,'')+'\')">'+esc(p.replace('West Vic Brolga — ','West Vic: '))+' <i>'+o.scored+'</i>'+(o.top?'<em>'+o.top+'</em>':'')+'</button>'; }).join('')+'</div>';
+  h+='<p class="cap" style="margin:-4px 0 12px">What reporters see under “Patch” (scored 40+). Green number = top picks (70+); grey = scored. '+PR.unscored+' collected item'+(PR.unscored===1?' is':'s are')+' still waiting to be scored.</p>';
+  if(!PR.rows.length) return h+'<div class="prb-empty">Nothing scored 40+ for this patch yet.'+(PR.unscored?' Press Scan patches to score the next batch.':'')+'</div>';
+  var card=function(r){ return '<div class="prb-n"><div class="prb-top"><span class="prb-sc '+(r.relevance>=80?'hi':(r.relevance>=60?'mid':''))+'">'+r.relevance+'</span><span class="prb-k '+(PRB_CLS[r.kind]||'')+'">'+esc(r.kind||'other')+'</span></div><div class="prb-t"><a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' ↗</a></div><div class="prb-m">'+esc(r.source_name)+((r.mentions||[]).length?' · '+esc(r.mentions.join(', ')):'')+'</div>'+(r.why?'<div class="prb-w">'+esc(r.why)+'</div>':'')+(r.angle?'<div class="prb-ang"><b>Angle:</b> '+esc(r.angle)+'</div>':'')+'</div>'; };
+  h+='<div class="prb-board">'+PRB_COLS.map(function(c){
+    var rows=PR.rows.filter(function(r){ return c[1]===null?r.relevance>=70:(r.relevance<70&&c[1].indexOf(r.kind||'other')>-1); });
+    if(!rows.length&&c[1]!==null) return '';
+    return '<div class="prb-col"><div class="prb-ch">'+c[0]+'<span>'+rows.length+'</span></div>'+rows.map(card).join('')+'</div>';
+  }).join('')+'</div>';
+  return h;
 }
 function prPickPatch(p){ PR.rpatch=p; prLoad(); }
 function prHealth(s){
@@ -5988,8 +6038,8 @@ function prRender(){
   var h='<div class="ir-head"><div class="ir-head-title">📍 Patch Radar</div><div class="ir-head-right"><span class="ir-pill">'+PR.items+' items this week</span><button class="ir-scan" onclick="prScanNow()">'+(PR.scanning?'Scanning…':'⚡ Scan patches')+'</button><button class="ir-refresh" onclick="prLoad()" title="Refresh">↻</button></div></div>';
   if(PR.msg) h+='<div class="ir-banner" style="cursor:default">'+esc(PR.msg)+'</div>';
   if(PR.err){ el.innerHTML=h+(PR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>patch-tables.sql</code>, then <code>patch-seed.sql</code>, in the Supabase SQL editor, then refresh.</div>':'<div class="ir-setup"><b>Could not load.</b> '+esc(PR.err)+'</div>'); return; }
-  var r=PR.runs[0]; if(r) h+='<p class="cap" style="margin:0 0 12px">Last scan '+esc(vdAgo(Date.parse(r.started_at)))+(r.finished_at?' — '+(r.inserted||0)+' new, '+(r.scored||0)+' scored':' — running')+'. Runs automatically at 7:15am Mon–Fri; reporters see the results under “Your patch”.</p>';
-  h+='<div class="ir-form" style="margin:0 0 12px"><button class="vd-btn sm" style="'+(PR.tab==='results'?'':'opacity:.55')+'" onclick="PR.tab=\'results\';prRender()">Results</button><button class="vd-btn sm" style="'+(PR.tab==='sources'?'':'opacity:.55')+'" onclick="PR.tab=\'sources\';prRender()">Sources</button></div>';
+  var r=PR.runs[0]; if(r) h+='<p class="cap" style="margin:0 0 12px">Last scan '+esc(vdAgo(Date.parse(r.started_at)))+(r.finished_at?' — '+(r.inserted||0)+' new, '+(r.scored||0)+' scored':' — running')+'. Runs automatically at 7:15am Mon–Fri; reporters see the results under “Patch”.</p>';
+  h+='<div class="prb-seg" style="margin:0 0 12px"><button class="'+(PR.tab==='results'?'on':'')+'" onclick="PR.tab=\'results\';prRender()">Results</button><button class="'+(PR.tab==='sources'?'on':'')+'" onclick="PR.tab=\'sources\';prRender()">Sources</button></div>';
   if(PR.tab==='results'){ el.innerHTML=h+prResultsHtml(); return; }
   var bad=PR.sources.filter(function(s){ return s.last_error; }).length, ok=PR.sources.filter(function(s){ return s.last_ok&&!s.last_error; }).length;
   h+='<div class="ir-panel"><h4>Sources — '+PR.sources.length+' ('+ok+' working'+(bad?', '+bad+' failing':'')+')</h4><p class="cap">Shared sources only keep items that name a place or politician from a patch. “Page” sources have no feed, so the headline links are read. Failing sources probably need a different address — edit the address and the next scan retries.</p>';
