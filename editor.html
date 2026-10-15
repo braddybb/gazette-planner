@@ -1078,6 +1078,16 @@ details.vd-more summary{font-size:13px;font-weight:500;color:var(--vd-blue);curs
 details.vd-more summary::-webkit-details-marker{display:none}
 #video-desk-view .vd-stage{font-size:13px;color:#6B685C}
 #video-desk-view .vd-stage:before{width:13px;height:13px}
+
+.res-admin-edit{background:none;border:1px solid #D9D6CB;border-radius:7px;font:inherit;font-size:12px;font-weight:600;color:#3A5BDF;padding:4px 10px;cursor:pointer;align-self:flex-start;margin-right:6px}
+.res-admin-edit:hover{background:#F6F5F1}
+.res-admin-url{word-break:break-all;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.res-editing{display:block}
+.res-edit-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.res-edit-form input{font-family:inherit;font-size:13.5px;border:1px solid #D9D6CB;border-radius:8px;padding:8px 10px;min-width:0}
+.res-edit-act{grid-column:1/-1;display:flex;gap:8px}
+.res-edit-act button{font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:7px 14px;cursor:pointer;border:1px solid #3A5BDF;background:#3A5BDF;color:#fff}
+.res-edit-act .res-edit-cancel{background:#fff;color:#444;border-color:#D9D6CB}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -4840,16 +4850,42 @@ async function loadResourcesAdmin() {
   } catch(e) { RESOURCES = []; }
   renderResourcesAdmin();
 }
+var RES_EDIT = null;
 function renderResourcesAdmin() {
   const body = document.getElementById('res-admin-list');
   if (!RESOURCES.length) { body.innerHTML = '<div class="rollup-empty">No resources yet — add one above.</div>'; return; }
-  body.innerHTML = RESOURCES.map(r =>
-    '<div class="res-admin-row"><div class="res-admin-main">' +
+  body.innerHTML = RESOURCES.map(r => {
+    if (r.id === RES_EDIT) {
+      return '<div class="res-admin-row res-editing"><div class="res-edit-form">' +
+        '<input id="res-ed-title" value="' + esc(r.title || '') + '" placeholder="Title">' +
+        '<input id="res-ed-url" value="' + esc(r.url || '') + '" placeholder="Link (https://…)">' +
+        '<input id="res-ed-cat" value="' + esc(r.category || '') + '" placeholder="Category (optional)">' +
+        '<input id="res-ed-note" value="' + esc(r.note || '') + '" placeholder="Short note (optional)">' +
+        '<div class="res-edit-act"><button onclick="saveResourceEdit(\'' + r.id + '\')">Save</button><button class="res-edit-cancel" onclick="cancelResourceEdit()">Cancel</button></div>' +
+      '</div></div>';
+    }
+    return '<div class="res-admin-row"><div class="res-admin-main">' +
       '<div class="res-admin-title">' + esc(r.title || r.url) + (r.category ? ' <span class="res-admin-cat">' + esc(r.category) + '</span>' : '') + '</div>' +
       '<a class="res-admin-url" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url) + '</a>' +
       (r.note ? '<div class="res-admin-note">' + esc(r.note) + '</div>' : '') +
-    '</div><button class="res-admin-del" onclick="removeResource(\'' + r.id + '\')" title="Remove">&times;</button></div>'
-  ).join('');
+    '</div><button class="res-admin-edit" onclick="editResource(\'' + r.id + '\')" title="Edit">Edit</button><button class="res-admin-del" onclick="removeResource(\'' + r.id + '\')" title="Remove">&times;</button></div>';
+  }).join('');
+}
+function editResource(id) { RES_EDIT = id; renderResourcesAdmin(); const t = document.getElementById('res-ed-title'); if (t) t.focus(); }
+function cancelResourceEdit() { RES_EDIT = null; renderResourcesAdmin(); }
+async function saveResourceEdit(id) {
+  const r = RESOURCES.find(x => x.id === id); if (!r) return;
+  const title = document.getElementById('res-ed-title').value.trim();
+  let url = document.getElementById('res-ed-url').value.trim();
+  if (!title || !url) { alert('Give it a title and a link.'); return; }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const prev = JSON.stringify(r);
+  r.title = title; r.url = url;
+  r.category = document.getElementById('res-ed-cat').value.trim();
+  r.note = document.getElementById('res-ed-note').value.trim();
+  const ok = await saveResourcesList();
+  if (ok) { RES_EDIT = null; renderResourcesAdmin(); }
+  else { Object.assign(r, JSON.parse(prev)); alert('Could not save the change. Try again.'); }
 }
 async function addResource() {
   const title = document.getElementById('res-new-title').value.trim();
