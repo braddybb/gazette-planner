@@ -265,6 +265,18 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .res-item-title{font-weight:600;font-size:14px;color:var(--ink);display:flex;align-items:center;gap:6px}
 .res-item-title .res-ext{font-size:12px;color:var(--grey-md,#999)}
 .res-item-note{font-size:12.5px;color:var(--grey-md,#888);margin-top:3px}
+.rl-card{background:#fff;border:1px solid #CFE0D6;border-radius:12px;padding:16px 18px;margin-bottom:26px}
+.rl-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.rl-title{font-weight:700;font-size:15px}
+.rl-count{font-size:12.5px;color:var(--grey-md,#888);font-weight:600}
+.rl-bar{height:6px;border-radius:99px;background:#EEF1EE;overflow:hidden;margin:8px 0 6px}
+.rl-bar div{height:100%;background:#2E6B4F;transition:width .25s}
+.rl-grp{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-md,#999);margin:12px 0 4px}
+.rl-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #F1F1EE;font-size:14px;cursor:pointer}
+.rl-item input{width:17px;height:17px;flex:none;accent-color:#2E6B4F}
+.rl-item a{color:var(--ink);text-decoration:none;font-weight:500}
+.rl-item a:hover{text-decoration:underline}
+.rl-item.done a{color:#999;text-decoration:line-through}
 .res-empty{color:var(--grey-md,#999);font-size:13.5px;font-style:italic;padding:20px 0}
 .foi-wrap{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
 .foi-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -1036,7 +1048,7 @@ padding:5px 12px;border-radius:999px}
 <span>&#127974;</span><span id="bank-nav-label">Bank</span>
 </button>
 <button class="bank-nav" id="res-nav" onclick="showResourcesView()" title="Onboarding docs and resources">
-<span>&#128218;</span><span>Resources</span>
+<span>&#128218;</span><span id="res-nav-label">Resources</span>
 </button>
 <button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
 <span>&#128196;</span><span>FOI</span>
@@ -1720,6 +1732,7 @@ loadStories();
 renderBadges();
 refreshNextWeekBadges();
 loadGoldStar();
+loadResources();
 loadBank();
 loadTodos();
 }
@@ -2363,6 +2376,43 @@ renderBankCards();
 loadBank();
 }
 
+
+// ── Starter reading list: the editor assigns categories; the reporter ticks items off ──
+let RES_ALL = [], MY_READ = null, READ_ITEMS = [];
+function resKeyI(r){ return r.id || r.url; }
+function slugName(n){ return String(n||'').toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+async function loadMyReadList(){
+try {
+const a = await supa.from('system_flags').select('value').like('key','readlist%').order('key',{ascending:true}).limit(2000);
+let mine = null;
+(a.data||[]).forEach(row => { let v; try { v = JSON.parse(row.value); } catch(e){ return; } if (!v || v.reporter !== USER.name) return; mine = v.removed ? null : { cats: v.cats || [], done: {} }; });
+if (mine) {
+const b = await supa.from('system_flags').select('value').like('key','readdone:'+slugName(USER.name)+':%').order('key',{ascending:true}).limit(5000);
+(b.data||[]).forEach(row => { let v; try { v = JSON.parse(row.value); } catch(e){ return; } if (v && v.id) mine.done[v.id] = !!v.done; });
+}
+MY_READ = mine;
+} catch(e){ MY_READ = null; }
+updateReadBadge();
+}
+function myReadItems(){ if (!MY_READ) return []; return RES_ALL.filter(r => MY_READ.cats.indexOf(((r.category||'').trim()) || 'General') > -1); }
+function updateReadBadge(){
+const el = document.getElementById('res-nav-label'); if (!el) return;
+const items = myReadItems(); const left = items.filter(r => !MY_READ.done[resKeyI(r)]).length;
+el.textContent = left ? ('Resources · ' + left + ' to read') : 'Resources';
+}
+function readCardHtml(){
+const items = myReadItems(); if (!items.length) return '';
+READ_ITEMS = items; const done = items.filter(r => MY_READ.done[resKeyI(r)]).length; const pct = Math.round(done/items.length*100);
+const groups = {}; items.forEach((r,i) => { const c = ((r.category||'').trim()) || 'General'; (groups[c] = groups[c] || []).push({r:r,i:i}); });
+return '<div class="rl-card"><div class="rl-top"><div class="rl-title">Your reading list</div><div class="rl-count">'+done+' of '+items.length+' read'+(done===items.length?' ✓':'')+'</div></div><div class="rl-bar"><div style="width:'+pct+'%"></div></div>'+
+Object.keys(groups).map(c => '<div class="rl-grp">'+esc(c)+'</div>'+groups[c].map(o => '<label class="rl-item'+(MY_READ.done[resKeyI(o.r)]?' done':'')+'"><input type="checkbox" '+(MY_READ.done[resKeyI(o.r)]?'checked ':'')+'onchange="toggleRead('+o.i+',this.checked)"><a href="'+esc(o.r.url||'#')+'" target="_blank" rel="noopener noreferrer">'+esc(o.r.title||o.r.url||'Link')+' <span class="res-ext">&#8599;</span></a></label>').join('')).join('')+'</div>';
+}
+async function toggleRead(i, on){
+const r = READ_ITEMS[i]; if (!r || !MY_READ) return; const k = resKeyI(r);
+MY_READ.done[k] = on; renderResources(RES_ALL); updateReadBadge();
+try { await supaFetch('POST', 'system_flags', { key: 'readdone:'+slugName(USER.name)+':'+Date.now(), value: JSON.stringify({ reporter: USER.name, id: k, done: on }) }); }
+catch(e){ MY_READ.done[k] = !on; renderResources(RES_ALL); updateReadBadge(); alert('Could not save that tick. Try again.'); }
+}
 // ── Resources (read-only list of editor-curated links, stored in system_flags) ──
 function showResourcesView(){
 document.getElementById('stories-view').style.display='none';
@@ -2376,7 +2426,9 @@ try {
 const { data } = await supa.from('system_flags').select('value').like('key','resources%').order('key', { ascending: false }).limit(1);
 const row = (data && data[0]) ? data[0] : null;
 const list = row && row.value ? JSON.parse(row.value) : [];
-renderResources(Array.isArray(list) ? list : []);
+RES_ALL = Array.isArray(list) ? list : [];
+await loadMyReadList();
+renderResources(RES_ALL);
 } catch(e){ console.warn('Resources load failed (non-critical):', e); renderResources([]); }
 }
 function renderResources(list){
@@ -2385,7 +2437,7 @@ if (!el) return;
 if (!list.length){ el.innerHTML = '<div class="res-empty">No resources have been added yet.</div>'; return; }
 const groups = {};
 list.forEach(r => { const c = ((r.category||'').trim()) || 'General'; (groups[c]=groups[c]||[]).push(r); });
-el.innerHTML = Object.keys(groups).map(cat =>
+el.innerHTML = readCardHtml() + Object.keys(groups).map(cat =>
 '<div class="res-group"><div class="res-group-title">'+esc(cat)+'</div>'+
 groups[cat].map(r => '<a class="res-item" href="'+esc(r.url||'#')+'" target="_blank" rel="noopener noreferrer"><div class="res-item-title">'+esc(r.title||r.url||'Link')+' <span class="res-ext">&#8599;</span></div>'+(r.note?'<div class="res-item-note">'+esc(r.note)+'</div>':'')+'</a>').join('')+
 '</div>'
