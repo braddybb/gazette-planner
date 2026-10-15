@@ -14,6 +14,29 @@ import { parseFeed, fetchText, adapterHtml, db, titleKey, normUrl, sha, matchWat
 
 export const PATCHES = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga — Wannon", "West Vic Brolga — Ballarat", "Gippsland Monitor", "Mid North Coaster", "National Account"];
 export const SCORE_PER_RUN = 120;
+export const ALERT_MIN = 80;     // relevance needed for a Slack DM to the patch's reporter
+export const ALERT_MAX = 6;      // max items per DM
+// Reporter -> Slack member ID (same IDs the other Gazette functions use)
+export const REPORTERS = [
+  { name: "Matthew Sims", pub: "Eastern Melburnian", slack: "U07SHH3RB46" },
+  { name: "Huw Bradshaw", pub: "North Shore Lorikeet", slack: "U08P2C7862Z" },
+  { name: "Zara Cuthbertson", pub: "West Vic Brolga \u2014 Wannon", slack: "U08LY1YR6E8" },
+  { name: "Darcie Humphreys", pub: "West Vic Brolga \u2014 Ballarat", slack: "U0AFJML3A1G" },
+  { name: "Jacob Wallace", pub: "Gippsland Monitor", slack: "U08DG9R5A6R" },
+  { name: "Douglas Connor", pub: "Mid North Coaster", slack: "U0B71KH9Y0K" },
+  { name: "Archie Milligan", pub: "National Account", slack: "U08DQ26CEE7" },
+];
+export function alertDm(pub, items, site) {
+  const L = [`:round_pushpin: *Patch Radar \u2014 ${pub}*`];
+  items.slice(0, ALERT_MAX).forEach((it) => L.push(`\u2022 *${it.relevance}* <${it.url}|${clip(it.title, 110)}> _(${it.source_name})_${it.why ? "\n   " + clip(it.why, 160) : ""}`));
+  if (items.length > ALERT_MAX) L.push(`_+${items.length - ALERT_MAX} more in your planner_`);
+  L.push(`<${site}|Open Patch in your planner>`); return L.join("\n");
+}
+async function dmSlack(ctx, channel, text) {
+  const tok = ctx.env.SLACK_BOT_TOKEN; if (!tok) return false;
+  const r = await ctx.fetch("https://slack.com/api/chat.postMessage", { method: "POST", headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify({ channel, text, unfurl_links: false }) });
+  const j = await r.json(); if (!j.ok) throw new Error("Slack: " + j.error); return true;
+}
 export const POLITICS_RE = /\b(parliament(?:ary)?|senate|senator|house of representatives|federal (?:government|election|budget|court|police)|prime minister|albanese|opposition leader|angus taylor|treasurer|chalmers|minister for|cabinet|budget|labor|coalition|liberals?|nationals|greens|one nation|crossbench|teals?|independent mp|election|by-?election|poll(?:s|ing)?|policy|legislation|bill|inquiry|royal commission|estimates|hansard|high court|integrity commission|icac|ibac|nacc|ombudsman|auditor-general|aec|rba|interest rates?|inflation|cost of living|housing|medicare|nbn|ndis|immigration|defence|aukus)\b/i;
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const wordRe = (t) => new RegExp(`(^|[^a-z0-9])${esc(t)}([^a-z0-9]|$)`, "i");
@@ -125,14 +148,15 @@ export async function scoreBatch(items, ctx, briefs) {
 
 // ── one full run ─────────────────────────────────────────────────────────────
 export async function run(ctx) {
-  const D = db(ctx); const started = new Date(ctx.now);
+  const D = db(ctx); const started = new Date(ctx.now); const scope = ctx.scope || "all";
   const stats = { fetched: 0, inserted: 0, scored: 0, errors: [] };
   try {
-    const last = await D.get("patch_runs?select=started_at&order=started_at.desc&limit=1");
+    const last = await D.get(`patch_runs?select=started_at&scope=eq.${encodeURIComponent(scope)}&order=started_at.desc&limit=1`);
     if (last[0] && ctx.now - Date.parse(last[0].started_at) < (ctx.minGapMs ?? 8 * 60e3)) return { skipped: "ran recently" };
   } catch (e) { stats.errors.push("throttle check: " + e.message); }
-  const runRow = (await D.insert("patch_runs", { started_at: started.toISOString() }))[0];
-  const [sources, areas, people] = await Promise.all([D.get("patch_sources?active=eq.true&select=*"), D.get("patch_areas?select=*"), D.get("patch_people?active=eq.true&select=*")]);
+  const runRow = (await D.insert("patch_runs", { started_at: started.toISOString(), scope }))[0];
+  const [allSources, areas, people] = await Promise.all([D.get("patch_sources?active=eq.true&select=*"), D.get("patch_areas?select=*"), D.get("patch_people?active=eq.true&select=*")]);
+  const sources = scope === "all" ? allSources : allSources.filter((s) => (s.patches || []).includes(scope));
   const matchers = buildMatchers(areas, people); const briefs = Object.fromEntries(areas.map((a) => [a.patch, a.brief]));
   const seenTitle = new Set((await D.get(`patch_items?select=title_key&fetched_at=gte.${new Date(ctx.now - 4 * 864e5).toISOString()}&limit=10000`)).map((r) => r.title_key));
   const fresh = [];
@@ -190,16 +214,18 @@ export async function run(ctx) {
       }
     }));
   }
+  // DM each reporter their own patch's best new items (scored high, not alerted before, last 24h)
+  try {
+    const cand = await D.get(`patch_items?alerted=eq.false&relevance=gte.${ALERT_MIN}&fetched_at=gte.${new Date(ctx.now - 864e5).toISOString()}&order=relevance.desc&limit=200&select=id,title,url,source_name,why,relevance,patches`);
+    const site = ctx.env.URL || "https://gari-planner.netlify.app";
+    for (const rep of REPORTERS) {
+      if (scope !== "all" && rep.pub !== scope) continue;
+      const mine = cand.filter((c) => (c.patches || []).includes(rep.pub)); if (!mine.length) continue;
+      const shown = mine.slice(0, ALERT_MAX);
+      try { if (await dmSlack(ctx, rep.slack, alertDm(rep.pub, mine, site))) for (const it of shown) await D.patch(`patch_items?id=eq.${it.id}`, { alerted: true }); stats.alerts = (stats.alerts || 0) + 1; }
+      catch (e) { stats.errors.push(`DM ${rep.name}: ${e.message}`); }
+    }
+  } catch (e) { stats.errors.push("alerts: " + e.message); }
   try { await D.patch(`patch_runs?id=eq.${runRow.id}`, { finished_at: new Date().toISOString(), fetched: stats.fetched, inserted: stats.inserted, scored: stats.scored, errors: stats.errors.length ? stats.errors.join(" | ").slice(0, 1500) : null }); } catch {}
   return stats;
-}
-
-// ── Slack digest (pure text) ─────────────────────────────────────────────────
-export function digestText({ byPatch, site, today }) {
-  const L = [`:round_pushpin: *Patch Radar — ${today}*`]; let any = false;
-  for (const p of PATCHES) {
-    const items = byPatch[p] || []; if (!items.length) continue; any = true;
-    L.push(`*${p}*`); items.slice(0, 3).forEach((it) => L.push(`• *${it.relevance}* <${it.url}|${clip(it.title, 100)}> _(${it.source_name})_\n   ${clip(it.why || "", 150)}`));
-  }
-  if (!any) return null; L.push(`<${site}>`); return L.join("\n");
 }
