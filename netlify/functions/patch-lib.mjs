@@ -14,7 +14,8 @@ import { parseFeed, fetchText, adapterHtml, db, titleKey, normUrl, sha, matchWat
 
 export const PATCHES = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga — Wannon", "West Vic Brolga — Ballarat", "Gippsland Monitor", "Mid North Coaster", "National Account"];
 export const SCORE_PER_RUN = 400;
-export const ALERT_MIN = 80;     // relevance needed for a Slack DM to the patch's reporter
+export const ALERT_MIN = 85;     // default relevance needed for a Slack DM; each reporter can change theirs in their planner (system_flags patchpref:*)
+export const ALERT_FLOOR = 60;   // lowest threshold a reporter can pick
 export const ALERT_MAX = 6;      // max items per DM
 // Reporter -> Slack member ID (same IDs the other Gazette functions use)
 export const REPORTERS = [
@@ -31,6 +32,15 @@ export function alertDm(pub, items, site) {
   items.slice(0, ALERT_MAX).forEach((it) => L.push(`\u2022 *${it.relevance}* <${it.url}|${clip(it.title, 110)}> _(${it.source_name})_${it.why ? "\n   " + clip(it.why, 160) : ""}`));
   if (items.length > ALERT_MAX) L.push(`_+${items.length - ALERT_MAX} more in your planner_`);
   L.push(`<${site}|Open Patch in your planner>`); return L.join("\n");
+}
+// Reporter alert preferences: latest "patchpref:<slug>:<ts>" row per reporter -> { name: minScore | null(off) }
+export async function loadPrefs(D) {
+  const out = {};
+  try {
+    const rows = await D.get("system_flags?key=like.patchpref*&order=key.desc&select=key,value&limit=500");
+    for (const r of rows) { let v; try { v = JSON.parse(r.value); } catch { continue; } if (!v || !v.reporter || v.reporter in out) continue; out[v.reporter] = v.alertMin == null ? null : Math.max(ALERT_FLOOR, Math.min(100, Number(v.alertMin) || ALERT_MIN)); }
+  } catch { /* no access: use defaults */ }
+  return out;
 }
 async function dmSlack(ctx, channel, text) {
   const tok = ctx.env.SLACK_BOT_TOKEN; if (!tok) return false;
@@ -106,7 +116,13 @@ Patches:
 ${PATCHES.map((p) => `- ${p}: ${briefs[p] || ""}`).join("\n")}
 
 For every numbered item give:
-- relevance 0-100 FOR THE LISTED PATCHES: 90-100 a concrete local decision, approval, charge, court result, closure or announcement with clear consequences for people in the patch and story-ready now; 70-89 strongly worth a reporter’s attention this week; 40-69 background or a stretch; 0-39 not local, trivia, routine notices, sport results, events listings, nothing new.
+- relevance 0-100 FOR THE LISTED PATCHES. Be strict; scores should be spread out, and most items score below 60:
+  90-100: rare (a few a week across the whole network). A major decision, charge, court result, closure or announcement that clearly changes things for many people in the patch and is story-ready now.
+  75-89: a concrete decision or document with real local consequences that a reporter should chase this week.
+  55-74: worth knowing; an incremental development, a proposal not yet decided, or a notable item with limited local impact.
+  35-54: background, council PR, a routine notice, or relevant only by a stretch.
+  0-34: not local, trivia, sport results, events listings, nothing new.
+  If only a headline was given, cap the score at 70.
 - kind (from the allowed list).
 - patches: which of the item’s listed patches it genuinely touches (subset). Use [] if none.
 - why: one plain sentence (max 22 words) naming the concrete thing that is new. No hype. If only a headline was given, say so.
@@ -226,11 +242,14 @@ export async function run(ctx) {
   }
   // DM each reporter their own patch's best new items (scored high, not alerted before, last 24h)
   try {
-    const cand = await D.get(`patch_items?alerted=eq.false&relevance=gte.${ALERT_MIN}&fetched_at=gte.${new Date(ctx.now - 864e5).toISOString()}&order=relevance.desc&limit=200&select=id,title,url,source_name,why,relevance,patches`);
+    const prefs = await loadPrefs(D);
+    const cand = await D.get(`patch_items?alerted=eq.false&relevance=gte.${ALERT_FLOOR}&fetched_at=gte.${new Date(ctx.now - 864e5).toISOString()}&order=relevance.desc&limit=200&select=id,title,url,source_name,why,relevance,patches`);
     const site = ctx.env.URL || "https://gari-planner.netlify.app";
     for (const rep of REPORTERS) {
       if (scope !== "all" && rep.pub !== scope) continue;
-      const mine = cand.filter((c) => (c.patches || []).includes(rep.pub)); if (!mine.length) continue;
+      const pref = prefs[rep.name]; if (pref === null) continue; // alerts switched off by the reporter
+      const min = pref == null ? ALERT_MIN : pref;
+      const mine = cand.filter((c) => (c.patches || []).includes(rep.pub) && c.relevance >= min); if (!mine.length) continue;
       const shown = mine.slice(0, ALERT_MAX);
       try { if (await dmSlack(ctx, rep.slack, alertDm(rep.pub, mine, site))) for (const it of shown) await D.patch(`patch_items?id=eq.${it.id}`, { alerted: true }); stats.alerts = (stats.alerts || 0) + 1; }
       catch (e) { stats.errors.push(`DM ${rep.name}: ${e.message}`); }
