@@ -13,7 +13,7 @@
 import { parseFeed, fetchText, adapterHtml, db, titleKey, normUrl, sha, matchWatch, MAX_AGE_HOURS, BATCH, stripHtml, clip } from "./impact-lib.mjs";
 
 export const PATCHES = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga — Wannon", "West Vic Brolga — Ballarat", "Gippsland Monitor", "Mid North Coaster", "National Account"];
-export const SCORE_PER_RUN = 120;
+export const SCORE_PER_RUN = 400;
 export const ALERT_MIN = 80;     // relevance needed for a Slack DM to the patch's reporter
 export const ALERT_MAX = 6;      // max items per DM
 // Reporter -> Slack member ID (same IDs the other Gazette functions use)
@@ -199,7 +199,17 @@ export async function run(ctx) {
   if (!ctx.env.ANTHROPIC_API_KEY) stats.errors.push("ANTHROPIC_API_KEY missing — items are saved but not scored");
   else {
     let todo = [];
-    try { todo = await D.get(`patch_items?scored_at=is.null&score_tries=lt.3&order=fetched_at.desc&limit=${SCORE_PER_RUN}&select=id,title,summary,source_name,category,published_at,score_tries,patches`); } catch (e) { stats.errors.push("load unscored: " + e.message); }
+    // Score fairly: each patch gets its share of the cap (a scoped scan puts its own patch first), so no patch is starved by a big backlog elsewhere.
+    try {
+      const sel = "select=id,title,summary,source_name,category,published_at,score_tries,patches"; const seen = new Set();
+      const order = scope === "all" ? PATCHES : [scope, ...PATCHES.filter((p) => p !== scope)];
+      const per = scope === "all" ? Math.ceil(SCORE_PER_RUN / PATCHES.length) : SCORE_PER_RUN;
+      for (const p of order) {
+        if (todo.length >= SCORE_PER_RUN) break;
+        const rows = await D.get(`patch_items?scored_at=is.null&score_tries=lt.3&patches=cs.${encodeURIComponent('{' + JSON.stringify(p) + '}')}&order=fetched_at.desc&limit=${per}&${sel}`);
+        for (const r of rows) if (!seen.has(r.id) && todo.length < SCORE_PER_RUN) { seen.add(r.id); todo.push(r); }
+      }
+    } catch (e) { stats.errors.push("load unscored: " + e.message); }
     const batches = []; for (let i = 0; i < todo.length; i += BATCH) batches.push(todo.slice(i, i + BATCH));
     await Promise.all(Array.from({ length: Math.min(3, batches.length) }, async () => {
       while (batches.length) {
