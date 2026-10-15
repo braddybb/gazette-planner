@@ -1198,6 +1198,7 @@ details.vd-more summary::-webkit-details-marker{display:none}
     <button class="tool" id="resources-btn" onclick="openResourcesAdmin()" title="Resources — manage onboarding docs & links">&#128218;</button>
     <button class="tool" id="leaderboard-btn" onclick="openLeaderboard()" title="Gold stars — everyone's tally">&#11088;</button>
     <button class="tool" id="impact-radar-btn" onclick="openImpactRadar()" title="Impact Radar — climate, energy &amp; environment leads">&#128225;</button>
+    <button class="tool" id="patch-radar-btn" onclick="openPatchRadar()" title="Patch Radar — sources, health and scan for each masthead's patch">&#128205;</button>
     <button class="tool" id="video-desk-btn" onclick="openVideoDesk()" title="Video Desk — Nick's board + your rollup">&#127909;</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
   </div>
@@ -1320,6 +1321,11 @@ details.vd-more summary::-webkit-details-marker{display:none}
       </div>
     </div>
     <div id="leaderboard-body"></div>
+  </div>
+
+  <div id="patch-radar-view" style="display:none">
+    <button class="back-btn" onclick="closePatchRadar()">&#8592; Back to all reporters</button>
+    <div id="patch-radar-body"></div>
   </div>
 
   <div id="impact-radar-view" style="display:none">
@@ -3422,7 +3428,7 @@ let WR_DATA = null; // cached once generated, until the user navigates away
 
 function hideAllViews(){
   document.body.classList.remove('vd-open');
-  ['main-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view','video-desk-view','impact-radar-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  ['main-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view','video-desk-view','impact-radar-view','patch-radar-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
 }
 async function openWeeklyReview() {
   hideAllViews();
@@ -5945,6 +5951,67 @@ var IR_TOPICS=['climate','energy','environment','water','land & agriculture','mi
 var IR_CATS={news:'News',govt:'Government',company:'Company',social:'Social','think-tank':'Think tank',lead:'Lead'};
 var IR_WIN={'24h':24,'3d':72,'7d':168};
 function irEl(){ return document.getElementById('impact-radar-view'); }
+
+// ── Patch Radar admin: scan, source health, on/off, add. Reporters read the results in their planner ("Your patch"). ──
+var PR={sources:[],runs:[],items:0,err:'',scanning:false,msg:'',patch:'all'};
+function openPatchRadar(){ hideAllViews(); document.getElementById('patch-radar-view').style.display='block'; prLoad(); }
+function closePatchRadar(){ document.getElementById('patch-radar-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
+async function prLoad(){
+  PR.err='';
+  try{
+    var a=await supa.from('patch_sources').select('*').order('name'); if(a.error) throw a.error; PR.sources=a.data||[];
+    var b=await supa.from('patch_runs').select('*').order('started_at',{ascending:false}).limit(3); PR.runs=(b.data)||[];
+    var c=await supa.from('patch_items').select('id',{count:'exact',head:true}).gte('fetched_at',new Date(Date.now()-7*864e5).toISOString()); PR.items=c.count||0;
+  }catch(e){ var m=String((e&&(e.message||e.code))||e); PR.err=/relation|does not exist|schema cache|PGRST205|42P01/i.test(m)?'setup':m; }
+  prRender();
+}
+function prHealth(s){
+  if(s.last_error) return '<span class="ir-health bad" title="'+esc(s.last_error)+'">⚠ '+esc(s.last_error.slice(0,70))+'</span>';
+  if(s.last_ok) return '<span class="ir-health ok">✓ '+(s.last_count||0)+' for patches · '+esc(vdAgo(Date.parse(s.last_ok)))+(s.config&&s.config.feed_url?' · feed':' · page')+'</span>';
+  return '<span class="ir-health na">not run yet</span>';
+}
+function prRender(){
+  var el=document.getElementById('patch-radar-body'); if(!el) return;
+  var h='<div class="ir-head"><div class="ir-head-title">📍 Patch Radar</div><div class="ir-head-right"><span class="ir-pill">'+PR.items+' items this week</span><button class="ir-scan" onclick="prScanNow()">'+(PR.scanning?'Scanning…':'⚡ Scan patches')+'</button><button class="ir-refresh" onclick="prLoad()" title="Refresh">↻</button></div></div>';
+  if(PR.msg) h+='<div class="ir-banner" style="cursor:default">'+esc(PR.msg)+'</div>';
+  if(PR.err){ el.innerHTML=h+(PR.err==='setup'?'<div class="ir-setup"><b>One-time setup needed.</b> Run <code>patch-tables.sql</code>, then <code>patch-seed.sql</code>, in the Supabase SQL editor, then refresh.</div>':'<div class="ir-setup"><b>Could not load.</b> '+esc(PR.err)+'</div>'); return; }
+  var r=PR.runs[0]; if(r) h+='<p class="cap" style="margin:0 0 12px">Last scan '+esc(vdAgo(Date.parse(r.started_at)))+(r.finished_at?' — '+(r.inserted||0)+' new, '+(r.scored||0)+' scored':' — running')+'. Runs automatically at 6:15am Mon–Fri; reporters see the results under “Your patch”.</p>';
+  var bad=PR.sources.filter(function(s){ return s.last_error; }).length, ok=PR.sources.filter(function(s){ return s.last_ok&&!s.last_error; }).length;
+  h+='<div class="ir-panel"><h4>Sources — '+PR.sources.length+' ('+ok+' working'+(bad?', '+bad+' failing':'')+')</h4><p class="cap">Shared sources only keep items that name a place or politician from a patch. “Page” sources have no feed, so the headline links are read. Failing sources probably need a different address — edit the address and the next scan retries.</p>';
+  var pats=['all'].concat(['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','National Account']);
+  h+='<div class="ir-form" style="margin-bottom:8px"><select onchange="PR.patch=this.value;prRender()">'+pats.map(function(p){ return '<option value="'+esc(p)+'"'+(PR.patch===p?' selected':'')+'>'+(p==='all'?'All patches':esc(p))+'</option>'; }).join('')+'</select><label><input type="checkbox" '+(PR.onlyBad?'checked ':'')+'onchange="PR.onlyBad=this.checked;prRender()"> Only failing</label></div>';
+  PR.sources.filter(function(s){ return (PR.patch==='all'||(s.patches||[]).indexOf(PR.patch)>-1)&&(!PR.onlyBad||s.last_error); }).forEach(function(s){
+    h+='<div class="ir-row"><label><input type="checkbox"'+(s.active?' checked':'')+' onchange="prActive(\''+esc(s.id)+'\',this.checked)"></label><span class="nm">'+esc(s.name)+'</span><span class="ir-tag">'+esc(s.scope)+'</span><a class="ir-tag" href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">open ↗</a><span class="grow">'+prHealth(s)+'</span><button class="vd-btn sm" onclick="prEditUrl(\''+esc(s.id)+'\')">Edit address</button><button class="vd-del" onclick="prDel(\''+esc(s.id)+'\')" title="Remove">×</button></div>';
+  });
+  h+='<div class="ir-form"><input class="w" id="pr-name" placeholder="Name"><input class="w" id="pr-url" placeholder="https://…"><select id="pr-patch">'+pats.slice(1).map(function(p){ return '<option>'+esc(p)+'</option>'; }).join('')+'</select><button class="vd-btn sm" onclick="prAdd()">+ Add local source</button></div></div>';
+  el.innerHTML=h;
+}
+async function prActive(id,on){ await supa.from('patch_sources').update({active:on}).eq('id',id); }
+async function prEditUrl(id){ var s=PR.sources.filter(function(x){ return x.id===id; })[0]; if(!s) return; var u=prompt('New address for '+s.name,s.url); if(!u) return; u=u.trim(); if(!/^https?:\/\//i.test(u)){ alert('A full https:// address, please.'); return; } var cfg=Object.assign({},s.config||{}); delete cfg.feed_url; await supa.from('patch_sources').update({url:u,config:cfg,last_error:null}).eq('id',id); prLoad(); }
+async function prDel(id){ if(!confirm('Remove this source? Items already collected stay.')) return; await supa.from('patch_sources').delete().eq('id',id); prLoad(); }
+async function prAdd(){
+  var n=document.getElementById('pr-name').value.trim(), u=document.getElementById('pr-url').value.trim(), p=document.getElementById('pr-patch').value;
+  if(!n||!/^https?:\/\//i.test(u)){ alert('Give it a name and a full https:// address.'); return; }
+  var r=await supa.from('patch_sources').insert({name:n,url:u,kind:'auto',category:'news',scope:'local',patches:[p],config:{}}).select();
+  if(r.error){ alert(/duplicate|unique/i.test(r.error.message||'')?'A source with that name already exists.':'Could not add the source.'); return; }
+  prLoad();
+}
+async function prScanNow(){
+  if(PR.scanning) return; var before=PR.runs[0]?PR.runs[0].started_at:null; PR.scanning=true; PR.msg=''; prRender();
+  var fin=function(m){ PR.scanning=false; PR.msg=m; prLoad(); };
+  try{
+    var ses=(await supa.auth.getSession()).data.session; var token=ses?ses.access_token:'';
+    var r=await fetch('/.netlify/functions/patch-run-background',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({force:true})});
+    if(!r.ok&&r.status!==202) throw new Error('HTTP '+r.status);
+  }catch(e){ fin('Could not start a scan ('+(e.message||e)+'). Is the function uploaded?'); return; }
+  var tries=0; (function poll(){ tries++; setTimeout(async function(){
+    try{ var d=await supa.from('patch_runs').select('*').order('started_at',{ascending:false}).limit(1); var row=d.data&&d.data[0];
+      if(row&&row.started_at!==before&&row.finished_at){ fin('Scan done — '+(row.inserted||0)+' new items, '+(row.scored||0)+' scored.'+(row.errors?' Some sources failed (see list).':'')); return; }
+      if(row&&row.started_at===before&&tries===3&&Date.now()-Date.parse(before)<60e3){ fin('A scan ran under a minute ago — try again shortly.'); return; }
+    }catch(e){}
+    if(tries>=60) fin('Still running — it can take several minutes. Refresh in a bit.'); else poll();
+  },5000); })();
+}
 function openImpactRadar(){ hideAllViews(); irEl().style.display='block'; irLoad(false); irStopPoll(); IR.timer=setInterval(function(){ if(irEl().style.display==='none'){ irStopPoll(); return; } irLoad(true); },90000); }
 function closeImpactRadar(){ irEl().style.display='none'; document.getElementById('main-view').style.display='block'; irStopPoll(); }
 function irStopPoll(){ if(IR.timer){ clearInterval(IR.timer); IR.timer=null; } }
