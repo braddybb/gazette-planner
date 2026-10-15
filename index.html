@@ -3841,7 +3841,8 @@ const extras = getExtras();
 const extrasFiled = extras.filter(e => e.data.filed).length;
 const grandTotal = baseTotal + extrasFiled;
 
-const pct = Math.round(Math.min(baseTotal / baseCount, 1) * 100);
+// Extras (assigned stories, cover for a sick colleague) count toward the week, same as the big number
+const pct = Math.round(Math.min(grandTotal / baseCount, 1) * 100);
 
 // Display: show grand total if there are extras, otherwise just base
 document.getElementById('prog-count').textContent = grandTotal;
@@ -3849,11 +3850,11 @@ document.getElementById('prog-pct').textContent   = pct + '%';
 const progLabel = document.querySelector('.prog-label');
 if (progLabel) progLabel.textContent = 'of ' + baseCount + ' filed this week';
 
-// Ring: based on the reporter's own base total
+// Ring: same total as the number beside it (base stories + extras filed)
 const ring = document.getElementById('prog-ring-fill');
 if (ring) {
-ring.style.strokeDashoffset = RING_CIRC * (1 - Math.min(baseTotal / baseCount, 1));
-ring.classList.toggle('complete', baseTotal >= baseCount);
+ring.style.strokeDashoffset = RING_CIRC * (1 - Math.min(grandTotal / baseCount, 1));
+ring.classList.toggle('complete', grandTotal >= baseCount);
 }
 
 // Video-first / video-flip pills only show for publications that have them
@@ -3926,8 +3927,8 @@ renderGlanceDots(stories);
 // Personal best (always track, even silent)
 const pbMsg = updatePB(grandTotal);
 
-// Celebration on reaching the full base count
-if (baseTotal === baseCount && _progressInitialised && _lastFiledCount < baseCount && !opts.silent) {
+// Celebration on reaching the full weekly count (planned stories + extras such as assigned or cover stories)
+if (grandTotal >= baseCount && _progressInitialised && _lastFiledCount < baseCount && !opts.silent) {
 celebrateComplete(pbMsg);
 bumpStreak();
 awardGoldStar();
