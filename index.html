@@ -1835,6 +1835,8 @@ toggleWeekBanner();
 
 // ── Away banner: shows when an editor has marked this reporter away this week.
 // Best-effort — if the database doesn't let a reporter read it, nothing shows. ──
+var AWAY_DAYS = 0; // weekdays (Mon–Fri) the editor has marked this reporter away this week
+function awayTarget(base) { return AWAY_DAYS >= 5 ? 0 : Math.round(base * (5 - AWAY_DAYS) / 5); }
 async function showAwayBanner() {
 let el = document.getElementById('away-banner');
 if (el) el.remove();
@@ -1850,6 +1852,7 @@ const dt = new Date(WEEK + 'T00:00:00'); dt.setDate(dt.getDate() + d);
 const ymd = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
 if (mine.some(a => a.from <= ymd && ymd <= a.to)) days.push(DAYS[d]);
 }
+AWAY_DAYS = days.length;
 if (!days.length) return;
 el = document.createElement('div');
 el.id = 'away-banner';
@@ -1859,6 +1862,7 @@ el.textContent = days.length === 5
 : 'You\u2019re marked away on ' + days.join(', ') + ' \u2014 your target is scaled down for those days.';
 const c = document.getElementById('stories-container');
 if (c && c.parentNode) c.parentNode.insertBefore(el, c);
+try { updateProgress({ silent: true }); } catch(e) {}
 } catch(e) { /* not visible to reporters — fine */ }
 }
 
@@ -3842,19 +3846,20 @@ const extrasFiled = extras.filter(e => e.data.filed).length;
 const grandTotal = baseTotal + extrasFiled;
 
 // Extras (assigned stories, cover for a sick colleague) count toward the week, same as the big number
-const pct = Math.round(Math.min(grandTotal / baseCount, 1) * 100);
+const tgt = awayTarget(baseCount); // scaled down for days away
+const pct = tgt ? Math.round(Math.min(grandTotal / tgt, 1) * 100) : (AWAY_DAYS >= 5 ? 0 : 100);
 
 // Display: show grand total if there are extras, otherwise just base
 document.getElementById('prog-count').textContent = grandTotal;
 document.getElementById('prog-pct').textContent   = pct + '%';
 const progLabel = document.querySelector('.prog-label');
-if (progLabel) progLabel.textContent = 'of ' + baseCount + ' filed this week';
+if (progLabel) progLabel.textContent = AWAY_DAYS >= 5 ? 'away this week' : 'of ' + tgt + ' filed this week' + (AWAY_DAYS ? ' (away ' + AWAY_DAYS + ' day' + (AWAY_DAYS > 1 ? 's' : '') + ')' : '');
 
 // Ring: same total as the number beside it (base stories + extras filed)
 const ring = document.getElementById('prog-ring-fill');
 if (ring) {
-ring.style.strokeDashoffset = RING_CIRC * (1 - Math.min(grandTotal / baseCount, 1));
-ring.classList.toggle('complete', grandTotal >= baseCount);
+ring.style.strokeDashoffset = RING_CIRC * (1 - (tgt ? Math.min(grandTotal / tgt, 1) : 0));
+ring.classList.toggle('complete', tgt > 0 && grandTotal >= tgt);
 }
 
 // Video-first / video-flip pills only show for publications that have them
@@ -3928,7 +3933,7 @@ renderGlanceDots(stories);
 const pbMsg = updatePB(grandTotal);
 
 // Celebration on reaching the full weekly count (planned stories + extras such as assigned or cover stories)
-if (grandTotal >= baseCount && _progressInitialised && _lastFiledCount < baseCount && !opts.silent) {
+if (tgt > 0 && grandTotal >= tgt && _progressInitialised && _lastFiledCount < tgt && !opts.silent) {
 celebrateComplete(pbMsg);
 bumpStreak();
 awardGoldStar();
