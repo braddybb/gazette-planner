@@ -2876,6 +2876,11 @@ if (storyHasContent(getStory(toNum))) { alert('That slot has just been filled \u
 // the editor note, and every other field). Type is derived from the slot, so it
 // adopts the destination slot\u2019s type automatically.
 try {
+// An "empty" slot can still have a blank row saved in the database (e.g. after Clear slot,
+// or a card that was opened and saved with nothing in it). That row owns the slot number,
+// so moving onto it hits the unique constraint (409). Remove the blank row first.
+// Safe: the guard above already confirmed the slot holds no content.
+if (!(await dbDeleteStory(toNum))) throw new Error('slot ' + toNum + ' still holds a blank saved row that could not be cleared \u2014 tell an editor');
 const { data: { session } } = await supa.auth.getSession();
 const token = session ? session.access_token : SUPA_KEY;
 const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE +
