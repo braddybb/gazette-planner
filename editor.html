@@ -407,6 +407,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .away-h{font-size:17px;font-weight:700;margin-bottom:4px}.away-sub{font-size:12.5px;color:#777;margin-bottom:14px}
 .away-l{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:#555;margin-bottom:10px}
 .away-l input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #DDD;border-radius:8px;font-weight:400}
+.away-list{border:1px solid #EEE;border-radius:10px;margin-bottom:12px;max-height:150px;overflow:auto}.away-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;font-size:12.5px;border-bottom:1px solid #F1F1F1}.away-item:last-child{border-bottom:0}.away-item.on{background:#F1EFF9}
 .away-err{color:#B4532A;font-size:12.5px;min-height:16px;margin-bottom:6px}.away-btns{display:flex;gap:8px;justify-content:flex-end}
 @media(max-width:640px){.dr-meta{display:none}.dr-detail{padding-left:18px}.dr-grid{grid-template-columns:1fr 1fr}}
 
@@ -2623,7 +2624,7 @@ function awayBarHtml(r, ai){
   var h='<div class="dr-away">';
   if(ai.any){
     h+='<span class="dr-chip grey">'+esc(ai.label)+(ai.back?' · back '+esc(vdDayLabel(ai.back)):'')+(ai.reason?' · '+esc(ai.reason):'')+'</span>';
-    ai.recs.forEach(function(a){ h+='<button class="dr-filter" onclick="endAway(\''+esc(a.id)+'\')">Remove away '+esc(vdShortDate(a.from))+'–'+esc(vdShortDate(a.to))+'</button>'; });
+    ai.recs.forEach(function(a){ h+='<button class="dr-filter" onclick="openAwayModal(\''+esc(r.name).replace(/'/g,"\\'")+'\',\''+esc(r.pub).replace(/'/g,"\\'")+'\',\''+esc(a.id)+'\')">Edit away '+esc(vdShortDate(a.from))+'–'+esc(vdShortDate(a.to))+'</button><button class="dr-filter" onclick="endAway(\''+esc(a.id)+'\')">Remove away '+esc(vdShortDate(a.from))+'–'+esc(vdShortDate(a.to))+'</button>'; });
   }
   h+='<button class="dr-filter" onclick="openAwayModal(\''+esc(r.name).replace(/'/g,"\\'")+'\',\''+esc(r.pub).replace(/'/g,"\\'")+'\')">'+(ai.any?'+ Another away period':'Mark away')+'</button></div>';
   return h;
@@ -3722,6 +3723,9 @@ async function loadBankRollup() {
 // (videotaskdone:*) so a Slack-added task can never be overwritten by a snapshot.
 // Notes, nudges and "push to planner" reuse the dashboard's editorUpsert + Slack.
 var VD_STAGES = ['Approved','Shot','Edited','Published — all platforms','Published — website'];
+var VD_STAGES_C = ['Commissioned','Received','Packaged','Published — all platforms','Published — website'];   // contributor (freelancer) videos
+function vdIsContrib(p){ return !!(p&&p.standalone&&p.contributor); }
+function vdStagesFor(p){ return vdIsContrib(p)?VD_STAGES_C:VD_STAGES; }
 var VD_SLOTS = [{n:'01',lbl:'Original'},{n:'02',lbl:'Original'},{n:'03',lbl:'Video flip'},{n:'04',lbl:'Impact video'}];
 var VD_FORMATS = ['On-location explainer','Meet the local','The Number','Before / after'];
 var VD_TREND_WEEKS = 6;
@@ -4107,7 +4111,7 @@ function renderVideoDesk(){
       else if(sw.d<=1&&!vdPreshootDone(p)) teamIssues.push({title:p.title,chip:'Shooting '+sw.text.toLowerCase()+' · pre-shoot not done',cls:'amber',target:'vd-sec-pipeline'});
       else if(sw.d<=1) teamIssues.push({title:p.title,chip:'Shooting '+sw.text.toLowerCase(),cls:'blue',target:'vd-sec-pipeline'});
     }
-    else if(p.stage===0&&!vdPreshootDone(p)&&a>=2) teamIssues.push({title:p.title,chip:'Approved '+a+'d ago · pre-shoot not done',cls:'amber',target:'vd-sec-pipeline'});
+    else if(p.stage===0&&!vdIsContrib(p)&&!vdPreshootDone(p)&&a>=2) teamIssues.push({title:p.title,chip:'Approved '+a+'d ago · pre-shoot not done',cls:'amber',target:'vd-sec-pipeline'});
     else if(p.stage===1&&a>=2) teamIssues.push({title:p.title,chip:'Shot '+a+'d ago · not edited',cls:'amber',target:'vd-sec-pipeline'});
     else if(p.stage===2&&a>=3) teamIssues.push({title:p.title,chip:'Edited '+a+'d ago · not published',cls:'amber',target:'vd-sec-pipeline'});
     else if(p.stage===3&&a>=2) teamIssues.push({title:p.title,chip:'On platforms · not on the website',cls:'amber',target:'vd-sec-pipeline'});
@@ -4224,7 +4228,7 @@ function renderVideoDesk(){
       h+=(s&&s.headline)?'<div class="vd-slot-head">'+esc(s.headline)+'</div>':'<div class="vd-slot-head empty">not planned yet</div>';
       h+=vdBadge(x.st[sl.n],s);
       if(s&&s.filed){ var posted=Array.isArray(s.posted)?s.posted:[]; if(posted.length===0) h+='<span class="vd-badge dist">not posted</span>'; }
-      if(proj){ h+='<div class="vd-dots" title="'+esc(VD_STAGES[Math.min(proj.stage,4)])+'">'; for(var i=0;i<5;i++)h+='<div class="vd-dot'+(proj.stage>=i?' on':'')+'"></div>'; h+='</div>'; }
+      if(proj){ h+='<div class="vd-dots" title="'+esc(vdStagesFor(proj)[Math.min(proj.stage,4)])+'">'; for(var i=0;i<5;i++)h+='<div class="vd-dot'+(proj.stage>=i?' on':'')+'"></div>'; h+='</div>'; }
       h+='</div>';
     });
     h+=vdFeedbackPrep(x);
@@ -4244,11 +4248,11 @@ function renderVideoDesk(){
   // ---- pipeline (live) + published log ----
   var live=VD.projects.filter(function(p){return p.stage<4;});
   var published=VD.projects.filter(function(p){return p.stage>=4;}).sort(function(a,b){return (b.stageAt||b.created||0)-(a.stageAt||a.created||0);});
-  h+='<div class="vd-sec" id="vd-sec-pipeline"><div class="vd-sec-head"><div class="vd-sec-t">Videos in production</div><div class="vd-sec-sum">Approved → Shot → Edited → Published</div></div>';
+  h+='<div class="vd-sec" id="vd-sec-pipeline"><div class="vd-sec-head"><div class="vd-sec-t">Videos in production</div><div class="vd-sec-sum">Approved → Shot → Edited → Published · contributors: Commissioned → Received → Packaged</div></div>';
   h+='<div class="vd-sec-cap">Every video the desk is tracking, from the day it’s approved to the day it’s live. <b>Add</b> a video when it’s approved, <b>move it along</b> as it’s shot, edited and published, then add the link. Published videos are kept in the list at the bottom.</div>';
   h+='<div class="vd-addbar"><span class="vd-addbar-t">Add a video when it\u2019s approved. Assign it to a reporter\u2019s slot, or leave it standalone.</span><button class="vd-btn'+(VD_ADD.video?' on':'')+'" id="vd-addbtn-video" onclick="vdAddToggle(\'video\')">+ New video</button></div>';
   h+='<div class="vd-collapse'+(VD_ADD.video?' open':'')+'" id="vd-add-video">';
-  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name" value="'+esc(VD_NEW_DRAFT.title||'')+'"><div class="vd-add-row"><select id="vd-new-rep" onchange="vdPickRep(this)"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){var v=rep.name+'|'+rep.pub; return '<option value="'+esc(v)+'"'+(VD_NEW_DRAFT.rep===v?' selected':'')+'>'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+((VD.contributors||[]).length?'<optgroup label="Contributors">'+VD.contributors.map(function(c){var v='c:'+c; return '<option value="'+esc(v)+'"'+(VD_NEW_DRAFT.rep===v?' selected':'')+'>'+esc(c)+' · contributor</option>';}).join('')+'</optgroup>':'')+'<option value="__contrib__">+ Add a contributor…</option></select><select id="vd-new-slot"><option value="">Slot (optional)</option>'+vdSlotOptLabels()+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+vdFmtOpts('')+'</select><label class="vd-lbl">Shoot date <input type="date" id="vd-new-date"></label><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
+  h+='<div class="vd-add"><input id="vd-new-title" placeholder="Video title / working name" value="'+esc(VD_NEW_DRAFT.title||'')+'"><div class="vd-add-row"><select id="vd-new-rep" onchange="vdPickRep(this)"><option value="">Standalone project (no reporter)</option>'+locals.map(function(rep){var v=rep.name+'|'+rep.pub; return '<option value="'+esc(v)+'"'+(VD_NEW_DRAFT.rep===v?' selected':'')+'>'+esc(rep.name)+' · '+esc(rep.pub)+'</option>';}).join('')+((VD.contributors||[]).length?'<optgroup label="Contributors">'+VD.contributors.map(function(c){var v='c:'+c; return '<option value="'+esc(v)+'"'+(VD_NEW_DRAFT.rep===v?' selected':'')+'>'+esc(c)+' · contributor</option>';}).join('')+'</optgroup>':'')+'<option value="__contrib__">+ Add a contributor…</option></select><select id="vd-new-slot"'+(vdDraftContrib()?' style="display:none"':'')+'><option value="">Slot (optional)</option>'+vdSlotOptLabels()+'</select></div><div class="vd-add-row"><select id="vd-new-fmt"><option value="">Format (optional)</option>'+vdFmtOpts('')+'</select><label class="vd-lbl" id="vd-new-shoot-wrap"'+(vdDraftContrib()?' style="display:none"':'')+'>Shoot date <input type="date" id="vd-new-date"></label></div><div class="vd-add-row" id="vd-new-contrib"'+(vdDraftContrib()?'':' style="display:none"')+'><label class="vd-lbl">Commissioned <input type="date" id="vd-new-dc"></label><label class="vd-lbl">Received <input type="date" id="vd-new-dr"></label><label class="vd-lbl">Packaged <input type="date" id="vd-new-dk"></label></div><div class="vd-add-row"><input id="vd-new-drive" placeholder="Link to the Drive folder (optional)" style="flex:1;min-width:200px"><button class="vd-btn sm" onclick="vdAddProject()">+ Add</button></div></div>';
   h+='</div>';
   var shoots=live.filter(function(p){return p.stage===0&&p.shootDate;}).map(function(p){return {p:p,w:vdShootWhen(p)};}).filter(function(x){return x.w.d>=-1&&x.w.d<=7;}).sort(function(a,b){return a.w.d-b.w.d;});
   if(shoots.length){
@@ -4264,18 +4268,23 @@ function renderVideoDesk(){
     var age=vdAgeDays(p);
     var meta=p.standalone?(p.contributor?esc(p.contributor)+' · contributor':'Standalone project'):(esc(p.reporter)+' · '+esc(p.pub)+(p.slot?' · '+vdSlotName(p.slot,p.pub):''));
     h+='<div class="vd-proj'+cls+'"><div class="vd-proj-top"><div><div class="vd-proj-title">'+esc(p.title)+'</div><div class="vd-proj-meta">'+meta+(p.pushed?' · ✓ on planner':'')+(age>=1?' · '+age+' day'+(age>1?'s':'')+' at this stage':'')+'</div></div><button class="vd-del" onclick="vdRemoveProject(\''+p.id+'\')" title="Remove">×</button></div>';
-    h+='<div class="vd-stages">'; VD_STAGES.forEach(function(nm,i){ if(i>0)h+='<span class="vd-arrow">›</span>'; var c=i<p.stage?'done':(i===p.stage?'cur':''); h+='<span class="vd-stage '+c+'">'+nm.replace('Published — ','Pub: ')+'</span>'; }); h+='</div>';
-    if(p.stage===0){
+    var STG=vdStagesFor(p); h+='<div class="vd-stages">'; STG.forEach(function(nm,i){ if(i>0)h+='<span class="vd-arrow">›</span>'; var c=i<p.stage?'done':(i===p.stage?'cur':''); h+='<span class="vd-stage '+c+'">'+nm.replace('Published — ','Pub: ')+'</span>'; }); h+='</div>';
+    if(vdIsContrib(p)){
+      var cd=p.cdates||{}; h+='<div class="vd-shootrow">'+[['c','Commissioned'],['r','Received'],['k','Packaged']].map(function(x){return '<label class="vd-lbl">'+x[1]+' <input type="date" value="'+esc(cd[x[0]]||'')+'" onchange="vdSetCDate(\''+p.id+'\',\''+x[0]+'\',this.value)"></label>';}).join('')+'</div>';
+    }
+    if(p.stage===0&&!vdIsContrib(p)){
       h+='<div class="vd-shootrow"><label class="vd-lbl">Shoot date <input type="date" value="'+esc(p.shootDate||'')+'" onchange="vdSetShoot(\''+p.id+'\',this.value)"></label>'+(p.shootDate?'<span class="vd-iss '+(vdShootWhen(p).d<0?'amber':(vdShootWhen(p).d<=1?'blue':'grey'))+'">'+esc(vdShootWhen(p).text)+'</span>':'')+'</div>';
       var ps=p.preshoot||{}; var items=[{k:'location',l:'Location / access'},{k:'gear',l:'Gear & kit'},{k:'talent',l:'Talent confirmed'},{k:'brief',l:'Shot brief agreed'}]; var psN=items.filter(function(it){return ps[it.k];}).length; var psOpen=VD_PRE_OPEN[p.id]!==undefined?VD_PRE_OPEN[p.id]:(p.shootDate&&vdShootWhen(p).d<=2&&psN<4); h+='<div class="vd-pre'+(psOpen?'':' shut')+'"><div class="vd-pre-h vd-pre-toggle" onclick="vdTogglePre(\''+p.id+'\')">'+(psOpen?'▾':'▸')+' Pre-shoot · '+psN+' of 4 done</div>'+items.map(function(it){return '<div class="vd-pre-row'+(ps[it.k]?' on':'')+'" onclick="vdPreshoot(\''+p.id+'\',\''+it.k+'\')"><div class="vd-pre-box">'+(ps[it.k]?'✓':'')+'</div>'+it.l+'</div>';}).join('')+'</div>';
     }
+    var okDrive=p.drive&&/^https?:\/\//i.test(p.drive);
+    h+='<div class="vd-url"><input id="vddrive-'+p.id+'" value="'+esc(p.drive||'')+'" placeholder="Link to the Drive folder"><button class="vd-btn ghost sm" onclick="vdSaveDrive(\''+p.id+'\')">Save Drive link</button>'+(okDrive?'<a class="vd-link" href="'+esc(p.drive)+'" target="_blank" rel="noopener">Open Drive ↗</a>':'')+'</div>';
     if(p.stage>=3){
       var okUrl=p.url&&/^https?:\/\//i.test(p.url);
       h+='<div class="vd-url"><input id="vdurl-'+p.id+'" value="'+esc(p.url||'')+'" placeholder="Link to the published video"><button class="vd-btn ghost sm" onclick="vdSaveUrl(\''+p.id+'\')">Save link</button>'+(okUrl?'<a class="vd-link" href="'+esc(p.url)+'" target="_blank" rel="noopener">Open ↗</a>':'')+'</div>';
     }
     h+='<div class="vd-act" style="margin-top:12px">';
-    var gated=p.stage===0&&!vdPreshootDone(p);
-    h+='<button class="vd-btn sm"'+(gated?' disabled title="Finish pre-shoot first"':'')+' onclick="vdAdvance(\''+p.id+'\')">Mark '+VD_STAGES[p.stage+1].replace('Published — ','Pub: ')+' →</button>';
+    var gated=p.stage===0&&!vdIsContrib(p)&&!vdPreshootDone(p);
+    h+='<button class="vd-btn sm"'+(gated?' disabled title="Finish pre-shoot first"':'')+' onclick="vdAdvance(\''+p.id+'\')">Mark '+STG[p.stage+1].replace('Published — ','Pub: ')+' →</button>';
     if(p.stage>0) h+='<button class="vd-btn ghost sm" onclick="vdStepBack(\''+p.id+'\')">← Back</button>';
     h+=vdFormatSelect(p);
     if(VD.series.length){
@@ -4477,7 +4486,8 @@ async function vdTagToday(ri,n,val){
 
 // Today panel tagging: pick a format, press Confirm; the row then reads "✓ <format>" until changed.
 var VD_PEND={}, VD_RETAG={};
-var VD_NEW_DRAFT={title:'',rep:''};   // keeps what was typed in the add-video form across a re-render
+var VD_NEW_DRAFT={title:'',rep:''};
+function vdDraftContrib(){ return (VD_NEW_DRAFT.rep||'').indexOf('c:')===0; }   // keeps what was typed in the add-video form across a re-render
 var VD_LAST_SERIES_REP='';   // keeps the reporter picked when starting several series in a row
 function vdTagKey(ri,n){ return ri+'_'+n; }
 function vdTagged(ri,n){ var x=VD_INFO[ri]; var p=x?vdProjectForWeek(x.rep.name,x.rep.pub,n,WEEK):null; return (p&&p.format)||''; }
@@ -4688,7 +4698,12 @@ async function vdRemoveCheck(k){
 }
 async function vdToggleCheck(k){ var prev=vdClone(); if(!VD.checklist[WEEK])VD.checklist[WEEK]={}; VD.checklist[WEEK][k]=!VD.checklist[WEEK][k]; await vdCommit(prev); }
 async function vdPickRep(sel){
-  if(sel.value!=='__contrib__') return;
+  if(sel.value!=='__contrib__'){
+    VD_NEW_DRAFT.rep=sel.value; var isC=vdDraftContrib();
+    var q=function(id,show){ var e=document.getElementById(id); if(e) e.style.display=show?'':'none'; };
+    q('vd-new-slot',!isC); q('vd-new-shoot-wrap',!isC); q('vd-new-contrib',isC);
+    return;
+  }
   var name=(prompt('Contributor’s name (someone who isn’t one of the seven reporters)')||'').replace(/\s+/g,' ').trim().slice(0,80);
   var ti=document.getElementById('vd-new-title'); VD_NEW_DRAFT.title=ti?ti.value:'';
   if(!name){ VD_NEW_DRAFT.rep=''; renderVideoDesk(); return; }
@@ -4706,7 +4721,14 @@ async function vdAddProject(){
   var prev=vdClone(); if(fmt==='__new__'){ fmt=vdAskFormat(); } var now=Date.now(); var p={id:now.toString(36),title:t,stage:0,preshoot:{},created:now,stageAt:now};
   if(sd) p.shootDate=sd;
   if(fmt) p.format=fmt;
-  if(rep&&rep.indexOf('c:')===0){ p.standalone=true; p.contributor=rep.slice(2); }
+  var dv=document.getElementById('vd-new-drive'); var dl=dv?dv.value.trim():'';
+  if(dl){ if(!/^https?:\/\//i.test(dl)) dl='https://'+dl; if(/\s/.test(dl)){ alert('That Drive link has spaces in it — paste just the URL.'); return; } p.drive=dl; }
+  if(rep&&rep.indexOf('c:')===0){
+    p.standalone=true; p.contributor=rep.slice(2); delete p.shootDate;
+    var gd=function(id){ var e=document.getElementById(id); return e&&/^\d{4}-\d{2}-\d{2}$/.test(e.value)?e.value:''; };
+    p.cdates={}; var dc=gd('vd-new-dc'),dr=gd('vd-new-dr'),dk=gd('vd-new-dk'); if(dc)p.cdates.c=dc; if(dr)p.cdates.r=dr; if(dk)p.cdates.k=dk;
+    p.stage=dk?2:(dr?1:0);
+  }
   else if(rep){var pa=rep.split('|');p.reporter=pa[0];p.pub=pa[1];p.slot=slot||null;p.standalone=false;}else p.standalone=true;
   VD_NEW_DRAFT={title:'',rep:''};
   VD.projects.push(p); await vdCommit(prev,'Could not add.');
@@ -4715,6 +4737,8 @@ function vdFormatSelect(p){
   return '<select class="vd-serpick" onchange="vdSetFormat(\''+p.id+'\',this.value)" title="Format"><option value="">Format: untagged</option>'+vdFmtOpts(p.format)+'</select>';
 }
 async function vdSetFormat(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val==='__new__'){ val=vdAskFormat(); if(!val){ renderVideoDesk(); return; } } if(val) p.format=val; else delete p.format; await vdCommit(prev,'Could not save the format.'); }
+async function vdSetCDate(id,k,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(!p.cdates)p.cdates={}; if(val&&/^\d{4}-\d{2}-\d{2}$/.test(val)) p.cdates[k]=val; else delete p.cdates[k]; await vdCommit(prev,'Could not save the date.'); }
+async function vdSaveDrive(id){ var el=document.getElementById('vddrive-'+id); var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var v=(el?el.value:'').trim(); if(v&&!/^https?:\/\//i.test(v)) v='https://'+v; if(v&&/\s/.test(v)){ alert('That link has spaces in it — paste just the URL.'); return; } var prev=vdClone(); if(v) p.drive=v; else delete p.drive; await vdCommit(prev,'Could not save the Drive link.'); }
 async function vdSetShoot(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val&&/^\d{4}-\d{2}-\d{2}$/.test(val)) p.shootDate=val; else delete p.shootDate; await vdCommit(prev,'Could not save the shoot date.'); }
 async function vdSetSeries(id,val){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return; var prev=vdClone(); if(val) p.seriesId=val; else delete p.seriesId; await vdCommit(prev,'Could not save the series.'); }
 async function vdRemoveProject(id){ if(!confirm('Remove this video from production?'))return; var prev=vdClone(); VD.projects=VD.projects.filter(function(p){return p.id!==id;}); await vdCommit(prev); }
@@ -4723,7 +4747,7 @@ async function vdAdvance(id){
   var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p)return;
   if(p.stage===0&&!vdPreshootDone(p)){alert('Finish the pre-shoot checklist first.');return;}
   var prev=vdClone();
-  if(p.stage<VD_STAGES.length-1){ p.stage++; p.stageAt=Date.now(); if(p.stage>=3&&!p.publishedAt) p.publishedAt=Date.now(); }
+  if(p.stage<VD_STAGES.length-1){ p.stage++; p.stageAt=Date.now(); if(vdIsContrib(p)&&p.stage<=2){ if(!p.cdates)p.cdates={}; var ck=['c','r','k'][p.stage]; if(!p.cdates[ck]) p.cdates[ck]=vdToday(); } if(p.stage>=3&&!p.publishedAt) p.publishedAt=Date.now(); }
   await vdCommit(prev);
 }
 async function vdStepBack(id){ var prev=vdClone(); var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(p&&p.stage>0){p.stage--;p.stageAt=Date.now();} await vdCommit(prev); }
@@ -4864,35 +4888,45 @@ function scaledBase(r,week){
   return Math.round(base*ai.avail/5);
 }
 
-function openAwayModal(name,pub){
+function awayRecsFor(name,pub){ return AWAY_LIST.filter(function(a){ return a.reporter===name&&a.pub===pub; }).sort(function(x,y){ return x.from<y.from?-1:1; }); }
+function openAwayModal(name,pub,editId){
   var el=document.getElementById('away-ov');
   if(el) el.remove();
-  var from=WEEK, to=vdAddDays(WEEK,4);
+  var rec=editId?AWAY_LIST.filter(function(a){ return a.id===editId; })[0]:null;
+  var from=rec?rec.from:WEEK, to=rec?rec.to:vdAddDays(WEEK,4);
+  var q=function(x){ return String(x).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); };
+  var list=awayRecsFor(name,pub);
+  var listHtml=list.length?'<div class="away-list">'+list.map(function(a){
+    return '<div class="away-item'+(rec&&rec.id===a.id?' on':'')+'"><span>'+esc(vdShortDate(a.from))+(a.to!==a.from?' – '+esc(vdShortDate(a.to)):'')+(a.reason?' · '+esc(a.reason):'')+'</span><span><button class="vd-btn ghost sm" onclick="openAwayModal(\''+q(name)+'\',\''+q(pub)+'\',\''+esc(a.id)+'\')">Edit</button> <button class="vd-btn ghost sm" onclick="endAway(\''+esc(a.id)+'\')">Remove</button></span></div>';
+  }).join('')+'</div>':'';
   el=document.createElement('div'); el.id='away-ov'; el.className='away-ov';
-  el.innerHTML='<div class="away-box"><div class="away-h">Mark '+esc(name)+' away</div>'+
-    '<div class="away-sub">Days away aren’t counted against them — targets scale down and nudges stop.</div>'+
+  el.innerHTML='<div class="away-box"><div class="away-h">'+(rec?'Edit away period':'Mark '+esc(name)+' away')+'</div>'+
+    (rec?'':'<div class="away-sub">Days away aren’t counted against them — targets scale down and nudges stop.</div>')+
+    listHtml+
     '<label class="away-l">From <input type="date" id="away-from" value="'+from+'"></label>'+
     '<label class="away-l">To (last day away) <input type="date" id="away-to" value="'+to+'"></label>'+
-    '<label class="away-l">Reason (optional) <input type="text" id="away-reason" placeholder="e.g. annual leave"></label>'+
+    '<label class="away-l">Reason (optional) <input type="text" id="away-reason" placeholder="e.g. annual leave" value="'+esc(rec?rec.reason||'':'')+'"></label>'+
     '<div class="away-err" id="away-err"></div>'+
-    '<div class="away-btns"><button class="vd-btn ghost sm" onclick="closeAwayModal()">Cancel</button><button class="vd-btn sm" id="away-save">Mark away</button></div></div>';
+    '<div class="away-btns"><button class="vd-btn ghost sm" onclick="closeAwayModal()">Cancel</button>'+(rec?'<button class="vd-btn ghost sm" onclick="openAwayModal(\''+q(name)+'\',\''+q(pub)+'\')">+ Add another</button>':'')+'<button class="vd-btn sm" id="away-save">'+(rec?'Save changes':'Mark away')+'</button></div></div>';
   document.body.appendChild(el);
-  document.getElementById('away-save').onclick=function(){ saveAway(name,pub); };
+  document.getElementById('away-save').onclick=function(){ saveAway(name,pub,editId); };
 }
 function closeAwayModal(){ var el=document.getElementById('away-ov'); if(el) el.remove(); }
-async function saveAway(name,pub){
+async function saveAway(name,pub,editId){
   var from=document.getElementById('away-from').value, to=document.getElementById('away-to').value;
   var reason=(document.getElementById('away-reason').value||'').trim().slice(0,120);
   var err=document.getElementById('away-err');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)){ err.textContent='Pick both dates.'; return; }
   if(to<from){ err.textContent='“To” can’t be before “From”.'; return; }
-  var id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-  var val={id:id,reporter:name,pub:pub,from:from,to:to,reason:reason,by:EDITOR_NAME,created:new Date().toISOString()};
+  var old=editId?AWAY_LIST.filter(function(a){ return a.id===editId; })[0]:null;
+  var id=old?old.id:Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  var val={id:id,reporter:name,pub:pub,from:from,to:to,reason:reason,by:EDITOR_NAME,created:old?old.created:new Date().toISOString()};
+  if(old) val.edited=new Date().toISOString();
   var btn=document.getElementById('away-save'); btn.disabled=true; btn.textContent='Saving…';
   try{
     var res=await supa.from('system_flags').insert({key:'away:'+Date.now()+'-'+id,value:JSON.stringify(val)});
     if(res.error) throw res.error;
-  }catch(e){ btn.disabled=false; btn.textContent='Mark away'; err.textContent='Could not save. Try again.'; return; }
+  }catch(e){ btn.disabled=false; btn.textContent=editId?'Save changes':'Mark away'; err.textContent='Could not save. Try again.'; return; }
   closeAwayModal(); await refreshAfterAway();
 }
 async function endAway(id){
@@ -4901,7 +4935,7 @@ async function endAway(id){
     var res=await supa.from('system_flags').insert({key:'awayend:'+id+':'+Date.now(),value:JSON.stringify({id:id})});
     if(res.error) throw res.error;
   }catch(e){ alert('Could not remove it. Try again.'); return; }
-  await refreshAfterAway();
+  closeAwayModal(); await refreshAfterAway();
 }
 async function refreshAfterAway(){
   await loadAway();
