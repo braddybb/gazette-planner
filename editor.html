@@ -850,6 +850,7 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-fb-row:last-child{border-bottom:none}
 .vd-fb-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
 .vd-fb-top b{color:var(--ink)}
+.vd-fbh{margin-top:8px;font-size:12px}.vd-fbh summary{cursor:pointer;color:#555;font-weight:600}.vd-fbh-row{display:flex;gap:10px;align-items:flex-start;padding:5px 0;border-bottom:1px dotted #E5E5E0}.vd-fbh-d{color:#777;white-space:nowrap}.vd-fbh-t{flex:1;color:#222}
 .vd-fb-last{font-size:12px;color:#777;margin:4px 0 6px}
 .vd-fb-in{display:flex;gap:8px}
 .vd-report{background:#F8F8F5;border:1px solid #ECECEC;border-radius:9px;padding:12px 14px;font-family:inherit;font-size:12.5px;line-height:1.6;white-space:pre-wrap;color:#333;margin:6px 0 10px}
@@ -3977,6 +3978,7 @@ function vdFeedbackPrep(x){
   var fri=VD_INFO.indexOf(x); var fbl=vdLastFeedback(x);
   h+='<div class="vd-prep-row"><span>Last feedback</span><b>'+(fbl?esc(vdShortDate(vdTsYmd(fbl.ts)))+' — '+esc(fbl.text.length>90?fbl.text.slice(0,90)+'…':fbl.text):'none logged')+'</b></div>';
   if(fri>-1) h+='<div class="vd-fb-in" style="margin-top:8px"><input id="vdfb-in-'+fri+'" placeholder="Log what you told '+esc(vdFirst(rep.name))+'…" onkeydown="if(event.key===\'Enter\')vdLogFeedback('+fri+')"><button class="vd-btn ghost sm" onclick="vdLogFeedback('+fri+')">Log</button></div>';
+  if(fri>-1) h+=vdFbHistoryHtml(x,fri);
   h+='</div>';
   return h;
 }
@@ -4437,6 +4439,18 @@ function vdLog(type,text){
   VD.decisions.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),ts:Date.now(),type:type,text:text});
   if(VD.decisions.length>300) VD.decisions.length=300;
 }
+var VD_FB_OPEN={};
+function vdFbHistoryHtml(x,ri){
+  var l=(VD.feedback||{})[x.key]; if(!Array.isArray(l)||!l.length) return '';
+  return '<details class="vd-fbh"'+(VD_FB_OPEN[x.key]?' open':'')+' ontoggle="VD_FB_OPEN[\''+esc(x.key).replace(/'/g,"\\'")+'\']=this.open"><summary>All feedback logged for '+esc(vdFirst(x.rep.name))+' ('+l.length+')</summary>'+l.map(function(f){
+    return '<div class="vd-fbh-row"><span class="vd-fbh-d">'+esc(vdShortDate(vdTsYmd(f.ts)))+'</span><span class="vd-fbh-t">'+esc(f.text)+'</span><button class="vd-del" title="Delete this entry" onclick="vdDeleteFeedback('+ri+','+f.ts+')">×</button></div>';
+  }).join('')+'</details>';
+}
+async function vdDeleteFeedback(ri,ts){
+  var x=VD_INFO[ri]; if(!x||!confirm('Delete this feedback entry?')) return;
+  var prev=vdClone(); VD.feedback[x.key]=(VD.feedback[x.key]||[]).filter(function(f){ return f.ts!==ts; });
+  await vdCommit(prev,'Could not delete the entry.');
+}
 function vdLastFeedback(x){ var l=(VD.feedback||{})[x.key]; return (Array.isArray(l)&&l.length)?l[0]:null; }
 function vdOpenPublished(){ VD_PUB_OPEN=true; renderVideoDesk(); vdScrollTo('vd-sec-pipeline'); }
 function vdWeekOfProject(p){ if(p.weekOf) return p.weekOf; var t=p.publishedAt||p.stageAt||p.created; return t?vdMondayOf(vdTsYmd(t)):''; }
@@ -4571,7 +4585,8 @@ async function vdLogFeedback(ri){
   if(!VD.feedback||typeof VD.feedback!=='object') VD.feedback={};
   if(!Array.isArray(VD.feedback[x.key])) VD.feedback[x.key]=[];
   VD.feedback[x.key].unshift({ts:Date.now(),week:WEEK,text:text});
-  if(VD.feedback[x.key].length>20) VD.feedback[x.key].length=20;
+  if(VD.feedback[x.key].length>50) VD.feedback[x.key].length=50;
+  VD_FB_OPEN[x.key]=true;
   if(vdFortnightIndex()===1){
     var need=VD_INFO.filter(function(y){ return !y.ai.full; });
     if(need.length&&need.every(vdFeedbackDone)){ if(!VD.checklist[WEEK]) VD.checklist[WEEK]={}; VD.checklist[WEEK].feedback=true; }
@@ -4585,13 +4600,14 @@ function vdCadenceHtml(){
     var need=VD_INFO.filter(function(x){ return !x.ai.full; });
     var doneN=need.filter(vdFeedbackDone).length;
     var h=vdSecOpen('cadence','Feedback round — this fortnight',doneN+'/'+need.length+' logged');
-    h+='<div class="vd-sec-cap">Last two weeks for each reporter. Log what you told them; when everyone has an entry the checklist ticks itself.</div>';
+    h+='<div class="vd-sec-cap">Last two weeks for each reporter. Log what you told them; when everyone has an entry the checklist ticks itself. <b>Where it’s saved:</b> in the Video Desk record, under each reporter — open “All feedback logged” below a name to see the full history. Editors only; reporters can’t see it.</div>';
     VD_INFO.forEach(function(x,ri){
       var t=x.trend; var last=t[t.length-2], cur=t[t.length-1]; var fb=vdLastFeedback(x); var done=!x.ai.full&&vdFeedbackDone(x);
       var series=vdActiveSeries(x.rep).length;
       h+='<div class="vd-fb-row"><div class="vd-fb-top"><b>'+esc(x.rep.name)+'</b><span class="vd-iss '+(done?'grey':'amber')+'">'+(x.ai.full?'Away':(done?'Logged ✓':'To do'))+'</span><span style="color:#777">last week '+(last&&last.c!==null?last.c+'/'+last.tg:'—')+' · this week '+(x.ai.full?'away':x.filed+'/'+x.vt)+' · '+series+'/2 series</span></div>';
       h+='<div class="vd-fb-last">'+(fb?'Last: '+esc(vdShortDate(vdTsYmd(fb.ts)))+' — '+esc(fb.text.length>120?fb.text.slice(0,120)+'…':fb.text):'No feedback logged yet.')+'</div>';
       if(!x.ai.full) h+='<div class="vd-fb-in"><input id="vdfb-in-'+ri+'" placeholder="Log what you told '+esc(vdFirst(x.rep.name))+'…" onkeydown="if(event.key===\'Enter\')vdLogFeedback('+ri+')"><button class="vd-btn ghost sm" onclick="vdLogFeedback('+ri+')">Log</button></div>';
+      h+=vdFbHistoryHtml(x,ri);
       h+='</div>';
     });
     return h+'</div></div>';
