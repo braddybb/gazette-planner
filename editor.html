@@ -20,7 +20,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1155,79 +1154,6 @@ details.vd-more summary::-webkit-details-marker{display:none}
 .prb-m{font-size:11px;color:#77776F}.prb-w{font-size:12px;color:#3a3a34;margin-top:6px;line-height:1.4}
 .prb-ang{font-size:11.5px;color:#1F5C3E;margin-top:5px;line-height:1.4}
 .prb-empty{padding:24px 8px;color:#8a887e;font-size:13.5px}
-
-/* ── Network Command Centre (owner-only) ── */
-#command-centre-view{display:none;padding:1.25rem 2rem 3rem;max-width:1400px;margin:0 auto;font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--cc-ink:#16150F;--cc-mute:#6B685C;--cc-line:#E6E4DC;--cc-green:#2E6B4F;--cc-rust:#B4532A;--cc-amber:#B7791F;--cc-blue:#1B3FD6}
-body.cc-open #network-bar{display:none}
-#command-centre-view .back-btn{margin-bottom:1rem}
-.cc-head{background:var(--ink);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-.cc-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#fff}
-.cc-sub{font-size:13px;color:#b9b9b4;margin-top:2px}
-.cc-head-r{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#b9b9b4}
-.cc-refresh{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:7px;padding:5px 12px;cursor:pointer;font:inherit;font-size:12.5px}
-.cc-refresh:hover{background:rgba(255,255,255,.2)}
-.cc-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
-.cc-tile{background:#fff;border:1px solid var(--cc-line);border-radius:12px;padding:14px 16px}
-.cc-tile-n{font-size:26px;font-weight:700;color:var(--cc-ink);line-height:1.1}
-.cc-tile-l{font-size:12px;color:var(--cc-mute);margin-top:4px}
-.cc-tile-s{font-size:11.5px;color:#9a978a;margin-top:2px}
-.cc-t-red .cc-tile-n{color:var(--cc-rust)}
-.cc-t-green .cc-tile-n{color:var(--cc-green)}
-.cc-t-blue .cc-tile-n{color:var(--cc-blue)}
-.cc-panel{background:#fff;border:1px solid var(--cc-line);border-radius:12px;padding:6px 20px 14px;margin-bottom:18px}
-.cc-panel-h{display:flex;align-items:baseline;gap:10px;padding:12px 0 6px}
-.cc-panel-t{font-size:13px;font-weight:600;color:var(--cc-ink)}
-.cc-panel-c{font-size:12px;color:var(--cc-mute)}
-.cc-need{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #F0EEE7;cursor:pointer;border-radius:8px}
-.cc-need:hover{background:#FAF9F5}
-.cc-need-dot{width:9px;height:9px;border-radius:50%;flex:none;background:#B9B6A9}
-.cc-need.red .cc-need-dot{background:#C2410C}
-.cc-need.amber .cc-need-dot{background:#D9A12B}
-.cc-need.blue .cc-need-dot{background:var(--cc-blue)}
-.cc-need-main{flex:1;min-width:0}
-.cc-need-t{font-size:14px;font-weight:600;color:var(--cc-ink)}
-.cc-need-s{font-size:12.5px;color:var(--cc-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cc-need-go{font-size:12px;color:var(--cc-blue);font-weight:600;flex:none}
-.cc-ok{font-size:13.5px;color:var(--cc-green);font-weight:600;padding:8px 0}
-.cc-loading{font-size:12px;color:#9a978a;padding:6px 0 0}
-.cc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;margin-bottom:18px;align-items:start}
-.cc-card{background:#fff;border:1px solid var(--cc-line);border-top:3px solid #D9D6CB;border-radius:12px;padding:14px 16px 12px}
-.cc-card.cc-red{border-top-color:#C2410C}
-.cc-card.cc-amber{border-top-color:#D9A12B}
-.cc-card.cc-blue{border-top-color:var(--cc-blue)}
-.cc-card.cc-green{border-top-color:var(--cc-green)}
-.cc-card-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.cc-card-name{font-size:15px;font-weight:700;color:var(--cc-ink)}
-.cc-pill{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:#EFEDE6;color:#4F4C42;white-space:nowrap}
-.cc-p-red{background:#F6E3DA;color:var(--cc-rust)}
-.cc-p-amber{background:#FBEFCF;color:#8A6209}
-.cc-p-blue{background:#E6EEFB;color:#1F4F9C}
-.cc-p-green{background:#E3EFE8;color:var(--cc-green)}
-.cc-prog{height:6px;background:#EEEDE7;border-radius:4px;overflow:hidden;margin:12px 0 6px}
-.cc-prog-fill{height:100%;background:var(--cc-green);border-radius:4px}
-.cc-card-line{font-size:13px;color:var(--cc-mute)}
-.cc-card-line b{color:var(--cc-ink);font-size:16px}
-.cc-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
-.cc-chip{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:#F1F0EC;color:#6B685C}
-.cc-chip.red{background:#F6E3DA;color:var(--cc-rust)}
-.cc-chip.amber{background:#FBEFCF;color:#8A6209}
-.cc-chip.blue{background:#E6EEFB;color:#1F4F9C}
-.cc-chip.green{background:#E3EFE8;color:var(--cc-green)}
-.cc-reps{margin-top:8px;border-top:1px solid #F0EEE7}
-.cc-rep{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid #F5F3EC;cursor:pointer;font-size:13px}
-.cc-rep:hover{background:#FAF9F5}
-.cc-rep-n{font-weight:600;color:var(--cc-ink)}
-.cc-rep-pub{color:#9a978a;font-size:12px}
-.cc-rep-f{margin-left:auto;font-weight:700;color:var(--cc-ink)}
-.cc-rep-away{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#ECEAF6;color:#4B3F8F}
-.cc-od{font-size:12.5px;color:#444;padding:6px 2px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cc-od b{color:var(--cc-rust);font-weight:600}
-.cc-od:hover{text-decoration:underline}
-.cc-radar{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 4px}
-.cc-radar-i{flex:1 1 240px;border:1px solid #F0EEE7;border-radius:10px;padding:10px 12px;background:#FCFBF8}
-.cc-radar-w{font-size:11px;font-weight:700;color:var(--cc-blue)}
-.cc-radar-m{font-size:13px;font-weight:600;color:var(--cc-ink);margin-top:3px}
-@media(max-width:700px){#command-centre-view{padding:1rem}.cc-grid{grid-template-columns:1fr}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1320,7 +1246,6 @@ body.cc-open #network-bar{display:none}
     <button class="tool" id="impact-radar-btn" onclick="openImpactRadar()" title="Impact Radar — climate, energy &amp; environment leads">&#128225;</button>
     <button class="tool" id="patch-radar-btn" onclick="openPatchRadar()" title="Patch Radar — sources, health and scan for each masthead's patch">&#128205;</button>
     <button class="tool" id="video-desk-btn" onclick="openVideoDesk()" title="Video Desk — Nick's board + your rollup">&#127909;</button>
-    <button class="tool" id="cc-btn" onclick="openCommandCentre()" title="Command Centre — whole network at a glance" style="display:none">&#129517;</button>
     <button class="signout-btn" onclick="editorSignOut()">Sign out</button>
   </div>
 
@@ -1457,11 +1382,6 @@ body.cc-open #network-bar{display:none}
   <div id="video-desk-view" style="display:none">
     <button class="back-btn" onclick="closeVideoDesk()">&#8592; Back to all reporters</button>
     <div id="video-desk-body"><div class="wr-loading"><div class="wr-spin"></div>Loading the desk&hellip;</div></div>
-  </div>
-
-  <div id="command-centre-view" style="display:none">
-    <button class="back-btn" onclick="closeCommandCentre()">&#8592; Back to all reporters</button>
-    <div id="command-centre-body"></div>
   </div>
 </div>
 
@@ -1910,7 +1830,6 @@ async function completePasswordReset(){
 async function editorSignOut() {
   await supa.auth.signOut();
   localStorage.removeItem('gz_editor_week');
-  try { ccResetOwner(); } catch (e) {}
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('inp-password').value = '';
@@ -1963,7 +1882,6 @@ async function loadWeek() {
   netBar.innerHTML = '';
 
   try {
-    ccInitOwner();
     await refreshData();
     await loadGoldStars();
     await loadAway();
@@ -2225,7 +2143,6 @@ function renderNetworkBar() {
 }
 
 function renderGrid() {
-  try { ccRefreshIfOpen(); } catch (e) { console.error(e); }
   try { renderTodayPanel(); } catch (e) { console.error(e); }
   const grid = document.getElementById('reporter-grid');
   grid.innerHTML = '';
@@ -2790,8 +2707,6 @@ function goHome() {
   if (impactView) impactView.style.display = 'none';
   if (todoRollupView) todoRollupView.style.display = 'none';
   if (foiRollupView) foiRollupView.style.display = 'none';
-  document.body.classList.remove('cc-open');
-  var ccView = document.getElementById('command-centre-view'); if (ccView) ccView.style.display = 'none';
   if (cwOverlay) cwOverlay.classList.remove('show');
   if (assignOverlay) assignOverlay.classList.remove('show');
   if (mainView) mainView.style.display = 'block';
@@ -3559,8 +3474,7 @@ let WR_DATA = null; // cached once generated, until the user navigates away
 
 function hideAllViews(){
   document.body.classList.remove('vd-open');
-  document.body.classList.remove('cc-open');
-  ['main-view','command-centre-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view','video-desk-view','impact-radar-view','patch-radar-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  ['main-view','drilldown','weekly-review','impact-view','election-view','todo-rollup-view','foi-rollup-view','bank-rollup-view','resources-admin-view','leaderboard-view','video-desk-view','impact-radar-view','patch-radar-view'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
 }
 async function openWeeklyReview() {
   hideAllViews();
@@ -3871,6 +3785,7 @@ function vdChecksFor(w){
   return [
     {k:'heat',lbl:'Run HEAT review',short:'HEAT review'},
     {k:'brandpub',lbl:'Publish a video to Gazette brand channels',short:'Brand-channel video'},
+    {k:'impvid',lbl:'All reporters file Impact Video',short:'Impact video — all reporters',active:(w>='2026-10-19'&&w<='2026-10-19')}, // one-off for week of 19 Oct; widen the dates to repeat it
     {k:'casestudy',lbl:'Case study of the week — written & filed',short:'Case study'},
     {k:'flag',lbl:'Send Friday end-of-week report',short:'Friday report',pill:'FRI',pc:'fri'},
     {k:'feedback',lbl:'Reporter video feedback round',short:'Feedback round',pill:'FORTNIGHTLY',pc:'fort',active:f===1},
@@ -4590,20 +4505,23 @@ function vdRetag(ri,n){ var key=vdTagKey(ri,n); VD_RETAG[key]=true; VD_PEND[key]
 function vdCancelRetag(ri,n){ var key=vdTagKey(ri,n); delete VD_RETAG[key]; delete VD_PEND[key]; renderVideoDesk(); }
 
 function vdTodayHtml(info,ds){
-  if(ds.state!=='current'||ds.idx>4) return '';
-  var idx=ds.idx, dayName=DAYS[idx];
-  var shoots=VD.projects.filter(function(p){ return p.stage===0&&p.shootDate; }).map(function(p){ return {p:p,w:vdShootWhen(p)}; }).filter(function(o){ return o.w.d>=0&&o.w.d<=1; }).sort(function(a,b){ return a.w.d-b.w.d; });
-  var tofile=[], filed=[];
+  // "live" = this is the current working week on a weekday. Otherwise (past week, weekend) the panel only shows videos still waiting for a format.
+  var live=ds.state==='current'&&ds.idx<=4;
+  var idx=live?ds.idx:-1, dayName=live?DAYS[idx]:'';
+  var shoots=live?VD.projects.filter(function(p){ return p.stage===0&&p.shootDate; }).map(function(p){ return {p:p,w:vdShootWhen(p)}; }).filter(function(o){ return o.w.d>=0&&o.w.d<=1; }).sort(function(a,b){ return a.w.d-b.w.d; }):[];
+  var tofile=[], filed=[], backlog=[];
   info.forEach(function(x,ri){
     if(x.ai.idx.indexOf(idx)>-1) return;
     x.slots.forEach(function(sl){
       var row=(x.d[WEEK]||{})[sl.n];
-      if(x.st[sl.n]==='due') tofile.push({x:x,ri:ri,sl:sl,row:row});
-      else if(x.st[sl.n]==='filed'&&row&&row.file_day===dayName) filed.push({x:x,ri:ri,sl:sl,row:row});
+      if(live&&x.st[sl.n]==='due') tofile.push({x:x,ri:ri,sl:sl,row:row});
+      else if(x.st[sl.n]==='filed'&&row&&live&&row.file_day===dayName) filed.push({x:x,ri:ri,sl:sl,row:row});
+      else if(x.st[sl.n]==='filed'&&row&&!vdTagged(ri,sl.n)) backlog.push({x:x,ri:ri,sl:sl,row:row});   // filed on an earlier day and never tagged
     });
   });
-  var h='<div class="vd-today"><div class="vd-today-head"><div class="vd-today-title">Today</div><div class="vd-today-date">'+esc(vdDayLabel(vdToday()))+'</div></div>';
-  if(!shoots.length&&!tofile.length&&!filed.length) h+='<div class="vd-today-empty">Nothing due or shooting today. A good day to move the pipeline.</div>';
+  if(!live&&!backlog.length) return '';
+  var h='<div class="vd-today"><div class="vd-today-head"><div class="vd-today-title">'+(live?'Today':'Videos to tag')+'</div><div class="vd-today-date">'+esc(live?vdDayLabel(vdToday()):'Week of '+WEEK)+'</div></div>';
+  if(live&&!shoots.length&&!tofile.length&&!filed.length&&!backlog.length) h+='<div class="vd-today-empty">Nothing due or shooting today. A good day to move the pipeline.</div>';
   if(shoots.length){
     h+='<div class="vd-today-grp">Shooting</div>';
     shoots.forEach(function(o){
@@ -4622,6 +4540,12 @@ function vdTodayHtml(info,ds){
     h+='<div class="vd-today-grp">Filed today ('+filed.length+') — '+(taggedN===filed.length?'all tagged ✓':taggedN+' of '+filed.length+' tagged')+'</div>';
     filed.forEach(function(o){
       h+='<div class="vd-today-row"><span class="who">'+esc(vdFirst(o.x.rep.name))+'</span><span class="what">'+esc(vdSlotName(o.sl.n,o.x.rep.pub))+(o.row&&o.row.headline?' <em>· '+esc(o.row.headline)+'</em>':'')+'</span>'+vdFmtPick(o.ri,o.sl.n)+'</div>';
+    });
+  }
+  if(backlog.length){
+    h+='<div class="vd-today-grp">'+(live?'Filed earlier, not tagged yet':'Filed, not tagged yet')+' ('+backlog.length+')</div>';
+    backlog.forEach(function(o){
+      h+='<div class="vd-today-row"><span class="who">'+esc(vdFirst(o.x.rep.name))+'</span><span class="what">'+esc(vdSlotName(o.sl.n,o.x.rep.pub))+(o.row&&o.row.headline?' <em>· '+esc(o.row.headline)+'</em>':'')+(o.row&&o.row.file_day?' <em>· filed '+esc(o.row.file_day)+'</em>':'')+'</span>'+vdFmtPick(o.ri,o.sl.n)+'</div>';
     });
   }
   h+='</div>';
@@ -6419,237 +6343,6 @@ async function irAddLead(){
   IR.tab='saved'; await irLoad(false);
 }
 function irPanelHtml(){ return IR.panel==='lists'?irListsPanel():(IR.panel==='sources'?irSourcesPanel():(IR.panel==='lead'?irLeadPanel():'')); }
-
-
-// ══════════════════════════════════════════
-//  NETWORK COMMAND CENTRE — owner-only
-// ══════════════════════════════════════════
-// One screen over everything this dashboard already knows: per-masthead filing
-// status, what's overdue, what was filed today, plus a "needs you" list pulled
-// from the Video Desk, splash lockouts, FOI and the Impact Radar.
-// It only reads tables the dashboard already reads. Visibility is gated on
-// profiles.is_owner (see command-centre-owner.sql); the button stays hidden for
-// everyone else and openCommandCentre() re-checks the flag.
-var CC_OWNER = false, CC_OWNER_CHECKED = false;
-var CC_X = { loaded:false, help:[], tasks:0, splash:[], foiOver:[], radarTop:null, at:0 };
-var CC_ORDER = ['Eastern Melburnian','West Vic Brolga','Gippsland Monitor','North Shore Lorikeet','Mid North Coaster','National Account'];
-
-function ccMasthead(pub){ return /^West Vic Brolga/.test(pub || '') ? 'West Vic Brolga' : (pub || ''); }
-function ccIsOpen(){ var el = document.getElementById('command-centre-view'); return !!el && el.style.display === 'block'; }
-
-async function ccInitOwner(){
-  if (CC_OWNER_CHECKED) { ccApplyOwner(); return; }
-  try {
-    var s = (await supa.auth.getSession()).data.session;
-    if (!s) return;
-    // Separate, failure-tolerant lookup so a missing column can never break login.
-    var r = await supa.from('profiles').select('is_owner').eq('id', s.user.id).single();
-    CC_OWNER = !r.error && !!(r.data && r.data.is_owner === true);
-    CC_OWNER_CHECKED = true;
-  } catch (e) { CC_OWNER = false; }
-  ccApplyOwner();
-}
-function ccApplyOwner(){
-  var b = document.getElementById('cc-btn');
-  if (b) b.style.display = CC_OWNER ? '' : 'none';
-  if (!CC_OWNER && ccIsOpen()) closeCommandCentre();
-}
-function ccResetOwner(){
-  CC_OWNER = false; CC_OWNER_CHECKED = false;
-  CC_X = { loaded:false, help:[], tasks:0, splash:[], foiOver:[], radarTop:null, at:0 };
-  ccApplyOwner();
-}
-
-function openCommandCentre(){
-  if (!CC_OWNER) return;
-  hideAllViews();
-  document.body.classList.add('cc-open');
-  document.getElementById('command-centre-view').style.display = 'block';
-  ccRender();
-  ccLoadExtras();
-}
-function closeCommandCentre(){
-  document.body.classList.remove('cc-open');
-  var v = document.getElementById('command-centre-view'); if (v) v.style.display = 'none';
-  var m = document.getElementById('main-view'); if (m) m.style.display = 'block';
-}
-function ccRefreshIfOpen(){ if (CC_OWNER && ccIsOpen()) ccRender(); }
-async function ccReload(){
-  try { await refreshData(); await loadAway(); } catch (e) {}
-  ccRender(); ccLoadExtras();
-}
-function ccOpenReporter(ri){ if (CC_OWNER && REPORTERS[ri]) openDrill(REPORTERS[ri]); }
-
-// Things outside the weekly story data. Each source fails quietly on its own.
-async function ccLoadExtras(){
-  var x = { loaded:true, help:[], tasks:0, splash:[], foiOver:[], radarTop:null, at:Date.now() };
-  await Promise.all([
-    (async function(){ try { await vdLoadHelp(); x.help = VD_HELP.slice(); } catch (e) {} })(),
-    (async function(){ try { await vdLoadTasks(); x.tasks = VD_TASKS.filter(function(t){ return !t.done && !t.cleared; }).length; } catch (e) {} })(),
-    (async function(){
-      try {
-        var rows = await supaFetch('reporter_todos?select=reporter,item,done&order=created_at.asc');
-        var day = lastSplashDayBeforeEd(new Date());
-        x.splash = REPORTERS.filter(function(r){ return reporterSplashLocked(rows, r.name, day); }).map(function(r){ return r.name; });
-      } catch (e) {}
-    })(),
-    (async function(){
-      try {
-        var rows = await supaFetch('foi_requests?select=agency,status,decision_due,reporter&order=decision_due.asc');
-        x.foiOver = (rows || []).filter(function(r){
-          var resolved = ['full','partial','refused'].indexOf(r.status) > -1;
-          return !resolved && r.decision_due && foiDaysUntil(r.decision_due) < 0;
-        });
-      } catch (e) {}
-    })(),
-    (async function(){
-      try {
-        var since = new Date(Date.now() - 24 * 3600e3).toISOString();
-        var r = await supa.from('impact_items').select('id', { count:'exact', head:true }).eq('status','new').gte('relevance',60).gte('fetched_at',since);
-        x.radarTop = r.error ? null : (r.count || 0);
-      } catch (e) {}
-    })()
-  ]);
-  CC_X = x;
-  ccRefreshIfOpen();
-}
-
-// ── numbers ──────────────────────────────────────────────────────────────────
-function ccPerReporter(){
-  var ds = vdDayState();
-  var today = (ds.state === 'current' && ds.idx <= 4) ? DAYS[ds.idx] : null;
-  return REPORTERS.map(function(r, ri){
-    var data = getReporterData(r.name, r.pub), all = drillAll(r), ai = awayInfo(r.name, r.pub);
-    var p = { r:r, ri:ri, ai:ai, target:scaledBase(r), filed:getFiledCount(data, r.pub), extras:getExtrasFiledCount(data, r.pub),
-      overdue:[], due:0, incomplete:0, unplanned:0, pubToday:0, notes:0, assigned:0, vFiled:0, vTarget:0, vOver:0 };
-    all.forEach(function(x){
-      var k = x.status.k;
-      if (k === 'overdue') p.overdue.push(x);
-      else if (k === 'due') p.due++;
-      else if (k === 'incomplete') p.incomplete++;
-      else if (k === 'empty' && x.status.cls === 'red') p.unplanned++;
-      if (today && k === 'filed' && x.st && x.st.file_day === today) p.pubToday++;
-      if (x.assigned && k !== 'filed' && k !== 'abandoned') p.assigned++;
-      p.notes += parseEditorNotes(x.st).filter(function(n){ return !n.addressed; }).length;
-      if (!x.extra && !ai.full && (DRILL_VIDEO[x.def.t] || (x.def.t === 'life' && vdIsNat(r.pub)))) {
-        p.vTarget++;
-        if (k === 'filed') p.vFiled++; else if (k === 'overdue') p.vOver++;
-      }
-    });
-    return p;
-  });
-}
-function ccGroups(ps){
-  var g = {};
-  ps.forEach(function(p){ var m = ccMasthead(p.r.pub); (g[m] = g[m] || { name:m, ps:[] }).ps.push(p); });
-  var names = CC_ORDER.filter(function(n){ return g[n]; }).concat(Object.keys(g).filter(function(n){ return CC_ORDER.indexOf(n) < 0; }));
-  return names.map(function(n){
-    var o = g[n];
-    ['target','filed','extras','due','incomplete','unplanned','pubToday','notes','assigned'].forEach(function(k){
-      o[k] = o.ps.reduce(function(a, p){ return a + p[k]; }, 0);
-    });
-    o.overdue = [];
-    o.ps.forEach(function(p){ p.overdue.forEach(function(x){ o.overdue.push({ p:p, x:x }); }); });
-    return o;
-  });
-}
-function ccHealth(o){
-  var ds = vdDayState();
-  if (!o.target) return { cls:'grey', label:'Away' };
-  if (ds.state === 'future') return { cls:'grey', label:'Not started' };
-  if (o.overdue.length) return { cls:'red', label:o.overdue.length + ' overdue' };
-  if (o.unplanned || o.incomplete) return { cls:'amber', label:'Needs planning' };
-  if (o.due) return { cls:'blue', label:o.due + ' due today' };
-  return { cls:'green', label:'On track' };
-}
-
-// ── rendering ────────────────────────────────────────────────────────────────
-function ccChip(cls, n, txt){ return n ? '<span class="cc-chip ' + cls + '">' + n + ' ' + txt + '</span>' : ''; }
-function ccTile(tone, n, label, sub){
-  return '<div class="cc-tile cc-t-' + tone + '"><div class="cc-tile-n">' + n + '</div><div class="cc-tile-l">' + esc(label) + '</div>' + (sub ? '<div class="cc-tile-s">' + esc(sub) + '</div>' : '') + '</div>';
-}
-function ccCardHtml(g){
-  var h = ccHealth(g);
-  var pct = g.target ? Math.min(100, Math.round(g.filed / g.target * 100)) : 0;
-  var s = '<div class="cc-card cc-' + h.cls + '">';
-  s += '<div class="cc-card-h"><div class="cc-card-name">' + esc(g.name) + '</div><span class="cc-pill cc-p-' + h.cls + '">' + esc(h.label) + '</span></div>';
-  s += '<div class="cc-prog"><div class="cc-prog-fill" style="width:' + pct + '%"></div></div>';
-  s += '<div class="cc-card-line"><b>' + g.filed + '</b> of ' + g.target + ' filed' + (g.extras ? ' · ' + g.extras + ' extra' : '') + '</div>';
-  var chips = ccChip('red', g.overdue.length, 'overdue') + ccChip('blue', g.due, 'due today') + ccChip('amber', g.unplanned, 'not planned') + ccChip('amber', g.incomplete, 'incomplete') + ccChip('green', g.pubToday, 'filed today') + ccChip('', g.notes, g.notes === 1 ? 'note open' : 'notes open') + ccChip('', g.assigned, 'assigned open');
-  if (chips) s += '<div class="cc-chips">' + chips + '</div>';
-  s += '<div class="cc-reps">';
-  g.ps.forEach(function(p){
-    var sfx = ccMasthead(p.r.pub) !== p.r.pub ? p.r.pub.replace(/^West Vic Brolga — /, '') : '';
-    s += '<div class="cc-rep" onclick="ccOpenReporter(' + p.ri + ')"><span class="cc-rep-n">' + esc(p.r.name) + '</span>' + (sfx ? '<span class="cc-rep-pub">' + esc(sfx) + '</span>' : '') + (p.ai.any ? '<span class="cc-rep-away">' + esc(p.ai.label) + '</span>' : '') + '<span class="cc-rep-f">' + (p.ai.full ? '—' : (p.filed + p.extras) + '/' + p.target) + '</span></div>';
-  });
-  s += '</div>';
-  g.overdue.slice(0, 3).forEach(function(o){
-    var hl = o.x.st && o.x.st.headline ? o.x.st.headline : (o.x.def.lbl || 'Story ' + o.x.def.n);
-    s += '<div class="cc-od" onclick="ccOpenReporter(' + o.p.ri + ')"><b>' + esc(vdFirst(o.p.r.name)) + '</b> · ' + esc(o.x.def.lbl || 'Story') + ' · ' + esc(hl) + '</div>';
-  });
-  if (g.overdue.length > 3) s += '<div class="cc-od" style="color:#9a978a">+ ' + (g.overdue.length - 3) + ' more overdue</div>';
-  return s + '</div>';
-}
-function ccNeedRow(cls, title, sub, act){
-  return '<div class="cc-need ' + cls + '" onclick="' + act + '"><span class="cc-need-dot"></span><div class="cc-need-main"><div class="cc-need-t">' + esc(title) + '</div>' + (sub ? '<div class="cc-need-s">' + esc(sub) + '</div>' : '') + '</div><span class="cc-need-go">Open →</span></div>';
-}
-function ccRender(){
-  var el = document.getElementById('command-centre-body'); if (!el) return;
-  var ps = ccPerReporter(), groups = ccGroups(ps), ds = vdDayState();
-  var sum = function(k){ return ps.reduce(function(a, p){ return a + p[k]; }, 0); };
-  var target = sum('target'), filed = sum('filed'), extras = sum('extras');
-  var overdue = ps.reduce(function(a, p){ return a + p.overdue.length; }, 0);
-  var vF = sum('vFiled'), vT = sum('vTarget'), vO = sum('vOver');
-  var pct = target ? Math.min(100, Math.round(filed / target * 100)) : 0;
-  var todayTxt = ds.state === 'current' && ds.idx <= 4 ? vdDayLabel(vdToday()) : (ds.state === 'current' ? 'Weekend' : (ds.state === 'past' ? 'Past week' : 'Upcoming week'));
-
-  var h = '<div class="cc-head"><div><div class="cc-title">Network Command Centre</div><div class="cc-sub">Week of ' + esc(vdWeekLabel()) + ' · ' + esc(todayTxt) + '</div></div>';
-  h += '<div class="cc-head-r">' + (CC_X.at ? '<span>Extras updated ' + esc(vdAgo(CC_X.at)) + '</span>' : '') + '<button class="cc-refresh" onclick="ccReload()">↻ Refresh</button></div></div>';
-
-  h += '<div class="cc-tiles">' +
-    ccTile(pct >= 80 ? 'green' : '', (filed + extras) + '/' + target, 'Stories filed', pct + '% of the base slate' + (extras ? ' · ' + extras + ' extra' : '')) +
-    ccTile(overdue ? 'red' : 'green', overdue, 'Overdue', overdue ? 'across ' + ps.filter(function(p){ return p.overdue.length; }).length + ' reporter(s)' : 'nothing late') +
-    ccTile('blue', sum('due'), 'Due today', ds.state === 'current' ? 'still to file' : '') +
-    ccTile('green', ds.state === 'current' && ds.idx <= 4 ? sum('pubToday') : '—', 'Filed today', '') +
-    ccTile(vO ? 'red' : '', vF + '/' + vT, 'Video-first output', vO ? vO + ' overdue' : '') +
-  '</div>';
-
-  // Needs you
-  var rows = [];
-  // One row per reporter: overdue first, then anyone with empty slots past the point they should be planned.
-  var repRows = ps.filter(function(p){ return !p.ai.full && (p.overdue.length || p.unplanned); }).sort(function(a, b){
-    return (b.overdue.length - a.overdue.length) || (b.unplanned - a.unplanned);
-  });
-  repRows.slice(0, 6).forEach(function(p){
-    var bits = [];
-    if (p.overdue.length) bits.push(p.overdue.length + ' overdue');
-    if (p.unplanned) bits.push(p.unplanned + ' not planned');
-    var sub = p.overdue.map(function(x){ return (x.def.lbl || 'Story') + (x.st && x.st.headline ? ': ' + x.st.headline : ''); }).join(' · ');
-    rows.push(ccNeedRow(p.overdue.length ? 'red' : 'amber', vdFirst(p.r.name) + ' — ' + bits.join(', '), sub, 'ccOpenReporter(' + p.ri + ')'));
-  });
-  if (repRows.length > 6) rows.push('<div class="cc-need-s" style="padding:8px 4px;border-top:1px solid #F0EEE7">+ ' + (repRows.length - 6) + ' more reporter' + (repRows.length - 6 > 1 ? 's' : '') + ' behind on planning — see the masthead cards below.</div>');
-  CC_X.help.forEach(function(q){
-    rows.push(ccNeedRow('red', q.reporter + ' asked the Video Desk for help', (q.type || 'Help') + ' · ' + vdSlotName(q.slot, q.pub) + (q.note ? ' · ' + q.note : ''), 'openVideoDesk()'));
-  });
-  if (CC_X.splash.length) rows.push(ccNeedRow('red', 'Splash lockout is on', CC_X.splash.join(', '), "openTool('todo',openTodoRollup)"));
-  if (CC_X.foiOver.length) rows.push(ccNeedRow('amber', CC_X.foiOver.length + ' FOI request' + (CC_X.foiOver.length > 1 ? 's' : '') + ' past due', CC_X.foiOver.slice(0, 4).map(function(r){ return r.agency; }).join(' · '), "openTool('foi',openFOIRollup)"));
-  if (CC_X.radarTop) rows.push(ccNeedRow('blue', CC_X.radarTop + ' new top lead' + (CC_X.radarTop > 1 ? 's' : '') + ' on the Impact Radar', 'Scored 60+ in the last 24 hours', 'openImpactRadar()'));
-  if (CC_X.tasks) rows.push(ccNeedRow('', CC_X.tasks + ' open Video Desk task' + (CC_X.tasks > 1 ? 's' : ''), '', 'openVideoDesk()'));
-  h += '<div class="cc-panel"><div class="cc-panel-h"><div class="cc-panel-t">Needs you</div><div class="cc-panel-c">' + rows.length + '</div></div>' +
-    (rows.length ? rows.join('') : '<div class="cc-ok">✓ All clear — nothing needs you right now.</div>') +
-    (CC_X.loaded ? '' : '<div class="cc-loading">Checking Video Desk, splash, FOI and the Radar…</div>') + '</div>';
-
-  h += '<div class="cc-grid">' + groups.map(ccCardHtml).join('') + '</div>';
-
-  var moments = [];
-  try { moments = getActiveCalendarMoments().slice(0, 3); } catch (e) {}
-  if (moments.length) {
-    h += '<div class="cc-panel"><div class="cc-panel-h"><div class="cc-panel-t">On the radar</div><div class="cc-panel-c">Next Victorian reporting moments</div></div><div class="cc-radar">' +
-      moments.map(function(m){ return '<div class="cc-radar-i"><div class="cc-radar-w">' + esc(m.timeframe) + '</div><div class="cc-radar-m">' + esc(m.moment) + '</div></div>'; }).join('') + '</div></div>';
-  }
-  el.innerHTML = h;
-}
-
 
 // ── Password recovery link detection ──
 if (window.location.hash.includes('type=recovery')) {
