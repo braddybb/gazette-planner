@@ -3976,7 +3976,7 @@ function vdFeedbackPrep(x){
   h+='<div class="vd-prep-row"><span>Notes on video slots</span><b>'+(notes.length?notes.length+' sent · '+addressed+' addressed':'none')+'</b></div>';
   notes.slice(-4).forEach(function(n){ h+='<div class="vd-prep-note">'+(n.addressed?'✓ ':'• ')+esc(vdSlotName(n.slot,rep.pub))+': '+esc(n.text.length>110?n.text.slice(0,110)+'…':n.text)+'</div>'; });
   var fri=VD_INFO.indexOf(x); var fbl=vdLastFeedback(x);
-  h+='<div class="vd-prep-row"><span>Last feedback</span><b>'+(fbl?esc(vdShortDate(vdTsYmd(fbl.ts)))+' — '+esc(fbl.text.length>90?fbl.text.slice(0,90)+'…':fbl.text):'none logged')+'</b></div>';
+  h+='<div class="vd-prep-row"><span>Last feedback</span><b>'+(fbl?esc(vdShortDate(vdTsYmd(fbl.ts)))+' — '+vdLinkify(fbl.text):'none logged')+'</b></div>';
   if(fri>-1) h+='<div class="vd-fb-in" style="margin-top:8px"><input id="vdfb-in-'+fri+'" placeholder="Log what you told '+esc(vdFirst(rep.name))+'…" onkeydown="if(event.key===\'Enter\')vdLogFeedback('+fri+')"><button class="vd-btn ghost sm" onclick="vdLogFeedback('+fri+')">Log</button></div>';
   if(fri>-1) h+=vdFbHistoryHtml(x,fri);
   h+='</div>';
@@ -4440,10 +4440,16 @@ function vdLog(type,text){
   if(VD.decisions.length>300) VD.decisions.length=300;
 }
 var VD_FB_OPEN={};
+function vdLinkify(t){
+  return esc(t||'').replace(/(https?:\/\/[^\s<]+)/g,function(m){
+    var tail=''; var t2=m.match(/[.,;:!?)\]]+$/); if(t2){ tail=t2[0]; m=m.slice(0,-tail.length); }
+    return '<a class="vd-link" href="'+m+'" target="_blank" rel="noopener">'+m+'</a>'+tail;
+  });
+}
 function vdFbHistoryHtml(x,ri){
   var l=(VD.feedback||{})[x.key]; if(!Array.isArray(l)||!l.length) return '';
   return '<details class="vd-fbh"'+(VD_FB_OPEN[x.key]?' open':'')+' ontoggle="VD_FB_OPEN[\''+esc(x.key).replace(/'/g,"\\'")+'\']=this.open"><summary>All feedback logged for '+esc(vdFirst(x.rep.name))+' ('+l.length+')</summary>'+l.map(function(f){
-    return '<div class="vd-fbh-row"><span class="vd-fbh-d">'+esc(vdShortDate(vdTsYmd(f.ts)))+'</span><span class="vd-fbh-t">'+esc(f.text)+'</span><button class="vd-del" title="Delete this entry" onclick="vdDeleteFeedback('+ri+','+f.ts+')">×</button></div>';
+    return '<div class="vd-fbh-row"><span class="vd-fbh-d">'+esc(vdShortDate(vdTsYmd(f.ts)))+'</span><span class="vd-fbh-t" style="word-break:break-word">'+vdLinkify(f.text)+'</span><button class="vd-del" title="Delete this entry" onclick="vdDeleteFeedback('+ri+','+f.ts+')">×</button></div>';
   }).join('')+'</details>';
 }
 async function vdDeleteFeedback(ri,ts){
@@ -4605,7 +4611,7 @@ function vdCadenceHtml(){
       var t=x.trend; var last=t[t.length-2], cur=t[t.length-1]; var fb=vdLastFeedback(x); var done=!x.ai.full&&vdFeedbackDone(x);
       var series=vdActiveSeries(x.rep).length;
       h+='<div class="vd-fb-row"><div class="vd-fb-top"><b>'+esc(x.rep.name)+'</b><span class="vd-iss '+(done?'grey':'amber')+'">'+(x.ai.full?'Away':(done?'Logged ✓':'To do'))+'</span><span style="color:#777">last week '+(last&&last.c!==null?last.c+'/'+last.tg:'—')+' · this week '+(x.ai.full?'away':x.filed+'/'+x.vt)+' · '+series+'/2 series</span></div>';
-      h+='<div class="vd-fb-last">'+(fb?'Last: '+esc(vdShortDate(vdTsYmd(fb.ts)))+' — '+esc(fb.text.length>120?fb.text.slice(0,120)+'…':fb.text):'No feedback logged yet.')+'</div>';
+      h+='<div class="vd-fb-last">'+(fb?'Last: '+esc(vdShortDate(vdTsYmd(fb.ts)))+' — '+vdLinkify(fb.text):'No feedback logged yet.')+'</div>';
       if(!x.ai.full) h+='<div class="vd-fb-in"><input id="vdfb-in-'+ri+'" placeholder="Log what you told '+esc(vdFirst(x.rep.name))+'…" onkeydown="if(event.key===\'Enter\')vdLogFeedback('+ri+')"><button class="vd-btn ghost sm" onclick="vdLogFeedback('+ri+')">Log</button></div>';
       h+=vdFbHistoryHtml(x,ri);
       h+='</div>';
