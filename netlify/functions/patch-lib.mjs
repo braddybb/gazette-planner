@@ -240,8 +240,8 @@ export async function run(ctx) {
       }
     }));
   }
-  // DM each reporter their own patch's best new items (scored high, not alerted before, last 24h)
-  try {
+  // DM each reporter their own patch's best new items (scored high, not alerted before, last 24h) — only on the 7:15am scheduled run
+  if (ctx.notify) try {
     const prefs = await loadPrefs(D);
     const cand = await D.get(`patch_items?alerted=eq.false&relevance=gte.${ALERT_FLOOR}&fetched_at=gte.${new Date(ctx.now - 864e5).toISOString()}&order=relevance.desc&limit=200&select=id,title,url,source_name,why,relevance,patches`);
     const site = ctx.env.URL || "https://gari-planner.netlify.app";
