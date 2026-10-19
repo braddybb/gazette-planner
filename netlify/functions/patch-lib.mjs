@@ -251,7 +251,15 @@ export async function run(ctx) {
       const min = pref == null ? ALERT_MIN : pref;
       const mine = cand.filter((c) => (c.patches || []).includes(rep.pub) && c.relevance >= min); if (!mine.length) continue;
       const shown = mine.slice(0, ALERT_MAX);
-      try { if (await dmSlack(ctx, rep.slack, alertDm(rep.pub, mine, site))) for (const it of shown) await D.patch(`patch_items?id=eq.${it.id}`, { alerted: true }); stats.alerts = (stats.alerts || 0) + 1; }
+      try {
+        const msg = alertDm(rep.pub, mine, site);
+        if (await dmSlack(ctx, rep.slack, msg)) {
+          for (const it of shown) await D.patch(`patch_items?id=eq.${it.id}`, { alerted: true });
+          // mirror to the editors' channel so Brad can see exactly what each reporter was sent (never blocks the DM)
+          try { await dmSlack(ctx, ctx.env.GARI_SLACK_CHANNEL || "#gari", `:eyes: _Sent to ${rep.name}_\n${msg}`); } catch (e) { stats.errors.push(`#gari mirror: ${e.message}`); }
+        }
+        stats.alerts = (stats.alerts || 0) + 1;
+      }
       catch (e) { stats.errors.push(`DM ${rep.name}: ${e.message}`); }
     }
   } catch (e) { stats.errors.push("alerts: " + e.message); }
