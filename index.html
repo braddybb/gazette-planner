@@ -18,7 +18,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4285,12 +4284,13 @@ Object.keys(localStorage).filter(k => k.indexOf('gz_draft|' + USER.name + '|' + 
 try {
 const num = k.split('|')[4];
 const d = JSON.parse(localStorage.getItem(k));
+if (d && DATA[num] && DATA[num].assigned_by && !d.assigned_by) { try { localStorage.removeItem(k); } catch(e) {} return; }   // an editor assignment landed in this slot: it wins over a stale local draft
 if (d && !(DATA[num] && DATA[num].filed)) DATA[num] = Object.assign({}, DATA[num] || {}, d);
 } catch(e) {}
 });
 }
 function showPlanGateWarnings() {
-Object.keys(DATA).forEach(num => { const p = planGateProblem(num); if (p) showPlanGate(num, p); });
+Object.keys(DATA).forEach(num => { if (DATA[num] && DATA[num].assigned_by && !DATA[num].file_day && !(localStorage.getItem(draftKey(num)))) return; /* untouched editor assignment: don't nag or block until the reporter edits it */ const p = planGateProblem(num); if (p) showPlanGate(num, p); });
 }
 window.addEventListener('beforeunload', function(e) {
 if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; }
