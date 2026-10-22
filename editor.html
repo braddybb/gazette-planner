@@ -818,6 +818,26 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-iss.amber{background:#FBE6CE;color:#8A5A12}
 .vd-iss.grey{background:#EFEEE9;color:#77776F}
 .vd-ne-more{font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;padding:6px 0 2px}
+.vd-wp{background:#fff;border:1px solid #ECECEC;border-left:4px solid #1B3FD6;border-radius:12px;padding:16px 20px 14px;margin-bottom:22px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.vd-wp-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vd-wp-head .sp{flex:1}
+.vd-wp-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555}
+.vd-wp-prog{font-size:12.5px;color:#777}.vd-wp-prog .bad{color:#C2410C;font-weight:700}
+.vd-wp-cap{font-size:13px;color:#777;margin:8px 0 2px}
+.vd-wp-carry{font-size:12.5px;color:#6A5A3A;background:#FBF5E6;border-radius:8px;padding:8px 11px;margin:10px 0 0}.vd-wp-carry a{color:#1B3FD6;cursor:pointer;font-weight:600}
+.vd-wp-grp{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B0B0A8;margin:16px 0 4px}.vd-wp-grp span{font-weight:600;margin-left:4px}
+.vd-wp-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dotted #E5E5E0}
+.vd-wp-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.vd-wp-what{flex:0 1 320px;min-width:120px;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vd-wp-what em{font-style:normal;color:#A0A098;font-size:12px}
+.vd-wp-row.done .vd-wp-what{color:#A0A098;text-decoration:line-through}
+.vd-wp-day{font-family:inherit;font-size:12.5px;border:1px solid #D5D5CE;border-radius:7px;padding:5px 6px;background:#fff;color:#333;flex:none}
+.vd-wp-how{flex:1;min-width:0;font-family:inherit;font-size:13px;border:1px dashed #D5D5CE;background:#FCFCFA;border-radius:8px;padding:7px 10px;color:#222}
+.vd-wp-how:focus,.vd-wp-why input:focus{outline:none;border-style:solid;border-color:var(--blue);background:#fff}
+.vd-wp-ok{margin-left:auto;font-size:12px;font-weight:600;color:#2E6B4F}
+.vd-wp-chk{width:20px;height:20px;border:1.5px solid #C9C9C0;border-radius:5px;background:#fff;cursor:pointer;flex:none;font-size:12px;color:#fff;line-height:1;padding:0}.vd-wp-chk.on{background:#2E6B4F;border-color:#2E6B4F}
+.vd-wp-why{display:flex;gap:8px;align-items:center;padding:6px 0 8px 19px;font-size:12px;color:#C2410C}.vd-wp-why input{flex:1;font-family:inherit;font-size:12.5px;border:1px dashed #E8C3B3;background:#FFFAF7;border-radius:8px;padding:6px 10px}
+@media(max-width:700px){.vd-wp-row{flex-wrap:wrap}.vd-wp-how{flex:1 1 100%}}
+
 .vd-ne .vd-ne-more,.vd-ne .vd-lnkbtn,.vd-ne .vd-showdone{color:#6A6A62;font-size:12px;font-weight:600}
 .vd-ne .vd-lnkbtn.on{color:var(--ink)}
 .vd-ne-sum{display:flex;gap:6px;flex-wrap:wrap;margin-left:4px}
@@ -825,6 +845,10 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-ne-acts input[type=date]{font-family:inherit;font-size:11px;border:1px solid #D5D5CE;border-radius:7px;padding:4px 6px;color:#555;background:#fff;width:112px}
 .vd-iss .ttl{font-weight:500;opacity:.85}
 .vd-ne-row .vd-iss{white-space:normal}
+.vd-ne-row .vd-snz{opacity:0;transition:opacity .12s}.vd-ne-row:hover .vd-snz{opacity:1}
+.vd-fold{font-size:12.5px;font-weight:600;color:#6A6A62;cursor:pointer;padding:12px 0 4px}.vd-fold em{font-style:normal;color:#1B3FD6;margin-left:6px;font-weight:600}
+.vd-ne{padding:18px 22px 14px}.vd-ne-row{padding:12px 8px}.vd-ne-who b{font-size:14px}.vd-ne-group{margin:20px 0 4px}
+.vd-fb-row{padding:11px 0}
 .vd-snz{background:none!important;border:0!important;color:#9A9A92!important;font-size:11px!important;font-weight:600;padding:4px 6px!important;cursor:pointer}
 .vd-snz:hover{color:#555!important;text-decoration:underline}
 .vd-ne-row .vd-ne-chips{align-items:center}
@@ -4126,9 +4150,9 @@ function renderVideoDesk(){
       if(od.length>3) issuesBy[ri].push({sev:3,cls:'red',text:'+'+(od.length-3)+' more overdue'});
       if(up.length===1) issuesBy[ri].push({sev:2,cls:'amber',text:vdSlotName(up[0].n,x.rep.pub)+' not planned'});
       else if(up.length>1) issuesBy[ri].push({sev:2,cls:'amber',text:up.length+' videos not planned yet'});
-      if(x.streak) issuesBy[ri].push({sev:2,cls:'amber',text:'Under target 3 weeks running'});
+      if(x.streak) issuesBy[ri].push({sev:1,cls:'sub',text:'under target 3 weeks running'});
       var a=vdActiveSeries(x.rep).length;
-      if(a<2&&!x.ai.full) issuesBy[ri].push({sev:1,cls:'grey',text:'Only '+a+' of 2 series running · start one'});
+      if(a<2&&!x.ai.full) issuesBy[ri].push({sev:1,cls:'sub',text:a+' of 2 series running'});
     });
     if(ds.state==='current'&&ds.idx>=3&&newThisWeek===0) teamIssues.push({title:'No new series this week',chip:'Aim for 1 across the team',cls:'grey',sev:1,target:'vd-sec-series'});
   }
@@ -4145,11 +4169,17 @@ function renderVideoDesk(){
     else if(p.stage===2&&a>=3) teamIssues.push({title:p.title,chip:'Edited '+a+'d ago · not published',cls:'amber',sev:2,id:p.id,acts:'Mark published',target:'vd-sec-pipeline'});
     else if(p.stage===3&&a>=2) teamIssues.push({title:p.title,chip:'On platforms · not on the website',cls:'amber',sev:2,id:p.id,acts:'Mark on website',target:'vd-sec-pipeline'});
   });
+  if(ds.state==='current'){ var pl=vdPlanOf(WEEK), pitems=vdPlanItems(info), pslip=pitems.filter(function(i){return i.st==='slipped';}).length;
+    if(!pl.locked) teamIssues.push({title:'Week plan',chip:'Not locked yet',cls:ds.idx>=1?'red':'amber',sev:ds.idx>=1?3:2,act:"vdScrollTo('vd-wp')"});
+    if(pslip) teamIssues.push({title:'Week plan',chip:pslip+' item'+(pslip>1?'s':'')+' slipped past the committed day',cls:'red',sev:3,act:"vdScrollTo('vd-wp')"}); }
   var untag=VD.projects.filter(function(p){ return p.stage>=3&&!p.format&&(Date.now()-(p.publishedAt||p.stageAt||p.created||0))<14*864e5; });
   if(untag.length) teamIssues.push({title:untag.length+' published video'+(untag.length>1?'s':''),chip:'Need a format tag',cls:'amber',sev:2,act:'vdOpenPublished()'});
   var quiet=VD.series.filter(function(s){ return vdSeriesState(s).auto; });
   var needRows=[];
-  info.forEach(function(x,ri){ if(issuesBy[ri].length){ var sc=0; issuesBy[ri].forEach(function(i){ sc=Math.max(sc,i.sev); }); needRows.push({ri:ri,x:x,issues:issuesBy[ri],score:sc*10+issuesBy[ri].length}); } });
+  var subCount=0;
+  info.forEach(function(x,ri){ var real=issuesBy[ri].filter(function(i){return i.cls!=='sub';}), subs=issuesBy[ri].filter(function(i){return i.cls==='sub';}); if(subs.some(function(i){return /series/.test(i.text);})) subCount++;
+    if(real.length){ var sc=0; real.forEach(function(i){ sc=Math.max(sc,i.sev); }); needRows.push({ri:ri,x:x,issues:real,subs:subs,score:sc*10+real.length}); } });
+  if(subCount&&ds.state!=='future') teamIssues.push({title:'Series',chip:subCount+' reporter'+(subCount>1?'s':'')+' with fewer than 2 running',cls:'grey',sev:0,target:'vd-sec-series'});
   needRows.sort(function(a,b){return b.score-a.score;});
   teamIssues.sort(function(a,b){return (b.sev||0)-(a.sev||0);});
   var snz=vdSnoozeMap(), snoozed=0;
@@ -4163,6 +4193,7 @@ function renderVideoDesk(){
   var h=''; var parts={};
   h='';
 
+  h+=vdPlanHtml(info,ds);
   h+=vdTodayHtml(info,ds);
 
   // ---- needs your eye: tasks, then reporters, then the desk itself ----
@@ -4183,20 +4214,21 @@ function renderVideoDesk(){
       h+='<div class="vd-ne-task"><div class="txt"><b>'+esc(s.title)+'</b> <span style="color:#A0A098">· '+esc(vdFirst(s.reporter))+' · quiet '+ss.idle+' days — keep it running?</span></div><button class="vd-btn ghost sm" onclick="vdKeepSeries(\''+esc(s.id)+'\')">Keep</button><button class="vd-btn warn sm" onclick="vdKillSeries(\''+esc(s.id)+'\')">End it</button></div>';
     });
   }
-  if(needRows.length){
-    h+='<div class="vd-ne-group">Reporters</div>';
-    var shownRows=VD_FLAGS_OPEN?needRows:needRows.slice(0,4);
-    shownRows.forEach(function(r){
-      var rep=r.x.rep; var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<24*3600*1000))||(ni0&&ni0.recent);
-      h+='<div class="vd-ne-row" onclick="vdJump('+r.ri+')"><div class="vd-ne-who"><b>'+esc(rep.name)+'</b><span>'+esc(rep.pub)+'</span></div><div class="vd-ne-chips">'+r.issues.map(function(i){return '<span class="vd-iss '+i.cls+'"'+(i.ttl?' title="'+esc(i.ttl)+'"':'')+'>'+esc(i.text)+(i.ttl?' <span class="ttl">· “'+esc(i.ttl)+'”</span>':'')+'</span>';}).join('')+vdNudgeTag(rep)+'</div><div class="vd-ne-acts">';
-      if(r.x.problems.length) h+='<button class="vd-btn warn sm" data-nudge="'+r.ri+'"'+(nudged?' disabled':'')+' onclick="event.stopPropagation();vdNudge('+r.ri+')">'+(nudged?'Nudged ✓':'Nudge')+'</button>';
-      h+=vdSnoozeBtn(r.sk)+'</div>';
-      h+='</div>';
-    });
-    if(needRows.length>4) h+='<div class="vd-ne-more" onclick="vdToggleFlags()">'+(VD_FLAGS_OPEN?'Show fewer':'Show '+(needRows.length-4)+' more reporter'+(needRows.length-4>1?'s':''))+'</div>';
+  var rowHtml=function(r){
+    var rep=r.x.rep; var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<24*3600*1000))||(ni0&&ni0.recent);
+    var o='<div class="vd-ne-row" onclick="vdJump('+r.ri+')"><div class="vd-ne-who"><b>'+esc(rep.name)+'</b><span>'+esc(rep.pub)+(r.subs&&r.subs.length?' · '+r.subs.map(function(i){return esc(i.text);}).join(' · '):'')+'</span></div><div class="vd-ne-chips">'+r.issues.map(function(i){return '<span class="vd-iss '+i.cls+'"'+(i.ttl?' title="'+esc(i.ttl)+'"':'')+'>'+esc(i.text)+(i.ttl?' <span class="ttl">· “'+esc(i.ttl)+'”</span>':'')+'</span>';}).join('')+vdNudgeTag(rep)+'</div><div class="vd-ne-acts">';
+    if(r.x.problems.length) o+='<button class="vd-btn warn sm" data-nudge="'+r.ri+'"'+(nudged?' disabled':'')+' onclick="event.stopPropagation();vdNudge('+r.ri+')">'+(nudged?'Nudged ✓':'Nudge')+'</button>';
+    return o+vdSnoozeBtn(r.sk)+'</div></div>';
+  };
+  var rowsOver=needRows.filter(function(r){return r.score>=30;}), rowsSort=needRows.filter(function(r){return r.score<30;});
+  if(rowsOver.length){ h+='<div class="vd-ne-group">Overdue</div>'; rowsOver.forEach(function(r){ h+=rowHtml(r); }); }
+  if(rowsSort.length){
+    h+='<div class="vd-ne-group">To sort</div>';
+    (VD_FLAGS_OPEN?rowsSort:rowsSort.slice(0,3)).forEach(function(r){ h+=rowHtml(r); });
+    if(rowsSort.length>3) h+='<div class="vd-ne-more" onclick="vdToggleFlags()">'+(VD_FLAGS_OPEN?'Show fewer':'Show '+(rowsSort.length-3)+' more')+'</div>';
   }
   if(teamIssues.length){
-    h+='<div class="vd-ne-group">Desk</div>';
+    h+='<div class="vd-ne-group">Desk &amp; pipeline</div>';
     teamIssues.forEach(function(t){
       var ac='';
       if(t.acts==='shot') ac='<button class="vd-btn sm" onclick="event.stopPropagation();vdMarkShot(\''+esc(t.id)+'\')">Mark shot</button><input type="date" title="Move the shoot date" onclick="event.stopPropagation()" onchange="vdSetShoot(\''+esc(t.id)+'\',this.value)">';
@@ -4575,6 +4607,9 @@ async function vdConfirmTag(ri,n){
 function vdRetag(ri,n){ var key=vdTagKey(ri,n); VD_RETAG[key]=true; VD_PEND[key]=vdTagged(ri,n); renderVideoDesk(); }
 function vdCancelRetag(ri,n){ var key=vdTagKey(ri,n); delete VD_RETAG[key]; delete VD_PEND[key]; renderVideoDesk(); }
 
+var VD_TAG_OPEN=false, VD_FBROW_OPEN={};
+function vdToggleTag(){ VD_TAG_OPEN=!VD_TAG_OPEN; renderVideoDesk(); }
+function vdToggleFbRow(i){ VD_FBROW_OPEN[i]=!VD_FBROW_OPEN[i]; renderVideoDesk(); }
 function vdTodayHtml(info,ds){
   // "live" = this is the current working week on a weekday. Otherwise (past week, weekend) the panel only shows videos still waiting for a format.
   var live=ds.state==='current'&&ds.idx<=4;
@@ -4614,8 +4649,8 @@ function vdTodayHtml(info,ds){
     });
   }
   if(backlog.length){
-    h+='<div class="vd-today-grp">'+(live?'Filed earlier, not tagged yet':'Filed, not tagged yet')+' ('+backlog.length+')</div>';
-    backlog.forEach(function(o){
+    h+='<div class="vd-fold" onclick="vdToggleTag()"><span>'+(VD_TAG_OPEN?'▾':'▸')+'</span> '+backlog.length+' video'+(backlog.length>1?'s':'')+' need a format tag <em>'+(VD_TAG_OPEN?'Hide':'Show')+'</em></div>';
+    if(VD_TAG_OPEN) backlog.forEach(function(o){
       h+='<div class="vd-today-row"><span class="who">'+esc(vdFirst(o.x.rep.name))+'</span><span class="what">'+esc(vdSlotName(o.sl.n,o.x.rep.pub))+(o.row&&o.row.headline?' <em>· '+esc(o.row.headline)+'</em>':'')+(o.row&&o.row.file_day?' <em>· filed '+esc(o.row.file_day)+'</em>':'')+'</span>'+vdFmtPick(o.ri,o.sl.n)+'</div>';
     });
   }
@@ -4647,14 +4682,18 @@ function vdCadenceHtml(){
     var need=VD_INFO.filter(function(x){ return !x.ai.full; });
     var doneN=need.filter(vdFeedbackDone).length;
     var h=vdSecOpen('cadence','Feedback round — this fortnight',doneN+'/'+need.length+' logged');
-    h+='<div class="vd-sec-cap">Last two weeks for each reporter. Log what you told them; when everyone has an entry the checklist ticks itself. <b>Where it’s saved:</b> in the Video Desk record, under each reporter — open “All feedback logged” below a name to see the full history. Editors only; reporters can’t see it.</div>';
+    h+='<div class="vd-sec-cap">Tap a name to log what you told them. Saved in the Video Desk record under each reporter; editors only.</div>';
     VD_INFO.forEach(function(x,ri){
       var t=x.trend; var last=t[t.length-2], cur=t[t.length-1]; var fb=vdLastFeedback(x); var done=!x.ai.full&&vdFeedbackDone(x);
       var series=vdActiveSeries(x.rep).length;
-      h+='<div class="vd-fb-row"><div class="vd-fb-top"><b>'+esc(x.rep.name)+'</b><span class="vd-iss '+(done?'grey':'amber')+'">'+(x.ai.full?'Away':(done?'Logged ✓':'To do'))+'</span><span style="color:#777">last week '+(last&&last.c!==null?last.c+'/'+last.tg:'—')+' · this week '+(x.ai.full?'away':x.filed+'/'+x.vt)+' · '+series+'/2 series</span></div>';
-      h+='<div class="vd-fb-last">'+(fb?'Last: '+esc(vdShortDate(vdTsYmd(fb.ts)))+' — '+vdLinkify(fb.text):'No feedback logged yet.')+'</div>';
-      if(!x.ai.full) h+='<div class="vd-fb-in"><input id="vdfb-in-'+ri+'" placeholder="Log what you told '+esc(vdFirst(x.rep.name))+'…" onkeydown="if(event.key===\'Enter\')vdLogFeedback('+ri+')"><button class="vd-btn ghost sm" onclick="vdLogFeedback('+ri+')">Log</button></div>';
-      h+=vdFbHistoryHtml(x,ri);
+      var fo=!!VD_FBROW_OPEN[ri]||(!x.ai.full&&!done&&false);
+      h+='<div class="vd-fb-row"><div class="vd-fb-top" style="cursor:pointer" onclick="vdToggleFbRow('+ri+')"><span style="color:#B0B0A8;width:10px">'+(fo?'▾':'▸')+'</span><b>'+esc(x.rep.name)+'</b><span class="vd-iss '+(done?'grey':'amber')+'">'+(x.ai.full?'Away':(done?'Logged ✓':'To do'))+'</span><span style="color:#999;margin-left:auto;font-size:12px">'+(fb?esc(vdShortDate(vdTsYmd(fb.ts))):'never')+'</span></div>';
+      if(fo){
+        h+='<div class="vd-fb-last" style="margin-top:8px">last week '+(last&&last.c!==null?last.c+'/'+last.tg:'—')+' · this week '+(x.ai.full?'away':x.filed+'/'+x.vt)+' · '+series+'/2 series</div>';
+        h+='<div class="vd-fb-last">'+(fb?'Last: '+vdLinkify(fb.text):'No feedback logged yet.')+'</div>';
+        if(!x.ai.full) h+='<div class="vd-fb-in"><input id="vdfb-in-'+ri+'" placeholder="Log what you told '+esc(vdFirst(x.rep.name))+'…" onkeydown="if(event.key===\'Enter\')vdLogFeedback('+ri+')"><button class="vd-btn ghost sm" onclick="vdLogFeedback('+ri+')">Log</button></div>';
+        h+=vdFbHistoryHtml(x,ri);
+      }
       h+='</div>';
     });
     return h+'</div></div>';
@@ -4902,6 +4941,96 @@ function vdNudge(ri){
   VD_NUDGELOG.unshift(entry);
   try{ supa.from('system_flags').insert({key:'videonudge:'+entry.ts+'-'+Math.random().toString(36).slice(2,6),value:JSON.stringify(entry)}).then(function(r){ if(r&&r.error) console.error('nudge log',r.error); }); }catch(e){}
   document.querySelectorAll('[data-nudge="'+ri+'"]').forEach(function(b){ b.textContent='Nudged ✓'; b.disabled=true; });
+}
+
+// ── Week plan: Nick's Monday commitment for the week's deliverables ─────────────
+// Stored in the desk snapshot: VD.plan[week] = {state:{id:{day,how,done,why}}, custom:[{id,label}], locked:{ts,items:[…]}}
+// Items are computed (Impact per reporter, LinkedIn, new series, open tasks) + any custom ones.
+var VD_PLAN_OPEN=false, VD_PLAN_SAVE_T=null;
+function vdPlanOf(w){ if(!VD.plan||typeof VD.plan!=='object'||Array.isArray(VD.plan)) VD.plan={}; if(!VD.plan[w]) VD.plan[w]={state:{},custom:[],locked:null}; var p=VD.plan[w]; if(!p.state) p.state={}; if(!p.custom) p.custom=[]; return p; }
+function vdPlanDone(w,id){
+  var P=(VD.plan&&VD.plan[w])||{state:{}}; var st=(P.state||{})[id]||{};
+  if(id.indexOf('impact:')===0){ var nm=id.slice(7); var x=(VD_INFO||[]).filter(function(i){return i.rep.name===nm;})[0]; if(!x) return !!st.done; var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; var row=sl&&(x.d[w]||{})[sl.n]; return !!(row&&row.filed); }
+  if(id==='series') return (VD.series||[]).some(function(s){return s.started===w;})||!!st.done;
+  if(id.indexOf('task:')===0){ var t=VD_TASKS.filter(function(t){return 'task:'+t.id===id;})[0]; return !!(t&&t.done); }
+  return !!st.done;
+}
+function vdPlanItems(info){
+  var P=vdPlanOf(WEEK), items=[], lockedIds={};
+  ((P.locked&&P.locked.items)||[]).forEach(function(i){ lockedIds[i.id]=1; });
+  info.forEach(function(x){
+    if(x.ai.full) return;
+    var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; if(!sl) return;
+    var row=(x.d[WEEK]||{})[sl.n];
+    items.push({id:'impact:'+x.rep.name,grp:'Impact videos',label:vdFirst(x.rep.name),sub:row&&row.headline?row.headline:'',owner:'reporter'});
+  });
+  items.push({id:'linkedin',grp:'Gazette LinkedIn',label:'Publish a video to the Gazette LinkedIn',owner:'Nick'});
+  items.push({id:'series',grp:'New series',label:'One reporter tries a new series',owner:'Nick'});
+  VD_TASKS.filter(function(t){return !t.cleared&&(!t.done||lockedIds['task:'+t.id]);}).forEach(function(t){ items.push({id:'task:'+t.id,grp:'Assigned to Nick',label:t.text,owner:'Nick',src:t.source==='slack'?'via Slack':''}); });
+  P.custom.forEach(function(c){ items.push({id:c.id,grp:'Assigned to Nick',label:c.label,owner:'Nick',custom:true}); });
+  var ds=vdDayState();
+  items.forEach(function(it){
+    var s=P.state[it.id]||{}; it.day=s.day||''; it.how=s.how||''; it.why=s.why||''; it.done=vdPlanDone(WEEK,it.id);
+    it.manual=!(it.id.indexOf('impact:')===0||it.id==='series'||it.id.indexOf('task:')===0);
+    var di=DAYS.indexOf(it.day);
+    if(it.done) it.st='done'; else if(!it.day) it.st='unplanned'; else if(ds.state==='past') it.st='missed';
+    else if(ds.state==='current'&&di<ds.idx) it.st='slipped'; else if(ds.state==='current'&&di===ds.idx) it.st='today'; else it.st='planned';
+  });
+  return items;
+}
+function vdPlanSave(){ clearTimeout(VD_PLAN_SAVE_T); VD_PLAN_SAVE_T=setTimeout(function(){ saveVD(); },600); }
+function vdPlanSet(id,k,v){ var P=vdPlanOf(WEEK); if(!P.state[id]) P.state[id]={}; P.state[id][k]=v; vdPlanSave(); if(k==='day'||k==='done') renderVideoDesk(); }
+function vdPlanToggle(){ VD_PLAN_OPEN=!VD_PLAN_OPEN; renderVideoDesk(); }
+function vdPlanAdd(){ var el=document.getElementById('vd-wp-new'); var t=el?el.value.trim():''; if(!t) return; var P=vdPlanOf(WEEK); P.custom.push({id:'x:'+Date.now().toString(36),label:t.slice(0,160)}); VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); }
+function vdPlanDel(id){ var P=vdPlanOf(WEEK); P.custom=P.custom.filter(function(c){return c.id!==id;}); delete P.state[id]; saveVD(); renderVideoDesk(); }
+function vdPlanCarry(label){ var P=vdPlanOf(WEEK); P.custom.push({id:'x:'+Date.now().toString(36),label:label}); VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); }
+function vdPlanMissed(){   // last week's locked items that never landed
+  var pw=vdAddDays(WEEK,-7), P=VD.plan&&VD.plan[pw]; if(!P||!P.locked) return [];
+  return P.locked.items.filter(function(i){ return !vdPlanDone(pw,i.id); }).map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,why:((P.state||{})[i.id]||{}).why||''}; });
+}
+async function vdPlanLock(){
+  var items=vdPlanItems(VD_INFO), open=items.filter(function(i){return !i.done;}), miss=open.filter(function(i){return !i.day||!i.how.trim();});
+  if(miss.length){ alert(miss.length+' item'+(miss.length>1?'s':'')+' still need a day and a line on how you’ll make it happen:\n\n'+miss.slice(0,6).map(function(i){return '• '+(i.grp==='Impact videos'?'Impact — ':'')+i.label;}).join('\n')); VD_PLAN_OPEN=true; renderVideoDesk(); return; }
+  var P=vdPlanOf(WEEK), prev=vdClone();
+  P.locked={ts:Date.now(),items:items.map(function(i){ return {id:i.id,label:i.label,who:i.owner,day:i.day,how:i.how}; })};
+  var ok=await saveVD(); if(!ok){ VD=prev; renderVideoDesk(); alert('Could not save the plan. Try again.'); return; }
+  renderVideoDesk();
+  try{ var sess=await supa.auth.getSession(); fetch('/.netlify/functions/video-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess&&sess.data&&sess.data.session?sess.data.session.access_token:'')},body:JSON.stringify({type:'locked',week:WEEK,items:P.locked.items.map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,day:i.day,how:i.how,done:vdPlanDone(WEEK,i.id)}; })})}).catch(function(){}); }catch(e){}
+}
+function vdPlanHtml(info,ds){
+  var items=vdPlanItems(info), P=vdPlanOf(WEEK), L=P.locked;
+  var done=items.filter(function(i){return i.done;}).length, slipped=items.filter(function(i){return i.st==='slipped'||i.st==='missed';}).length, unp=items.filter(function(i){return !i.done&&(!i.day||!i.how.trim());}).length;
+  var missed=vdPlanMissed();
+  var pill=L?'<span class="vd-iss grey">Locked '+esc(vdAgo(L.ts))+' ✓</span>':'<span class="vd-iss '+(ds.state==='current'&&ds.idx>=1?'red':'amber')+'">Not locked</span>';
+  var open=!L||VD_PLAN_OPEN||slipped>0;
+  var h='<div class="vd-wp" id="vd-wp"><div class="vd-wp-head"><div class="vd-wp-title">Week plan</div>'+pill+'<span class="vd-wp-prog"><b>'+done+'</b> of '+items.length+' landed'+(slipped?' · <span class="bad">'+slipped+' slipped</span>':'')+'</span><span class="sp"></span>'+
+    (L&&!slipped?'<button class="vd-snz" style="color:#6A6A62!important" onclick="vdPlanToggle()">'+(open?'Hide':'Show')+' plan</button>':'')+
+    '<button class="vd-btn sm" onclick="vdPlanLock()">'+(L?'Update the plan':'Lock the week')+'</button></div>';
+  if(!L) h+='<div class="vd-wp-cap">Set a day and one line on how you’ll make each of these happen, then lock it. '+(unp?'<b>'+unp+' still need a plan.</b>':'All planned — ready to lock.')+'</div>';
+  if(open){
+    if(missed.length) h+='<div class="vd-wp-carry"><b>Missed last week:</b> '+missed.map(function(m){ return esc(m.label)+(m.why?' <em>('+esc(m.why)+')</em>':'')+' <a onclick="vdPlanCarry(\''+esc(m.label).replace(/'/g,'&#39;')+'\')">carry over</a>'; }).join(' · ')+'</div>';
+    var grps=[]; items.forEach(function(i){ if(grps.indexOf(i.grp)<0) grps.push(i.grp); });
+    grps.forEach(function(g){
+      var gi=items.filter(function(i){return i.grp===g;});
+      h+='<div class="vd-wp-grp">'+esc(g)+' <span>'+gi.filter(function(i){return i.done;}).length+'/'+gi.length+'</span></div>';
+      gi.forEach(function(i){
+        var dot={done:'#2E6B4F',today:'#B7791F',slipped:'#C2410C',missed:'#C2410C',planned:'#9AA7D6',unplanned:'#D5D5CE'}[i.st];
+        var idq=esc(i.id).replace(/'/g,'&#39;');
+        h+='<div class="vd-wp-row'+(i.done?' done':'')+'"><span class="vd-wp-dot" style="background:'+dot+'"></span><div class="vd-wp-what"><b>'+esc(i.label)+'</b>'+(i.sub?' <em>· '+esc(i.sub)+'</em>':'')+(i.src?' <em>· '+i.src+'</em>':'')+(i.owner==='reporter'?'':'')+'</div>';
+        if(i.done&&!i.manual) h+='<span class="vd-wp-ok">Landed ✓</span>';
+        else{
+          h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+DAYS.map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
+          h+='<input class="vd-wp-how" data-i="'+idq+'" value="'+esc(i.how)+'" placeholder="How will this happen?" onchange="vdPlanSet(this.dataset.i,\'how\',this.value)">';
+          if(i.manual) h+='<button class="vd-wp-chk'+(i.done?' on':'')+'" title="Mark done" onclick="vdPlanSet(this.dataset.i,\'done\','+(i.done?'false':'true')+')" data-i="'+idq+'">'+(i.done?'✓':'')+'</button>';
+          if(i.custom) h+='<button class="vd-snz" onclick="vdPlanDel(this.dataset.i)" data-i="'+idq+'" title="Remove">×</button>';
+        }
+        h+='</div>';
+        if((i.st==='slipped'||i.st==='missed')&&!i.done) h+='<div class="vd-wp-why"><span>Slipped past '+esc(i.day)+' —</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Why, and what’s the new plan?" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"></div>';
+      });
+    });
+    h+='<div class="vd-ne-add"><input id="vd-wp-new" placeholder="+ Add something Nick has committed to…" onkeydown="if(event.key===\'Enter\')vdPlanAdd()"><button class="vd-btn ghost sm" onclick="vdPlanAdd()">Add</button></div>';
+  }
+  return h+'</div>';
 }
 
 // ── Away — a reporter marked away for a stretch isn't counted against ───────
