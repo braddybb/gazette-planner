@@ -18,6 +18,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1069,6 +1070,7 @@ padding:5px 12px;border-radius:999px}
 </div>
 <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
+<button class="bank-nav" id="vh-gen" onclick="openVideoHelp('', '')" title="Request time with Nick, or flag that you need a hand">&#127916; Ask Nick</button>
 <button class="bank-nav" id="bank-nav" onclick="showBankView()" title="Your evergreen bank — content ready for when you're away">
 <span>&#127974;</span><span id="bank-nav-label">Bank</span>
 </button>
@@ -2996,13 +2998,13 @@ banner.innerHTML = '<b>Abandoned.</b> ' + esc(st.abandon_reason || '') + ' <butt
 body.appendChild(banner);
 }
 
-// Video slots: one tap to flag the Head of Video when you need a hand
-if ((s.t === 'vidfirst' || s.t === 'vidflip' || s.t === 'vidimp') && !filed && st.status !== 'abandoned') {
+// Any open story: one tap to ask the Head of Video for a hand or some time
+if (!filed && st.status !== 'abandoned') {
 const vh = document.createElement('button');
 vh.type = 'button';
 const sent = videoHelpSent(s.n);
 vh.className = 'vh-btn' + (sent ? ' sent' : '');
-vh.textContent = sent ? '\u2713 Video help requested' : '\uD83C\uDFAC Need video help';
+vh.textContent = sent ? '\u2713 Nick has been asked' : '\uD83C\uDFAC Ask Nick for help';
 vh.id = 'vh-btn-' + s.n;
 if (!sent) vh.onclick = function(ev) { ev.stopPropagation(); openVideoHelp(s.n, s.lbl); };
 body.appendChild(vh);
@@ -4300,32 +4302,32 @@ if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; 
 // Goes through /.netlify/functions/video-help (signed in as you), which files the
 // request on the Video Desk and pings him in Slack. If that's unavailable it falls
 // back to filing the request directly and posting to the usual Slack channel.
-const VH_TYPES = ['Shoot help', 'Edit help', 'Idea / series pitch', 'Stuck on it', 'Something else'];
+const VH_TYPES = ['Book time with Nick', 'Shoot help', 'Edit help', 'Idea / series pitch', 'Stuck on it', 'Something else'];
 let _vhNum = null, _vhLbl = '';
-function videoHelpSent(num) { try { return localStorage.getItem('gz_vh|' + WEEK + '|' + USER.name + '|' + num) === '1'; } catch(e) { return false; } }
-function markVideoHelpSent(num) { try { localStorage.setItem('gz_vh|' + WEEK + '|' + USER.name + '|' + num, '1'); } catch(e) {} }
+function videoHelpSent(num) { if (!num) return false; try { return localStorage.getItem('gz_vh|' + WEEK + '|' + USER.name + '|' + num) === '1'; } catch(e) { return false; } }
+function markVideoHelpSent(num) { if (!num) return; try { localStorage.setItem('gz_vh|' + WEEK + '|' + USER.name + '|' + num, '1'); } catch(e) {} }
 function openVideoHelp(num, lbl) {
-_vhNum = num; _vhLbl = lbl || '';
+_vhNum = num || ''; _vhLbl = lbl || '';
 let el = document.getElementById('vh-ov'); if (el) el.remove();
 el = document.createElement('div'); el.id = 'vh-ov'; el.className = 'ab-ov';
-const st = getStory(num);
-el.innerHTML = '<div class="ab-box"><div class="ab-h">Need video help?</div>' +
-'<div class="ab-sub">This goes straight to the Head of Video for \u201c' + esc(st.headline || (lbl || 'this video')) + '\u201d.</div>' +
+const st = num ? getStory(num) : {};
+el.innerHTML = '<div class="ab-box"><div class="ab-h">' + (num ? 'Ask Nick for a hand' : 'Ask Nick') + '</div>' +
+'<div class="ab-sub">' + (num ? 'This goes straight to the Head of Video for \u201c' + esc(st.headline || lbl || 'this story') + '\u201d.' : 'Request time with the Head of Video, or flag that you need a hand. It lands on his Video Desk and he gets a Slack message.') + '</div>' +
 '<select id="vh-type" class="vh-sel">' + VH_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select>' +
-'<textarea id="vh-note" placeholder="What do you need? (optional, but it helps)"></textarea>' +
+'<textarea id="vh-note" placeholder="What do you need, and when suits? (optional, but it helps)"></textarea>' +
 '<div class="ab-err" id="vh-err"></div>' +
 '<div class="ab-btns"><button type="button" class="ab-cancel" onclick="closeVideoHelp()">Cancel</button><button type="button" class="ab-go" id="vh-go" style="background:#4A56B8" onclick="sendVideoHelp()">Send</button></div></div>';
 document.body.appendChild(el);
 }
 function closeVideoHelp() { const el = document.getElementById('vh-ov'); if (el) el.remove(); _vhNum = null; }
 async function sendVideoHelp() {
-const num = _vhNum; if (!num) return;
+const num = _vhNum;
 const type = document.getElementById('vh-type').value;
 const note = (document.getElementById('vh-note').value || '').trim().slice(0, 500);
 const err = document.getElementById('vh-err');
 const btn = document.getElementById('vh-go'); btn.disabled = true; btn.textContent = 'Sending\u2026';
-const st = getStory(num);
-const payload = { reporter: USER.name, pub: USER.pub, week: WEEK, slot: num, headline: st.headline || '', type: type, note: note };
+const st = num ? getStory(num) : {};
+const payload = { reporter: USER.name, pub: USER.pub, week: WEEK, slot: num, label: _vhLbl, headline: st.headline || '', type: type, note: note };
 let ok = false;
 try {
 const { data: { session } } = await supa.auth.getSession();
@@ -4341,7 +4343,7 @@ if (!ok) {
 try {
 const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 await supaFetch('POST', 'system_flags', { key: 'videohelp:' + Date.now() + '-' + id, value: JSON.stringify(Object.assign({ id: id, ts: Date.now() }, payload)) });
-notifySlack(':clapper: *' + USER.name + '* needs video help (' + type + ') on \u201c' + (st.headline || 'a video slot') + '\u201d' + (note ? '\n>' + note.replace(/\n/g, ' ') : ''));
+notifySlack(':clapper: *' + USER.name + '* ' + (type === 'Book time with Nick' ? 'would like time with Nick' : 'needs Nick\u2019s help (' + type + ')') + (num ? ' on \u201c' + (st.headline || _vhLbl || 'a story') + '\u201d' : '') + (note ? '\n>' + note.replace(/\n/g, ' ') : ''));
 ok = true;
 } catch(e) { ok = false; }
 }
@@ -4349,7 +4351,8 @@ if (!ok) { btn.disabled = false; btn.textContent = 'Send'; err.textContent = 'Co
 markVideoHelpSent(num);
 closeVideoHelp();
 const b = document.getElementById('vh-btn-' + num);
-if (b) { b.className = 'vh-btn sent'; b.textContent = '\u2713 Video help requested'; b.onclick = null; }
+if (b) { b.className = 'vh-btn sent'; b.textContent = '\u2713 Nick has been asked'; b.onclick = null; }
+if (!num) { const g = document.getElementById('vh-gen'); if (g) { const o = g.textContent; g.textContent = '\u2713 Sent to Nick'; setTimeout(function() { g.textContent = o; }, 3000); } }
 }
 
 // ── Abandoning an assigned story: a reason is required, and editors are told ──
