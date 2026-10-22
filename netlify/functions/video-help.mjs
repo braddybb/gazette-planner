@@ -56,6 +56,15 @@ export default async (req) => {
   let ok = false; try { ok = await signedIn(token); } catch { ok = false; }
   if (!ok) return json({ error: "not signed in" }, 401);
   let body; try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
+  if (body && body.type === "reply") {   // Nick's reply to a reporter → a private DM, not the channel
+    const to = String(body.to || ""), text = String(body.text || "").slice(0, 1500);
+    if (!/^U[A-Z0-9]{6,}$/.test(to) || !text.trim() || !BOT_TOKEN) return json({ ok: true, sent: false });
+    try {
+      const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST", headers: { Authorization: `Bearer ${BOT_TOKEN}`, "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify({ channel: to, text, unfurl_links: false }) });
+      const j = await r.json(); if (!j.ok) console.warn("video-help reply DM:", j.error);
+      return json({ ok: true, sent: !!j.ok });
+    } catch (e) { console.warn("video-help reply DM failed", e); return json({ ok: true, sent: false }); }
+  }
   const rec = cleanPayload(body);
   if (!rec) return json({ error: "bad request" }, 400);
   try {

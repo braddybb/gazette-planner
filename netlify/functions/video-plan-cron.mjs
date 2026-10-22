@@ -31,15 +31,19 @@ export function scorePlan(plan, ctx) {
     else if (i.id === "series") done = ctx.seriesStarted || !!(st[i.id] && st[i.id].done);
     else if (i.id.startsWith("task:")) done = ctx.tasksDone.has(i.id.slice(5));
     else done = !!(st[i.id] && st[i.id].done);
-    return { ...i, done, why: (st[i.id] && st[i.id].why) || "" };
+    const skip = !!(st[i.id] && st[i.id].skip) || i.status === "skip";
+    return { ...i, done, skip, away: i.status === "away", why: (st[i.id] && st[i.id].why) || i.why || "" };
   });
-  return { landed: rows.filter((r) => r.done), missed: rows.filter((r) => !r.done) };
+  const live = rows.filter((r) => !r.away);
+  return { landed: live.filter((r) => r.done), missed: live.filter((r) => !r.done && !r.skip), calledOff: live.filter((r) => !r.done && r.skip), away: rows.filter((r) => r.away) };
 }
 const nm = (i) => (i.id.startsWith("impact:") ? "Impact video — " : "") + i.label;
 export function fridayText(week, sc) {
   const L = [`:chart_with_upwards_trend: *Video Desk — week of ${week}: ${sc.landed.length} of ${sc.landed.length + sc.missed.length} landed*`];
   if (sc.landed.length) L.push("*Landed:* " + sc.landed.map(nm).join(", "));
-  if (sc.missed.length) { L.push("*Missed:*"); sc.missed.forEach((m) => L.push(`• ${nm(m)} (planned ${m.day})${m.why ? ` — _${m.why}_` : " — no reason logged"}`)); }
+  if (sc.missed.length) { L.push("*Missed:*"); sc.missed.forEach((m) => L.push(`• ${nm(m)}${m.day ? ` (planned ${m.day})` : " (never given a day)"}${m.why ? ` — _${m.why}_` : " — no reason logged"}`)); }
+  if (sc.calledOff.length) { L.push("*Called off:*"); sc.calledOff.forEach((m) => L.push(`• ${nm(m)} — ${m.why ? `_${m.why}_` : "no reason given"}`)); }
+  if (sc.away.length) L.push("*Away:* " + sc.away.map(nm).join(", "));
   L.push(`<${SITE}/videodesk|Open the Video Desk>`); return L.join("\n");
 }
 

@@ -14,14 +14,18 @@ const clip = (v, n) => String(v == null ? "" : v).replace(/[\r\n]+/g, " ").trim(
 
 export function cleanItems(items) {
   if (!Array.isArray(items)) return [];
-  return items.slice(0, 60).map((i) => ({ label: clip(i && i.label, 120), day: clip(i && i.day, 3), how: clip(i && i.how, 200), done: !!(i && i.done) })).filter((i) => i.label);
+  return items.slice(0, 60).map((i) => ({ label: clip(i && i.label, 120), day: clip(i && i.day, 3), how: clip(i && i.how, 200), why: clip(i && i.why, 200), status: ["done", "skip", "away", "open"].includes(i && i.status) ? i.status : (i && i.done ? "done" : "open") })).filter((i) => i.label);
 }
 export function planText(week, items) {
-  const open = items.filter((i) => !i.done), done = items.filter((i) => i.done);
-  const L = [`:calendar: *Nick has locked the week of ${week}* — ${open.length} to deliver, ${done.length} already landed`];
+  const open = items.filter((i) => i.status === "open"), done = items.filter((i) => i.status === "done"), skip = items.filter((i) => i.status === "skip"), away = items.filter((i) => i.status === "away");
+  const noDay = open.filter((i) => !i.day);
+  const L = [`:calendar: *Nick has locked the week of ${week}* — ${open.length} to deliver, ${done.length} already landed${skip.length ? `, ${skip.length} called off` : ""}${away.length ? `, ${away.length} away` : ""}`];
+  if (noDay.length) L.push(`:warning: *Locked with gaps — ${noDay.length} item${noDay.length > 1 ? "s have" : " has"} no day set:* ${noDay.map((i) => i.label).join(", ")}`);
   const byDay = {};
-  open.forEach((i) => { (byDay[i.day || "?"] = byDay[i.day || "?"] || []).push(i); });
-  ["Mon", "Tue", "Wed", "Thu", "Fri", "?"].forEach((d) => { if (byDay[d]) { L.push(`*${d}*`); byDay[d].forEach((i) => L.push(`• ${i.label}${i.how ? ` — _${i.how}_` : ""}`)); } });
+  open.filter((i) => i.day).forEach((i) => { (byDay[i.day] = byDay[i.day] || []).push(i); });
+  ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((d) => { if (byDay[d]) { L.push(`*${d}*`); byDay[d].forEach((i) => L.push(`• ${i.label}${i.how ? ` — _${i.how}_` : ""}`)); } });
+  if (skip.length) { L.push("*Won't happen this week:*"); skip.forEach((i) => L.push(`• ${i.label} — ${i.why ? `_${i.why}_` : "no reason given"}`)); }
+  if (away.length) L.push(`*Away:* ${away.map((i) => i.label).join(", ")}`);
   L.push(`<${SITE}/videodesk|Open the Video Desk>`);
   return L.join("\n");
 }
