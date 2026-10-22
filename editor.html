@@ -818,6 +818,20 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-iss.amber{background:#FBE6CE;color:#8A5A12}
 .vd-iss.grey{background:#EFEEE9;color:#77776F}
 .vd-ne-more{font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;padding:6px 0 2px}
+.vd-hc{border:2px solid #C2410C;border-radius:14px;background:#FFF6F2;padding:16px 20px;margin-bottom:18px;box-shadow:0 0 0 5px rgba(194,65,12,.12)}
+.vd-hc.time{border-color:#1B3FD6;background:#F4F7FF;box-shadow:0 0 0 5px rgba(27,63,214,.10)}
+.vd-hc-h{display:flex;align-items:center;gap:10px}
+.vd-hc-dot{width:11px;height:11px;border-radius:50%;background:#C2410C;animation:vdpulse 1.4s infinite}
+.vd-hc.time .vd-hc-dot{background:#1B3FD6;animation-name:vdpulseb}
+@keyframes vdpulse{0%{box-shadow:0 0 0 0 rgba(194,65,12,.55)}70%{box-shadow:0 0 0 10px rgba(194,65,12,0)}100%{box-shadow:0 0 0 0 rgba(194,65,12,0)}}
+@keyframes vdpulseb{0%{box-shadow:0 0 0 0 rgba(27,63,214,.5)}70%{box-shadow:0 0 0 10px rgba(27,63,214,0)}100%{box-shadow:0 0 0 0 rgba(27,63,214,0)}}
+@media(prefers-reduced-motion:reduce){.vd-hc-dot{animation:none}}
+.vd-hc-t{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C2410C}.vd-hc.time .vd-hc-t{color:#1B3FD6}
+.vd-hc-ago{margin-left:auto;font-size:12px;color:#999}
+.vd-hc-who{font-size:19px;font-weight:700;color:var(--ink);margin:8px 0 2px}.vd-hc-what{font-size:13px;color:#777}
+.vd-hc-msg{background:#fff;border:1px solid #F0D5C8;border-radius:10px;padding:11px 13px;margin:11px 0;font-size:14.5px;color:#222;line-height:1.4;word-break:break-word}.vd-hc.time .vd-hc-msg{border-color:#D3DCF7}
+.vd-hc-r{display:flex;gap:8px;margin-top:11px}.vd-hc-r input{flex:1;min-width:0;font-family:inherit;border:1px solid #E5C9BC;border-radius:8px;padding:10px 12px;font-size:13.5px}.vd-hc.time .vd-hc-r input{border-color:#C5D0F2}
+.vd-hc-r button{background:#C2410C;color:#fff;border:0;border-radius:8px;padding:0 18px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}.vd-hc.time .vd-hc-r button{background:#1B3FD6}
 .vd-wp{background:#fff;border:1px solid #ECECEC;border-left:4px solid #1B3FD6;border-radius:12px;padding:16px 20px 14px;margin-bottom:22px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .vd-wp-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .vd-wp-head .sp{flex:1}
@@ -4194,6 +4208,7 @@ function renderVideoDesk(){
   var h=''; var parts={};
   h='';
 
+  h+=vdHelpCards();
   h+=vdPlanHtml(info,ds);
   h+=vdTodayHtml(info,ds);
 
@@ -4203,12 +4218,6 @@ function renderVideoDesk(){
   var doneTasks=VD_TASKS.filter(function(t){return t.done&&!t.cleared;});
   var attn=needRows.length+teamIssues.length+openTasks.length+VD_HELP.length+quiet.length;
   h+='<div class="vd-ne'+(attn?'':' clear')+'"><div class="vd-ne-head"><div class="vd-ne-title">Needs your eye</div>'+(attn?vdNeSummary(needRows,teamIssues,openTasks,quiet):'<span class="vd-ne-ok">✓ All clear</span>')+'</div>';
-  if(VD_HELP.length){
-    h+='<div class="vd-ne-group">Reporters asking for you</div>';
-    VD_HELP.forEach(function(q){
-      h+='<div class="vd-help"><div class="vd-help-top"><b>'+esc(q.reporter)+'</b><span class="vd-iss '+(q.type==='Book time with Nick'?'blue':'red')+'">'+esc(q.type||'Help')+'</span><span class="vd-help-slot">'+(q.slot?esc(q.label||vdSlotName(q.slot,q.pub))+(q.headline?' · '+esc(q.headline):''):'General request')+'</span><span class="vd-help-ago">'+vdAgo(q.ts||Date.now())+'</span></div>'+(q.note?'<div class="vd-help-note">'+esc(q.note)+'</div>':'')+'<div class="vd-help-act"><input id="vdhelp-in-'+esc(q.id)+'" placeholder="Reply (pings '+esc(vdFirst(q.reporter))+' in Slack)…" onkeydown="if(event.key===\'Enter\')vdResolveHelp(\''+esc(q.id)+'\')"><button class="vd-btn sm" onclick="vdResolveHelp(\''+esc(q.id)+'\')">Resolve</button></div></div>';
-    });
-  }
   if(quiet.length){
     h+='<div class="vd-ne-group">Decide</div>';
     quiet.forEach(function(s){ var ss=vdSeriesState(s);
@@ -4493,6 +4502,18 @@ async function vdRemoveFormat(ci){
 //   videohelpdone:<id>:<ts> {id,reply,ts}   — written here when Nick resolves one.
 // Decisions and per-reporter feedback ride in the desk snapshot (VD.decisions, VD.feedback).
 var VD_HELP=[];
+function vdHelpCards(){
+  if(!VD_HELP.length) return '';
+  var h='';
+  VD_HELP.forEach(function(q){
+    var tm=q.type==='Book time with Nick', id=esc(q.id);
+    h+='<div class="vd-hc'+(tm?' time':'')+'"><div class="vd-hc-h"><span class="vd-hc-dot"></span><span class="vd-hc-t">'+(tm?'Wants time with you':'Asking for your help')+'</span><span class="vd-hc-ago">'+vdAgo(q.ts||Date.now())+'</span></div>'+
+      '<div class="vd-hc-who">'+esc(q.reporter)+'</div><div class="vd-hc-what">'+esc(q.type||'Help')+' · '+(q.slot?esc(q.label||vdSlotName(q.slot,q.pub))+(q.headline?' · '+esc(q.headline):''):'General request')+'</div>'+
+      (q.note?'<div class="vd-hc-msg">'+vdLinkify(q.note)+'</div>':'')+
+      '<div class="vd-hc-r"><input id="vdhelp-in-'+id+'" placeholder="Reply (DMs '+esc(vdFirst(q.reporter))+')…" onkeydown="if(event.key===\'Enter\')vdResolveHelp(\''+id+'\')"><button onclick="vdResolveHelp(\''+id+'\')">'+'Reply &amp; resolve</button></div></div>';
+  });
+  return h;
+}
 function vdHelpWhat(q){ return (q.type==='Book time with Nick'?'time-with-Nick':(q.slot?String(q.label||vdSlotName(q.slot,q.pub)).toLowerCase():'help')); }
 async function vdLoadHelp(){
   try{
