@@ -828,11 +828,12 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-wp-grp{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B0B0A8;margin:16px 0 4px}.vd-wp-grp span{font-weight:600;margin-left:4px}
 .vd-wp-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dotted #E5E5E0}
 .vd-wp-dot{width:9px;height:9px;border-radius:50%;flex:none}
-.vd-wp-what{flex:0 1 320px;min-width:120px;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vd-wp-what em{font-style:normal;color:#A0A098;font-size:12px}
+.vd-wp-what{flex:0 1 260px;min-width:120px;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vd-wp-what em{font-style:normal;color:#A0A098;font-size:12px}
 .vd-wp-row.done .vd-wp-what{color:#A0A098;text-decoration:line-through}
 .vd-wp-day{font-family:inherit;font-size:12.5px;border:1px solid #D5D5CE;border-radius:7px;padding:5px 6px;background:#fff;color:#333;flex:none}
-.vd-wp-how{flex:1;min-width:0;font-family:inherit;font-size:13px;border:1px dashed #D5D5CE;background:#FCFCFA;border-radius:8px;padding:7px 10px;color:#222}
+.vd-wp-how{flex:1;min-width:130px;font-family:inherit;font-size:13px;border:1px dashed #D5D5CE;background:#FCFCFA;border-radius:8px;padding:7px 10px;color:#222}
 .vd-wp-how:focus,.vd-wp-why input:focus{outline:none;border-style:solid;border-color:var(--blue);background:#fff}
+.vd-wp-lnk{font-size:11.5px;font-weight:600;color:#9A9A92;cursor:pointer;white-space:nowrap;flex:none}.vd-wp-lnk:hover{color:#C2410C;text-decoration:underline}
 .vd-wp-ok{margin-left:auto;font-size:12px;font-weight:600;color:#2E6B4F}
 .vd-wp-chk{width:20px;height:20px;border:1.5px solid #C9C9C0;border-radius:5px;background:#fff;cursor:pointer;flex:none;font-size:12px;color:#fff;line-height:1;padding:0}.vd-wp-chk.on{background:#2E6B4F;border-color:#2E6B4F}
 .vd-wp-why{display:flex;gap:8px;align-items:center;padding:6px 0 8px 19px;font-size:12px;color:#C2410C}.vd-wp-why input{flex:1;font-family:inherit;font-size:12.5px;border:1px dashed #E8C3B3;background:#FFFAF7;border-radius:8px;padding:6px 10px}
@@ -4537,6 +4538,12 @@ function vdProjectForWeek(name,pub,slot,week){
   return VD.projects.filter(function(p){ return !p.standalone&&p.reporter===name&&p.pub===pub&&p.slot===slot&&vdWeekOfProject(p)===week; })[0]||null;
 }
 
+// A private DM to a reporter (falls back to the channel @-mention if the bot can't DM).
+async function vdDM(name,text){
+  var id=REPORTER_SLACK_IDS[name], sent=false;
+  if(id){ try{ var sess=await supa.auth.getSession(); var r=await fetch('/.netlify/functions/video-help',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess&&sess.data&&sess.data.session?sess.data.session.access_token:'')},body:JSON.stringify({type:'reply',to:id,text:text})}); var j=r.ok?await r.json():null; sent=!!(j&&j.sent); }catch(e){ sent=false; } }
+  if(!sent) notifySlack(slackMention(name)+text);
+}
 async function vdResolveHelp(id){
   var q=VD_HELP.filter(function(h){ return h.id===id; })[0]; if(!q) return;
   var inp=document.getElementById('vdhelp-in-'+id); var reply=inp?inp.value.trim():'';
@@ -4544,7 +4551,7 @@ async function vdResolveHelp(id){
     var res=await supa.from('system_flags').insert({key:'videohelpdone:'+id+':'+Date.now(),value:JSON.stringify({id:id,reply:reply,ts:Date.now()})});
     if(res.error){ alert('Could not resolve that one. Try again.'); return; }
   }catch(e){ alert('Could not resolve that one. Try again.'); return; }
-  notifySlack(slackMention(q.reporter)+':clapper: '+(reply?'Reply from Nick on your '+vdHelpWhat(q)+' request:\n>'+reply:'Nick has picked up your '+vdHelpWhat(q)+' request.'));
+  vdDM(q.reporter,':clapper: '+(reply?'Reply from Nick on your '+vdHelpWhat(q)+' request:\n>'+reply:'Nick has picked up your '+vdHelpWhat(q)+' request.'));
   VD_HELP=VD_HELP.filter(function(h){ return h.id!==id; });
   if(reply){ var prev=vdClone(); vdLog('Reply to '+vdFirst(q.reporter),(q.type||'Help')+': '+reply); await vdCommit(prev); } else renderVideoDesk();
 }
@@ -4959,10 +4966,9 @@ function vdPlanItems(info){
   var P=vdPlanOf(WEEK), items=[], lockedIds={};
   ((P.locked&&P.locked.items)||[]).forEach(function(i){ lockedIds[i.id]=1; });
   info.forEach(function(x){
-    if(x.ai.full) return;
     var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; if(!sl) return;
     var row=(x.d[WEEK]||{})[sl.n];
-    items.push({id:'impact:'+x.rep.name,grp:'Impact videos',label:vdFirst(x.rep.name),sub:row&&row.headline?row.headline:'',owner:'reporter'});
+    items.push({id:'impact:'+x.rep.name,grp:'Impact videos',label:vdFirst(x.rep.name),sub:row&&row.headline?row.headline:'',owner:'reporter',rep:x.rep,away:!!x.ai.full});
   });
   items.push({id:'linkedin',grp:'Gazette LinkedIn',label:'Publish a video to the Gazette LinkedIn',owner:'Nick'});
   items.push({id:'series',grp:'New series',label:'One reporter tries a new series',owner:'Nick'});
@@ -4970,62 +4976,71 @@ function vdPlanItems(info){
   P.custom.forEach(function(c){ items.push({id:c.id,grp:'Assigned to Nick',label:c.label,owner:'Nick',custom:true}); });
   var ds=vdDayState();
   items.forEach(function(it){
-    var s=P.state[it.id]||{}; it.day=s.day||''; it.how=s.how||''; it.why=s.why||''; it.done=vdPlanDone(WEEK,it.id);
+    var s=P.state[it.id]||{}; it.day=s.day||''; it.how=s.how||''; it.why=s.why||''; it.skip=!!s.skip; it.done=vdPlanDone(WEEK,it.id);
     it.manual=!(it.id.indexOf('impact:')===0||it.id==='series'||it.id.indexOf('task:')===0);
     var di=DAYS.indexOf(it.day);
-    if(it.done) it.st='done'; else if(!it.day) it.st='unplanned'; else if(ds.state==='past') it.st='missed';
+    if(it.away) it.st='away'; else if(it.done) it.st='done'; else if(it.skip) it.st='skipped'; else if(!it.day) it.st='unplanned'; else if(ds.state==='past') it.st='missed';
     else if(ds.state==='current'&&di<ds.idx) it.st='slipped'; else if(ds.state==='current'&&di===ds.idx) it.st='today'; else it.st='planned';
   });
   return items;
 }
 function vdPlanSave(){ clearTimeout(VD_PLAN_SAVE_T); VD_PLAN_SAVE_T=setTimeout(function(){ saveVD(); },600); }
 function vdPlanSet(id,k,v){ var P=vdPlanOf(WEEK); if(!P.state[id]) P.state[id]={}; P.state[id][k]=v; vdPlanSave(); if(k==='day'||k==='done') renderVideoDesk(); }
+function vdPlanSkip(id,on){ var P=vdPlanOf(WEEK); if(!P.state[id]) P.state[id]={}; P.state[id].skip=on; if(!on) delete P.state[id].why; VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); if(on){ var el=document.querySelector('.vd-wp-skipwhy input[data-i="'+id+'"]'); if(el) el.focus(); } }
+function vdPlanAway(name,pub){ openAwayModal(name,pub); }
 function vdPlanToggle(){ VD_PLAN_OPEN=!VD_PLAN_OPEN; renderVideoDesk(); }
 function vdPlanAdd(){ var el=document.getElementById('vd-wp-new'); var t=el?el.value.trim():''; if(!t) return; var P=vdPlanOf(WEEK); P.custom.push({id:'x:'+Date.now().toString(36),label:t.slice(0,160)}); VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); }
 function vdPlanDel(id){ var P=vdPlanOf(WEEK); P.custom=P.custom.filter(function(c){return c.id!==id;}); delete P.state[id]; saveVD(); renderVideoDesk(); }
 function vdPlanCarry(label){ var P=vdPlanOf(WEEK); P.custom.push({id:'x:'+Date.now().toString(36),label:label}); VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); }
 function vdPlanMissed(){   // last week's locked items that never landed
   var pw=vdAddDays(WEEK,-7), P=VD.plan&&VD.plan[pw]; if(!P||!P.locked) return [];
-  return P.locked.items.filter(function(i){ return !vdPlanDone(pw,i.id); }).map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,why:((P.state||{})[i.id]||{}).why||''}; });
+  return P.locked.items.filter(function(i){ return !vdPlanDone(pw,i.id)&&i.status!=='skip'&&i.status!=='away'&&!(((P.state||{})[i.id]||{}).skip); }).map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,why:((P.state||{})[i.id]||{}).why||''}; });
 }
 async function vdPlanLock(){
-  var items=vdPlanItems(VD_INFO), open=items.filter(function(i){return !i.done;}), miss=open.filter(function(i){return !i.day||!i.how.trim();});
-  if(miss.length){ alert(miss.length+' item'+(miss.length>1?'s':'')+' still need a day and a line on how you’ll make it happen:\n\n'+miss.slice(0,6).map(function(i){return '• '+(i.grp==='Impact videos'?'Impact — ':'')+i.label;}).join('\n')); VD_PLAN_OPEN=true; renderVideoDesk(); return; }
+  var items=vdPlanItems(VD_INFO), live=items.filter(function(i){return !i.done&&!i.skip&&!i.away;}), gaps=live.filter(function(i){return !i.day;});
+  if(gaps.length&&!confirm(gaps.length+' item'+(gaps.length>1?'s have':' has')+' no day yet:\n\n'+gaps.slice(0,6).map(function(i){return '• '+(i.grp==='Impact videos'?'Impact — ':'')+i.label;}).join('\n')+'\n\nLock the week anyway? Your summary will say these are unplanned.')) return;
   var P=vdPlanOf(WEEK), prev=vdClone();
-  P.locked={ts:Date.now(),items:items.map(function(i){ return {id:i.id,label:i.label,who:i.owner,day:i.day,how:i.how}; })};
+  var stat=function(i){ return i.away?'away':(i.done?'done':(i.skip?'skip':'open')); };
+  P.locked={ts:Date.now(),items:items.map(function(i){ return {id:i.id,label:i.label,who:i.owner,day:i.day,how:i.how,status:stat(i),why:i.why}; })};
   var ok=await saveVD(); if(!ok){ VD=prev; renderVideoDesk(); alert('Could not save the plan. Try again.'); return; }
   renderVideoDesk();
-  try{ var sess=await supa.auth.getSession(); fetch('/.netlify/functions/video-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess&&sess.data&&sess.data.session?sess.data.session.access_token:'')},body:JSON.stringify({type:'locked',week:WEEK,items:P.locked.items.map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,day:i.day,how:i.how,done:vdPlanDone(WEEK,i.id)}; })})}).catch(function(){}); }catch(e){}
+  try{ var sess=await supa.auth.getSession(); fetch('/.netlify/functions/video-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess&&sess.data&&sess.data.session?sess.data.session.access_token:'')},body:JSON.stringify({type:'locked',week:WEEK,items:P.locked.items.map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,day:i.day,how:i.how,status:i.status,why:i.why}; })})}).catch(function(){}); }catch(e){}
 }
 function vdPlanHtml(info,ds){
   var items=vdPlanItems(info), P=vdPlanOf(WEEK), L=P.locked;
-  var done=items.filter(function(i){return i.done;}).length, slipped=items.filter(function(i){return i.st==='slipped'||i.st==='missed';}).length, unp=items.filter(function(i){return !i.done&&(!i.day||!i.how.trim());}).length;
+  var counted=items.filter(function(i){return !i.away&&!i.skip;}), off=items.filter(function(i){return i.skip&&!i.away;}).length, awayN=items.filter(function(i){return i.away;}).length;
+  var done=counted.filter(function(i){return i.done;}).length, slipped=items.filter(function(i){return i.st==='slipped'||i.st==='missed';}).length, unp=items.filter(function(i){return !i.done&&!i.skip&&!i.away&&!i.day;}).length;
   var missed=vdPlanMissed();
   var pill=L?'<span class="vd-iss grey">Locked '+esc(vdAgo(L.ts))+' ✓</span>':'<span class="vd-iss '+(ds.state==='current'&&ds.idx>=1?'red':'amber')+'">Not locked</span>';
   var open=!L||VD_PLAN_OPEN||slipped>0;
-  var h='<div class="vd-wp" id="vd-wp"><div class="vd-wp-head"><div class="vd-wp-title">Week plan</div>'+pill+'<span class="vd-wp-prog"><b>'+done+'</b> of '+items.length+' landed'+(slipped?' · <span class="bad">'+slipped+' slipped</span>':'')+'</span><span class="sp"></span>'+
+  var h='<div class="vd-wp" id="vd-wp"><div class="vd-wp-head"><div class="vd-wp-title">Week plan</div>'+pill+'<span class="vd-wp-prog"><b>'+done+'</b> of '+counted.length+' landed'+(off?' · '+off+' called off':'')+(awayN?' · '+awayN+' away':'')+(slipped?' · <span class="bad">'+slipped+' slipped</span>':'')+'</span><span class="sp"></span>'+
     (L&&!slipped?'<button class="vd-snz" style="color:#6A6A62!important" onclick="vdPlanToggle()">'+(open?'Hide':'Show')+' plan</button>':'')+
     '<button class="vd-btn sm" onclick="vdPlanLock()">'+(L?'Update the plan':'Lock the week')+'</button></div>';
-  if(!L) h+='<div class="vd-wp-cap">Set a day and one line on how you’ll make each of these happen, then lock it. '+(unp?'<b>'+unp+' still need a plan.</b>':'All planned — ready to lock.')+'</div>';
+  if(!L) h+='<div class="vd-wp-cap">Pick a day for each one, then lock it. Add a note only where it helps. '+(unp?'<b>'+unp+' have no day yet</b> — you can still lock, and the summary will say so.':'All planned — ready to lock.')+'</div>';
   if(open){
     if(missed.length) h+='<div class="vd-wp-carry"><b>Missed last week:</b> '+missed.map(function(m){ return esc(m.label)+(m.why?' <em>('+esc(m.why)+')</em>':'')+' <a onclick="vdPlanCarry(\''+esc(m.label).replace(/'/g,'&#39;')+'\')">carry over</a>'; }).join(' · ')+'</div>';
     var grps=[]; items.forEach(function(i){ if(grps.indexOf(i.grp)<0) grps.push(i.grp); });
     grps.forEach(function(g){
       var gi=items.filter(function(i){return i.grp===g;});
-      h+='<div class="vd-wp-grp">'+esc(g)+' <span>'+gi.filter(function(i){return i.done;}).length+'/'+gi.length+'</span></div>';
+      h+='<div class="vd-wp-grp">'+esc(g)+' <span>'+gi.filter(function(i){return i.done&&!i.away;}).length+'/'+gi.filter(function(i){return !i.away&&!i.skip;}).length+'</span></div>';
       gi.forEach(function(i){
-        var dot={done:'#2E6B4F',today:'#B7791F',slipped:'#C2410C',missed:'#C2410C',planned:'#9AA7D6',unplanned:'#D5D5CE'}[i.st];
+        var dot={done:'#2E6B4F',today:'#B7791F',slipped:'#C2410C',missed:'#C2410C',planned:'#9AA7D6',unplanned:'#D5D5CE',away:'#D5D5CE',skipped:'#B0B0A8'}[i.st];
         var idq=esc(i.id).replace(/'/g,'&#39;');
-        h+='<div class="vd-wp-row'+(i.done?' done':'')+'"><span class="vd-wp-dot" style="background:'+dot+'"></span><div class="vd-wp-what"><b>'+esc(i.label)+'</b>'+(i.sub?' <em>· '+esc(i.sub)+'</em>':'')+(i.src?' <em>· '+i.src+'</em>':'')+(i.owner==='reporter'?'':'')+'</div>';
-        if(i.done&&!i.manual) h+='<span class="vd-wp-ok">Landed ✓</span>';
+        h+='<div class="vd-wp-row'+(i.done||i.skip||i.away?' done':'')+'"><span class="vd-wp-dot" style="background:'+dot+'"></span><div class="vd-wp-what"><b>'+esc(i.label)+'</b>'+(i.sub?' <em>· '+esc(i.sub)+'</em>':'')+(i.src?' <em>· '+i.src+'</em>':'')+'</div>';
+        if(i.away) h+='<span class="vd-wp-ok" style="color:#8A8A82">Away this week</span>';
+        else if(i.done&&!i.manual) h+='<span class="vd-wp-ok">Landed ✓</span>';
+        else if(i.skip) h+='<span class="vd-wp-ok" style="color:#8A8A82">Won’t happen</span><a class="vd-wp-lnk" onclick="vdPlanSkip(this.dataset.i,false)" data-i="'+idq+'">Put back</a>';
         else{
           h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+DAYS.map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
-          h+='<input class="vd-wp-how" data-i="'+idq+'" value="'+esc(i.how)+'" placeholder="How will this happen?" onchange="vdPlanSet(this.dataset.i,\'how\',this.value)">';
+          h+='<input class="vd-wp-how" data-i="'+idq+'" value="'+esc(i.how)+'" placeholder="Note (optional)" onchange="vdPlanSet(this.dataset.i,\'how\',this.value)">';
           if(i.manual) h+='<button class="vd-wp-chk'+(i.done?' on':'')+'" title="Mark done" onclick="vdPlanSet(this.dataset.i,\'done\','+(i.done?'false':'true')+')" data-i="'+idq+'">'+(i.done?'✓':'')+'</button>';
+          if(i.rep) h+='<a class="vd-wp-lnk" onclick="vdPlanAway(this.dataset.n,this.dataset.p)" data-n="'+esc(i.rep.name)+'" data-p="'+esc(i.rep.pub)+'" title="Mark '+esc(vdFirst(i.rep.name))+' as away">Away</a>';
+          if(!i.done) h+='<a class="vd-wp-lnk" onclick="vdPlanSkip(this.dataset.i,true)" data-i="'+idq+'" title="Mark as not happening this week">Won’t happen</a>';
           if(i.custom) h+='<button class="vd-snz" onclick="vdPlanDel(this.dataset.i)" data-i="'+idq+'" title="Remove">×</button>';
         }
         h+='</div>';
-        if((i.st==='slipped'||i.st==='missed')&&!i.done) h+='<div class="vd-wp-why"><span>Slipped past '+esc(i.day)+' —</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Why, and what’s the new plan?" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"></div>';
+        if(i.skip&&!i.away) h+='<div class="vd-wp-why vd-wp-skipwhy" style="color:#6A6A62"><span>Why not?</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Reason — this goes in your summary" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"></div>';
+        else if((i.st==='slipped'||i.st==='missed')&&!i.done) h+='<div class="vd-wp-why"><span>Slipped past '+esc(i.day)+' —</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Why, and what’s the new plan?" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"></div>';
       });
     });
     h+='<div class="vd-ne-add"><input id="vd-wp-new" placeholder="+ Add something Nick has committed to…" onkeydown="if(event.key===\'Enter\')vdPlanAdd()"><button class="vd-btn ghost sm" onclick="vdPlanAdd()">Add</button></div>';
