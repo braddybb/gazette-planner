@@ -1,111 +1,50 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Monday-morning Video Desk plan → Slack DM to Nick. Plain counting only, no AI.
-// The mirror of the Friday summary: what the week looks like before it starts.
-// Fires at 22:00 and 23:00 UTC on Sundays; the function checks it is really
-// Monday 9am in Sydney (so it is right across daylight saving).
+// Week plan → Slack. The Video Desk POSTs here (signed in) when Nick locks his
+// Monday plan; we DM the editorial director a plain summary. Nothing is stored
+// here — the plan itself lives in the desk snapshot.
 //
-// Imports helpers from video-digest.mjs — upload both files to the same folder.
-// Env vars: the same as the Friday summary (NICK_SLACK_ID, SLACK_BOT_TOKEN,
-// SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL).
+// Env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SLACK_BOT_TOKEN,
+// CHEF_SLACK_ID (who gets the summary). Optional: URL (link in the message).
 // ─────────────────────────────────────────────────────────────────────────────
-import { sydneyParts, mondayOf, checklistItems, groupReporters, activeSeriesCount, sget, loadTasks, loadAway, awayIdx, sendDM, slotsFor, slotName, SLOT_QUERY } from "./video-digest.mjs";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://asgyshkafnrqknnmkbfo.supabase.co";
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+const SITE = process.env.URL || "https://gari-planner.netlify.app";
+const clip = (v, n) => String(v == null ? "" : v).replace(/[\r\n]+/g, " ").trim().slice(0, n);
 
-export const config = { schedule: "0 22,23 * * 0" };
-
-const SLOT_NAMES = { "01": "Original 1", "02": "Original 2", "03": "Video flip", "04": "Impact video" };
-const utc = (ymd) => { const [y, m, d] = ymd.split("-").map(Number); return Date.UTC(y, m - 1, d); };
-const addDays = (ymd, n) => new Date(utc(ymd) + n * 864e5).toISOString().slice(0, 10);
-const daysBetween = (a, b) => Math.round((utc(b) - utc(a)) / 864e5);
-const dayName = (ymd) => { const d = new Date(utc(ymd)); return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getUTCDay()] + " " + d.getUTCDate() + "/" + (d.getUTCMonth() + 1); };
-
-export function shouldRun(now = new Date()) { const s = sydneyParts(now); return s.weekday === "Mon" && s.hour === 9; }
-
-export function buildPlan({ today, week, snapshot, tasks, stories, away = [] }) {
-  const snap = snapshot || { projects: [], checklist: {}, series: [] };
-  const L = [];
-  const prev = addDays(week, -7);
-
-  L.push("*This week's checklist*");
-  checklistItems(week).forEach((c) => L.push("• " + c.lbl));
-  // Last week's misses, but only for weeks the desk was actually in use.
-  const start = snap.deskStart || null;
-  if (start && prev >= start) {
-    const missed = checklistItems(prev).filter((c) => !((snap.checklist || {})[prev] || {})[c.k]);
-    if (missed.length) L.push("_Carried over from last week:_ " + missed.map((c) => c.lbl).join("; "));
-  }
-  L.push("");
-
-  const shoots = (snap.projects || []).filter((p) => p.stage === 0 && p.shootDate && daysBetween(today, p.shootDate) <= 6)
-    .sort((a, b) => a.shootDate.localeCompare(b.shootDate));
-  if (shoots.length) {
-    L.push("*Shoots*");
-    shoots.forEach((p) => {
-      const ps = p.preshoot || {}; const ready = ps.location && ps.gear && ps.talent && ps.brief;
-      const late = daysBetween(today, p.shootDate) < 0;
-      L.push(`• ${p.title} — ${late ? "date passed (" + dayName(p.shootDate) + "), not marked Shot" : dayName(p.shootDate)}${ready ? "" : " · pre-shoot open"}`);
-    });
-    L.push("");
-  }
-
-  const stuck = (snap.projects || []).filter((p) => p.stage < 4).map((p) => ({ p, age: Math.floor((Date.now() - (p.stageAt || p.created || Date.now())) / 864e5) }))
-    .filter((x) => x.age >= 3 && !(x.p.stage === 0 && x.p.shootDate && daysBetween(today, x.p.shootDate) >= 0));
-  if (stuck.length) {
-    const st = ["Approved", "Shot", "Edited", "On platforms"];
-    L.push("*Stuck in the pipeline*"); stuck.forEach((x) => L.push(`• ${x.p.title} — ${st[x.p.stage]} ${x.age}d ago`)); L.push("");
-  }
-
-  const allReps = groupReporters(stories);
-  const awayNow = [];
-  const reps = allReps.filter((r) => {
-    const idx = awayIdx(away, r.name, r.pub, week);
-    if (idx.length === 5) { awayNow.push(`${r.name} (all week)`); return false; }
-    if (idx.length) awayNow.push(`${r.name} (${idx.map((i) => ["Mon", "Tue", "Wed", "Thu", "Fri"][i]).join(", ")})`);
-    return true;
-  });
-  const plan = [];
-  reps.forEach((r) => {
-    const idx = awayIdx(away, r.name, r.pub, week);
-    const SL = slotsFor(r.pub);
-    const need = Math.round(SL.length * (5 - idx.length) / 5);
-    const missing = SL.filter((n) => !(r.slots[n] && r.slots[n].headline));
-    const planned = SL.length - missing.length;
-    if (planned < need) plan.push(`• *${r.name}* — ${planned}/${need} planned (need: ${missing.slice(0, need - planned).map((n) => slotName(n, r.pub)).join(", ")})`);
-  });
-  if (awayNow.length) { L.push("*Away this week*"); awayNow.forEach((x) => L.push("• " + x)); L.push(""); }
-  L.push(plan.length ? "*Planning — chase these by Wednesday*" : "*Planning*");
-  if (plan.length) plan.forEach((x) => L.push(x)); else L.push("• Every video planned for everyone 🎉");
-  L.push("");
-
-  const low = reps.map((r) => ({ r, n: activeSeriesCount(snap, r) })).filter((x) => x.n < 2);
-  const newThis = (snap.series || []).filter((s) => s.started === week).length;
-  L.push("*Series*");
-  if (low.length) low.forEach((x) => L.push(`• ${x.r.name} — ${x.n}/2 running`)); else L.push("• Everyone has two running");
-  L.push(newThis ? `• ${newThis} new series started this week` : "• No new series yet — aim for 1 across the team");
-  L.push("");
-
-  const open = (tasks || []).filter((t) => !t.done);
-  if (open.length) {
-    L.push("*Open tasks*");
-    open.forEach((t) => {
-      let tag = "";
-      if (t.due) { const d = daysBetween(today, t.due); tag = d < 0 ? ` — overdue ${-d}d` : d === 0 ? " — due today" : ` — due ${dayName(t.due)}`; }
-      L.push("• " + t.text + tag);
-    });
-  }
-  return ":calendar: *Video Desk — the week ahead*\n\n" + L.join("\n").trim();
+export function cleanItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items.slice(0, 60).map((i) => ({ label: clip(i && i.label, 120), day: clip(i && i.day, 3), how: clip(i && i.how, 200), done: !!(i && i.done) })).filter((i) => i.label);
 }
-
-export default async () => {
-  if (!shouldRun()) return new Response("not Monday 9am Sydney — skipped");
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SLACK_BOT_TOKEN || !process.env.NICK_SLACK_ID) { console.warn("video-plan: missing env vars"); return new Response("not configured"); }
-  const today = sydneyParts().ymd; const week = mondayOf(today);
+export function planText(week, items) {
+  const open = items.filter((i) => !i.done), done = items.filter((i) => i.done);
+  const L = [`:calendar: *Nick has locked the week of ${week}* — ${open.length} to deliver, ${done.length} already landed`];
+  const byDay = {};
+  open.forEach((i) => { (byDay[i.day || "?"] = byDay[i.day || "?"] || []).push(i); });
+  ["Mon", "Tue", "Wed", "Thu", "Fri", "?"].forEach((d) => { if (byDay[d]) { L.push(`*${d}*`); byDay[d].forEach((i) => L.push(`• ${i.label}${i.how ? ` — _${i.how}_` : ""}`)); } });
+  L.push(`<${SITE}/videodesk|Open the Video Desk>`);
+  return L.join("\n");
+}
+async function signedIn(token) {
+  if (!token) return false;
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${token}` } });
+  return r.ok;
+}
+const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "Content-Type": "application/json" } });
+export default async (req) => {
+  if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  if (!SERVICE_KEY) return json({ error: "not configured" }, 500);
+  const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  let ok = false; try { ok = await signedIn(token); } catch { ok = false; }
+  if (!ok) return json({ error: "not signed in" }, 401);
+  let b; try { b = await req.json(); } catch { return json({ error: "bad json" }, 400); }
+  const items = cleanItems(b && b.items), week = clip(b && b.week, 10);
+  if (!items.length || !/^\d{4}-\d{2}-\d{2}$/.test(week)) return json({ error: "bad request" }, 400);
+  const to = process.env.CHEF_SLACK_ID;
+  if (!BOT_TOKEN || !to) return json({ ok: true, sent: false });
   try {
-    const snaps = await sget("system_flags?select=value&key=like.videodesk*&order=key.desc&limit=1");
-    const snapshot = snaps[0] ? JSON.parse(snaps[0].value) : null;
-    const tasks = await loadTasks();
-    const away = await loadAway().catch(() => []);
-    const stories = await sget(`planner_stories?week_of=eq.${week}&story_num=in.(${SLOT_QUERY})&select=reporter,publication,story_num,headline,filed,file_day`);
-    await sendDM(buildPlan({ today, week, snapshot, tasks, stories, away }));
-    return new Response("sent");
-  } catch (e) { console.error("video-plan failed:", e); return new Response("failed: " + e.message, { status: 500 }); }
+    const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST", headers: { Authorization: `Bearer ${BOT_TOKEN}`, "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify({ channel: to, text: planText(week, items), unfurl_links: false }) });
+    const j = await r.json(); if (!j.ok) console.warn("video-plan DM:", j.error);
+    return json({ ok: true, sent: !!j.ok });
+  } catch (e) { console.warn("video-plan DM failed", e); return json({ ok: true, sent: false }); }
 };
