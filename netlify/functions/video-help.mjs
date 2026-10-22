@@ -18,21 +18,25 @@ const BOT_TOKEN    = process.env.SLACK_BOT_TOKEN;
 const NICK_ID      = process.env.NICK_SLACK_ID;
 const SITE         = process.env.URL || "https://gari-planner.netlify.app";
 
-export const TYPES = ["Shoot help", "Edit help", "Idea / series pitch", "Stuck on it", "Something else"];
+export const TYPES = ["Book time with Nick", "Shoot help", "Edit help", "Idea / series pitch", "Stuck on it", "Something else"];
 const SLOT_NAMES = { "01": "Original 1", "02": "Original 2", "03": "Video flip", "04": "Impact video" };
 const clip = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
 
 // Pure: turn the request body into the stored record (or null if it's unusable).
 export function cleanPayload(b, now = Date.now(), rand = Math.random().toString(36).slice(2, 6)) {
   if (!b || typeof b !== "object") return null;
-  const reporter = clip(b.reporter, 80), pub = clip(b.pub, 80), slot = clip(b.slot, 3);
-  if (!reporter || !pub || !SLOT_NAMES[slot]) return null;
+  const reporter = clip(b.reporter, 80), pub = clip(b.pub, 80), slot = clip(b.slot, 3), label = clip(b.label, 40);
+  if (!reporter || !pub) return null;   // slot is optional: a blank slot is a general request, not about one story
   const type = TYPES.includes(b.type) ? b.type : "Something else";
   const id = now.toString(36) + rand;
-  return { id, ts: now, reporter, pub, week: clip(b.week, 10), slot, headline: clip(b.headline, 200), type, note: clip(b.note, 500) };
+  return { id, ts: now, reporter, pub, week: clip(b.week, 10), slot, label, headline: clip(b.headline, 200), type, note: clip(b.note, 500) };
 }
 export function dmText(rec) {
-  const lines = [`:clapper: *${rec.reporter}* needs video help — *${rec.type}*`, `_${SLOT_NAMES[rec.slot]}${rec.headline ? ": " + rec.headline : ""}_`];
+  const what = rec.slot ? (rec.label || SLOT_NAMES[rec.slot] || "Story " + rec.slot) : "";
+  const head = rec.type === "Book time with Nick" ? `*${rec.reporter}* would like some time with you` : `*${rec.reporter}* needs your help — *${rec.type}*`;
+  const lines = [`:clapper: ${head}`];
+  if (what || rec.headline) lines.push(`_${what}${what && rec.headline ? ": " : ""}${rec.headline || ""}_`);
+  else lines.push("_General request — not about one story_");
   if (rec.note) lines.push(">" + rec.note.replace(/\n+/g, " "));
   lines.push(`<${SITE}/videodesk|Open the Video Desk>`);
   return lines.join("\n");
