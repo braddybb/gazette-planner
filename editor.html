@@ -818,6 +818,16 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-iss.amber{background:#FBE6CE;color:#8A5A12}
 .vd-iss.grey{background:#EFEEE9;color:#77776F}
 .vd-ne-more{font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;padding:6px 0 2px}
+.vd-ne .vd-ne-more,.vd-ne .vd-lnkbtn,.vd-ne .vd-showdone{color:#6A6A62;font-size:12px;font-weight:600}
+.vd-ne .vd-lnkbtn.on{color:var(--ink)}
+.vd-ne-sum{display:flex;gap:6px;flex-wrap:wrap;margin-left:4px}
+.vd-ne-acts{display:flex;gap:6px;align-items:center;flex:none}
+.vd-ne-acts input[type=date]{font-family:inherit;font-size:11px;border:1px solid #D5D5CE;border-radius:7px;padding:4px 6px;color:#555;background:#fff;width:112px}
+.vd-iss .ttl{font-weight:500;opacity:.85}
+.vd-ne-row .vd-iss{white-space:normal}
+.vd-snz{background:none!important;border:0!important;color:#9A9A92!important;font-size:11px!important;font-weight:600;padding:4px 6px!important;cursor:pointer}
+.vd-snz:hover{color:#555!important;text-decoration:underline}
+.vd-ne-row .vd-ne-chips{align-items:center}
 .vd-ne-more:hover{text-decoration:underline}
 @media(max-width:700px){.vd-ne-row{flex-wrap:wrap}.vd-ne-who,.vd-ne-who.wide{flex-basis:100%}}
 /* Today panel, reporter help requests, decisions, cadence */
@@ -3751,6 +3761,22 @@ var VD_PUB_OPEN = false;
 var VD_INFO = [];
 var VD_NUDGED = {};
 var VD_FLAGS_OPEN = false;
+var VD_SNZ_SHOW = false;
+function vdSnoozeMap(){ try{ return JSON.parse(localStorage.getItem('gz_vd_snooze')||'{}'); }catch(e){ return {}; } }
+function vdSnooze(k){ var m=vdSnoozeMap(), now=Date.now(); Object.keys(m).forEach(function(x){ if(m[x]<now) delete m[x]; }); var t=new Date(); t.setDate(t.getDate()+1); t.setHours(7,0,0,0); m[k]=t.getTime(); try{ localStorage.setItem('gz_vd_snooze',JSON.stringify(m)); }catch(e){} renderVideoDesk(); }
+function vdUnsnooze(k){ var m=vdSnoozeMap(); delete m[k]; try{ localStorage.setItem('gz_vd_snooze',JSON.stringify(m)); }catch(e){} renderVideoDesk(); }
+function vdToggleSnz(){ VD_SNZ_SHOW=!VD_SNZ_SHOW; renderVideoDesk(); }
+function vdSnoozeBtn(k){ var on=vdSnoozeMap()[k]>Date.now(); var kk=esc(k).replace(/'/g,'&#39;'); return '<button class="vd-snz" title="'+(on?'Snoozed until tomorrow 7am — click to bring back':'Hide until tomorrow morning')+'" onclick="event.stopPropagation();'+(on?'vdUnsnooze':'vdSnooze')+'(this.dataset.k)" data-k="'+kk+'">'+(on?'Unsnooze':'Snooze')+'</button>'; }
+function vdNeSummary(rows,team,tasks,quiet){
+  var od=rows.filter(function(r){return r.score>=30;}).length, gaps=rows.length-od+team.length, tk=tasks.length+quiet.length+VD_HELP.length;
+  var h='<span class="vd-ne-sum">';
+  if(VD_HELP.length) h+='<span class="vd-iss red">'+VD_HELP.length+' asking for you</span>';
+  if(od) h+='<span class="vd-iss red">'+od+' overdue</span>';
+  if(gaps) h+='<span class="vd-iss amber">'+gaps+' to sort</span>';
+  if(tasks.length||quiet.length) h+='<span class="vd-iss grey">'+(tasks.length+quiet.length)+' task'+((tasks.length+quiet.length)>1?'s':'')+'</span>';
+  return h+'</span>';
+}
+async function vdMarkShot(id){ var p=VD.projects.filter(function(x){return x.id===id;})[0]; if(!p||p.stage!==0) return; var prev=vdClone(); p.stage=1; p.stageAt=Date.now(); await vdCommit(prev,'Could not mark it shot.'); }
 var VD_NUDGELOG = [];   // persisted nudges: {reporter,pub,week,ts,slots:[{n,st}]}, newest first
 // Per-viewer convenience only (which sections are folded). Safe if storage is blocked.
 var VD_COLLAPSED = (function(){ try{ var v=JSON.parse(localStorage.getItem('vd_collapsed')||'null'); if(v&&typeof v==='object'){ if(v.decisions===undefined) v.decisions=true; if(v.report===undefined) v.report=true; return v; } }catch(e){} return {record:true,perf:true,decisions:true,report:true}; })();
@@ -3867,7 +3893,7 @@ function vdNudgeInfo(rep){
   var sorted=0;
   (n.slots||[]).forEach(function(sl){ var row=cur[sl.n]; if(row&&(row.filed||(sl.st!=='overdue'&&row.headline))) sorted++; });
   var total=(n.slots||[]).length;
-  return {ts:n.ts,sorted:sorted,total:total,recent:Date.now()-n.ts<4*3600*1000};
+  return {ts:n.ts,sorted:sorted,total:total,recent:Date.now()-n.ts<24*3600*1000};
 }
 function vdAgo(ts){
   var m=Math.floor((Date.now()-ts)/60000);
@@ -4095,35 +4121,44 @@ function renderVideoDesk(){
     info.forEach(function(x,ri){
       var od=x.problems.filter(function(p){return p.st==='overdue';});
       var up=x.problems.filter(function(p){return p.st!=='overdue';});
-      if(od.length===1) issuesBy[ri].push({sev:3,cls:'red',text:vdSlotName(od[0].n,x.rep.pub)+' overdue'+(od[0].row&&od[0].row.file_day?' · due '+od[0].row.file_day:'')});
-      else if(od.length>1) issuesBy[ri].push({sev:3,cls:'red',text:od.length+' videos overdue'});
+      od.slice(0,3).forEach(function(o){ var hd=o.row&&o.row.headline?String(o.row.headline):''; if(hd.length>34) hd=hd.slice(0,33)+'…';
+        issuesBy[ri].push({sev:3,cls:'red',text:vdSlotName(o.n,x.rep.pub)+(hd?' ':'')+(hd?'':'')+' overdue'+(o.row&&o.row.file_day?' · was due '+o.row.file_day:''),ttl:hd}); });
+      if(od.length>3) issuesBy[ri].push({sev:3,cls:'red',text:'+'+(od.length-3)+' more overdue'});
       if(up.length===1) issuesBy[ri].push({sev:2,cls:'amber',text:vdSlotName(up[0].n,x.rep.pub)+' not planned'});
-      else if(up.length>1) issuesBy[ri].push({sev:2,cls:'amber',text:up.length+' videos not planned'});
-      if(x.streak) issuesBy[ri].push({sev:2,cls:'amber',text:'3 weeks under target'});
+      else if(up.length>1) issuesBy[ri].push({sev:2,cls:'amber',text:up.length+' videos not planned yet'});
+      if(x.streak) issuesBy[ri].push({sev:2,cls:'amber',text:'Under target 3 weeks running'});
       var a=vdActiveSeries(x.rep).length;
-      if(a<2&&!x.ai.full) issuesBy[ri].push({sev:1,cls:'grey',text:a+'/2 series running'});
+      if(a<2&&!x.ai.full) issuesBy[ri].push({sev:1,cls:'grey',text:'Only '+a+' of 2 series running · start one'});
     });
-    if(ds.state==='current'&&ds.idx>=3&&newThisWeek===0) teamIssues.push({title:'No new series this week',chip:'Aim for 1 across the team',cls:'grey',target:'vd-sec-series'});
+    if(ds.state==='current'&&ds.idx>=3&&newThisWeek===0) teamIssues.push({title:'No new series this week',chip:'Aim for 1 across the team',cls:'grey',sev:1,target:'vd-sec-series'});
   }
   VD.projects.forEach(function(p){
     var a=vdAgeDays(p);
     if(p.stage===0&&p.shootDate){
       var sw=vdShootWhen(p);
-      if(sw.d<0) teamIssues.push({title:p.title,chip:'Shoot date passed · not marked Shot',cls:'amber',target:'vd-sec-pipeline'});
-      else if(sw.d<=1&&!vdPreshootDone(p)) teamIssues.push({title:p.title,chip:'Shooting '+sw.text.toLowerCase()+' · pre-shoot not done',cls:'amber',target:'vd-sec-pipeline'});
-      else if(sw.d<=1) teamIssues.push({title:p.title,chip:'Shooting '+sw.text.toLowerCase(),cls:'blue',target:'vd-sec-pipeline'});
+      if(sw.d<0) teamIssues.push({title:p.title,chip:'Shoot date passed · not marked Shot',cls:'amber',sev:2,id:p.id,acts:'shot'});
+      else if(sw.d<=1&&!vdPreshootDone(p)) teamIssues.push({title:p.title,chip:'Shooting '+sw.text.toLowerCase()+' · pre-shoot not done',cls:'amber',sev:2,id:p.id,target:'vd-sec-pipeline'});
+      else if(sw.d<=1) teamIssues.push({title:p.title,chip:'Shooting '+sw.text.toLowerCase(),cls:'blue',sev:0,id:p.id,target:'vd-sec-pipeline'});
     }
-    else if(p.stage===0&&!vdIsContrib(p)&&!vdPreshootDone(p)&&a>=2) teamIssues.push({title:p.title,chip:'Approved '+a+'d ago · pre-shoot not done',cls:'amber',target:'vd-sec-pipeline'});
-    else if(p.stage===1&&a>=2) teamIssues.push({title:p.title,chip:'Shot '+a+'d ago · not edited',cls:'amber',target:'vd-sec-pipeline'});
-    else if(p.stage===2&&a>=3) teamIssues.push({title:p.title,chip:'Edited '+a+'d ago · not published',cls:'amber',target:'vd-sec-pipeline'});
-    else if(p.stage===3&&a>=2) teamIssues.push({title:p.title,chip:'On platforms · not on the website',cls:'amber',target:'vd-sec-pipeline'});
+    else if(p.stage===0&&!vdIsContrib(p)&&!vdPreshootDone(p)&&a>=2) teamIssues.push({title:p.title,chip:'Approved '+a+'d ago · pre-shoot not done',cls:'amber',sev:2,id:p.id,target:'vd-sec-pipeline'});
+    else if(p.stage===1&&a>=2) teamIssues.push({title:p.title,chip:'Shot '+a+'d ago · not edited',cls:'amber',sev:2,id:p.id,acts:'Mark edited',target:'vd-sec-pipeline'});
+    else if(p.stage===2&&a>=3) teamIssues.push({title:p.title,chip:'Edited '+a+'d ago · not published',cls:'amber',sev:2,id:p.id,acts:'Mark published',target:'vd-sec-pipeline'});
+    else if(p.stage===3&&a>=2) teamIssues.push({title:p.title,chip:'On platforms · not on the website',cls:'amber',sev:2,id:p.id,acts:'Mark on website',target:'vd-sec-pipeline'});
   });
   var untag=VD.projects.filter(function(p){ return p.stage>=3&&!p.format&&(Date.now()-(p.publishedAt||p.stageAt||p.created||0))<14*864e5; });
-  if(untag.length) teamIssues.push({title:untag.length+' published video'+(untag.length>1?'s':''),chip:'Need a format tag',cls:'amber',act:'vdOpenPublished()'});
+  if(untag.length) teamIssues.push({title:untag.length+' published video'+(untag.length>1?'s':''),chip:'Need a format tag',cls:'amber',sev:2,act:'vdOpenPublished()'});
   var quiet=VD.series.filter(function(s){ return vdSeriesState(s).auto; });
   var needRows=[];
   info.forEach(function(x,ri){ if(issuesBy[ri].length){ var sc=0; issuesBy[ri].forEach(function(i){ sc=Math.max(sc,i.sev); }); needRows.push({ri:ri,x:x,issues:issuesBy[ri],score:sc*10+issuesBy[ri].length}); } });
   needRows.sort(function(a,b){return b.score-a.score;});
+  teamIssues.sort(function(a,b){return (b.sev||0)-(a.sev||0);});
+  var snz=vdSnoozeMap(), snoozed=0;
+  needRows.forEach(function(r){ r.sk='r:'+r.x.rep.name+'|'+r.x.rep.pub+'|'+WEEK; });
+  teamIssues.forEach(function(t){ t.sk='d:'+(t.id||t.title)+'|'+t.chip; });
+  var needAll=needRows, teamAll=teamIssues;
+  if(!VD_SNZ_SHOW){ needRows=needRows.filter(function(r){return !(snz[r.sk]>Date.now());}); teamIssues=teamIssues.filter(function(t){return !(snz[t.sk]>Date.now());}); }
+  snoozed=(needAll.length-needRows.length)+(teamAll.length-teamIssues.length);
+  if(VD_SNZ_SHOW){ snoozed=needAll.filter(function(r){return snz[r.sk]>Date.now();}).length+teamAll.filter(function(t){return snz[t.sk]>Date.now();}).length; }
 
   var h=''; var parts={};
   h='';
@@ -4135,11 +4170,11 @@ function renderVideoDesk(){
     var ad=a.due?a.due.d:99999, bd=b.due?b.due.d:99999; if(ad!==bd) return ad-bd; return String(a.t.created).localeCompare(String(b.t.created)); });
   var doneTasks=VD_TASKS.filter(function(t){return t.done&&!t.cleared;});
   var attn=needRows.length+teamIssues.length+openTasks.length+VD_HELP.length+quiet.length;
-  h+='<div class="vd-ne'+(attn?'':' clear')+'"><div class="vd-ne-head"><div class="vd-ne-title">Needs your eye</div>'+(attn?'<span class="vd-ne-count">'+attn+'</span>':'<span class="vd-ne-ok">✓ All clear</span>')+'</div>';
+  h+='<div class="vd-ne'+(attn?'':' clear')+'"><div class="vd-ne-head"><div class="vd-ne-title">Needs your eye</div>'+(attn?vdNeSummary(needRows,teamIssues,openTasks,quiet):'<span class="vd-ne-ok">✓ All clear</span>')+'</div>';
   if(VD_HELP.length){
     h+='<div class="vd-ne-group">Reporters asking for you</div>';
     VD_HELP.forEach(function(q){
-      h+='<div class="vd-help"><div class="vd-help-top"><b>'+esc(q.reporter)+'</b><span class="vd-iss red">'+esc(q.type||'Help')+'</span><span class="vd-help-slot">'+esc(vdSlotName(q.slot,q.pub))+(q.headline?' · '+esc(q.headline):'')+'</span><span class="vd-help-ago">'+vdAgo(q.ts||Date.now())+'</span></div>'+(q.note?'<div class="vd-help-note">'+esc(q.note)+'</div>':'')+'<div class="vd-help-act"><input id="vdhelp-in-'+esc(q.id)+'" placeholder="Reply (pings '+esc(vdFirst(q.reporter))+' in Slack)…" onkeydown="if(event.key===\'Enter\')vdResolveHelp(\''+esc(q.id)+'\')"><button class="vd-btn sm" onclick="vdResolveHelp(\''+esc(q.id)+'\')">Resolve</button></div></div>';
+      h+='<div class="vd-help"><div class="vd-help-top"><b>'+esc(q.reporter)+'</b><span class="vd-iss '+(q.type==='Book time with Nick'?'blue':'red')+'">'+esc(q.type||'Help')+'</span><span class="vd-help-slot">'+(q.slot?esc(q.label||vdSlotName(q.slot,q.pub))+(q.headline?' · '+esc(q.headline):''):'General request')+'</span><span class="vd-help-ago">'+vdAgo(q.ts||Date.now())+'</span></div>'+(q.note?'<div class="vd-help-note">'+esc(q.note)+'</div>':'')+'<div class="vd-help-act"><input id="vdhelp-in-'+esc(q.id)+'" placeholder="Reply (pings '+esc(vdFirst(q.reporter))+' in Slack)…" onkeydown="if(event.key===\'Enter\')vdResolveHelp(\''+esc(q.id)+'\')"><button class="vd-btn sm" onclick="vdResolveHelp(\''+esc(q.id)+'\')">Resolve</button></div></div>';
     });
   }
   if(quiet.length){
@@ -4148,20 +4183,14 @@ function renderVideoDesk(){
       h+='<div class="vd-ne-task"><div class="txt"><b>'+esc(s.title)+'</b> <span style="color:#A0A098">· '+esc(vdFirst(s.reporter))+' · quiet '+ss.idle+' days — keep it running?</span></div><button class="vd-btn ghost sm" onclick="vdKeepSeries(\''+esc(s.id)+'\')">Keep</button><button class="vd-btn warn sm" onclick="vdKillSeries(\''+esc(s.id)+'\')">End it</button></div>';
     });
   }
-  if(openTasks.length){
-    h+='<div class="vd-ne-group">Tasks</div>';
-    openTasks.forEach(function(o){
-      var t=o.t;
-      h+='<div class="vd-ne-task"><div class="vd-check-box" onclick="vdToggleTask(\''+esc(t.id)+'\',true)" title="Mark done"></div><div class="txt">'+esc(t.text)+'</div>'+(o.due?'<span class="vd-iss '+o.due.cls+'">'+esc(o.due.text)+'</span>':'')+(t.source==='slack'?'<span class="via">via Slack</span>':'')+'</div>';
-    });
-  }
   if(needRows.length){
     h+='<div class="vd-ne-group">Reporters</div>';
     var shownRows=VD_FLAGS_OPEN?needRows:needRows.slice(0,4);
     shownRows.forEach(function(r){
-      var rep=r.x.rep; var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000))||(ni0&&ni0.recent);
-      h+='<div class="vd-ne-row" onclick="vdJump('+r.ri+')"><div class="vd-ne-who"><b>'+esc(rep.name)+'</b><span>'+esc(rep.pub)+'</span></div><div class="vd-ne-chips">'+r.issues.map(function(i){return '<span class="vd-iss '+i.cls+'">'+esc(i.text)+'</span>';}).join('')+vdNudgeTag(rep)+'</div>';
+      var rep=r.x.rep; var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<24*3600*1000))||(ni0&&ni0.recent);
+      h+='<div class="vd-ne-row" onclick="vdJump('+r.ri+')"><div class="vd-ne-who"><b>'+esc(rep.name)+'</b><span>'+esc(rep.pub)+'</span></div><div class="vd-ne-chips">'+r.issues.map(function(i){return '<span class="vd-iss '+i.cls+'"'+(i.ttl?' title="'+esc(i.ttl)+'"':'')+'>'+esc(i.text)+(i.ttl?' <span class="ttl">· “'+esc(i.ttl)+'”</span>':'')+'</span>';}).join('')+vdNudgeTag(rep)+'</div><div class="vd-ne-acts">';
       if(r.x.problems.length) h+='<button class="vd-btn warn sm" data-nudge="'+r.ri+'"'+(nudged?' disabled':'')+' onclick="event.stopPropagation();vdNudge('+r.ri+')">'+(nudged?'Nudged ✓':'Nudge')+'</button>';
+      h+=vdSnoozeBtn(r.sk)+'</div>';
       h+='</div>';
     });
     if(needRows.length>4) h+='<div class="vd-ne-more" onclick="vdToggleFlags()">'+(VD_FLAGS_OPEN?'Show fewer':'Show '+(needRows.length-4)+' more reporter'+(needRows.length-4>1?'s':''))+'</div>';
@@ -4169,7 +4198,18 @@ function renderVideoDesk(){
   if(teamIssues.length){
     h+='<div class="vd-ne-group">Desk</div>';
     teamIssues.forEach(function(t){
-      h+='<div class="vd-ne-row" onclick="'+(t.act||('vdScrollTo(\''+t.target+'\')'))+'"><div class="vd-ne-who wide"><b>'+esc(t.title)+'</b></div><div class="vd-ne-chips"><span class="vd-iss '+t.cls+'">'+esc(t.chip)+'</span></div></div>';
+      var ac='';
+      if(t.acts==='shot') ac='<button class="vd-btn sm" onclick="event.stopPropagation();vdMarkShot(\''+esc(t.id)+'\')">Mark shot</button><input type="date" title="Move the shoot date" onclick="event.stopPropagation()" onchange="vdSetShoot(\''+esc(t.id)+'\',this.value)">';
+      else if(t.acts) ac='<button class="vd-btn sm" onclick="event.stopPropagation();vdAdvance(\''+esc(t.id)+'\')">'+esc(t.acts)+'</button>';
+      h+='<div class="vd-ne-row" onclick="'+(t.act||('vdScrollTo(\''+t.target+'\')'))+'"><div class="vd-ne-who wide"><b>'+esc(t.title)+'</b></div><div class="vd-ne-chips"><span class="vd-iss '+t.cls+'">'+esc(t.chip)+'</span></div><div class="vd-ne-acts">'+ac+vdSnoozeBtn(t.sk)+'</div></div>';
+    });
+  }
+  if(snoozed) h+='<div class="vd-ne-more" onclick="vdToggleSnz()">'+(VD_SNZ_SHOW?'Hide':'Show')+' '+snoozed+' snoozed</div>';
+  if(openTasks.length){
+    h+='<div class="vd-ne-group">Tasks</div>';
+    openTasks.forEach(function(o){
+      var t=o.t;
+      h+='<div class="vd-ne-task"><div class="vd-check-box" onclick="vdToggleTask(\''+esc(t.id)+'\',true)" title="Mark done"></div><div class="txt">'+esc(t.text)+'</div>'+(o.due?'<span class="vd-iss '+o.due.cls+'">'+esc(o.due.text)+'</span>':'')+(t.source==='slack'?'<span class="via">via Slack</span>':'')+'</div>';
     });
   }
   h+='<div class="vd-task-addlink"><button class="vd-lnkbtn'+(VD_ADD.task?' on':'')+'" id="vd-addbtn-task" onclick="vdAddToggle(\'task\')">+ Add a task</button></div><div class="vd-collapse'+(VD_ADD.task?' open':'')+'" id="vd-add-task">';
@@ -4239,7 +4279,7 @@ function renderVideoDesk(){
     h+='<textarea id="vdnote-text-'+ri+'" placeholder="Leave a note — pings '+esc(vdFirst(rep.name))+' in Slack"></textarea>';
     h+='<div><button class="vd-btn sm" id="vdnote-btn-'+ri+'" onclick="vdNote('+ri+')">Send note</button></div></div>';
     if(x.behind){
-      var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<4*3600*1000))||(ni0&&ni0.recent);
+      var nk=rep.name+'|'+WEEK; var ni0=vdNudgeInfo(rep); var nudged=(VD_NUDGED[nk]&&(Date.now()-VD_NUDGED[nk]<24*3600*1000))||(ni0&&ni0.recent);
       h+=vdNudgeTag(rep)+'<button class="vd-btn warn sm" data-nudge="'+ri+'"'+(nudged?' disabled':'')+' onclick="vdNudge('+ri+')">'+(nudged?'Nudged ✓':'Nudge: behind on video')+'</button>';
     }
     h+='</div></div></div>';
@@ -4420,6 +4460,7 @@ async function vdRemoveFormat(ci){
 //   videohelpdone:<id>:<ts> {id,reply,ts}   — written here when Nick resolves one.
 // Decisions and per-reporter feedback ride in the desk snapshot (VD.decisions, VD.feedback).
 var VD_HELP=[];
+function vdHelpWhat(q){ return (q.type==='Book time with Nick'?'time-with-Nick':(q.slot?String(q.label||vdSlotName(q.slot,q.pub)).toLowerCase():'help')); }
 async function vdLoadHelp(){
   try{
     var r=await supa.from('system_flags').select('key,value').like('key','videohelp%').order('key',{ascending:true}).limit(1000);
@@ -4471,7 +4512,7 @@ async function vdResolveHelp(id){
     var res=await supa.from('system_flags').insert({key:'videohelpdone:'+id+':'+Date.now(),value:JSON.stringify({id:id,reply:reply,ts:Date.now()})});
     if(res.error){ alert('Could not resolve that one. Try again.'); return; }
   }catch(e){ alert('Could not resolve that one. Try again.'); return; }
-  notifySlack(slackMention(q.reporter)+':clapper: '+(reply?'Reply from the Video Desk on your '+vdSlotName(q.slot).toLowerCase()+' request:\n>'+reply:'The Video Desk has picked up your '+vdSlotName(q.slot).toLowerCase()+' request.'));
+  notifySlack(slackMention(q.reporter)+':clapper: '+(reply?'Reply from Nick on your '+vdHelpWhat(q)+' request:\n>'+reply:'Nick has picked up your '+vdHelpWhat(q)+' request.'));
   VD_HELP=VD_HELP.filter(function(h){ return h.id!==id; });
   if(reply){ var prev=vdClone(); vdLog('Reply to '+vdFirst(q.reporter),(q.type||'Help')+': '+reply); await vdCommit(prev); } else renderVideoDesk();
 }
@@ -4853,7 +4894,9 @@ function vdNudge(ri){
     if(p.st==='overdue') return nm+(p.row&&p.row.headline?' (“'+p.row.headline+'”)':'')+' was due'+(p.row&&p.row.file_day?' '+p.row.file_day:'');
     return nm+" isn't planned yet";
   });
-  notifySlack(slackMention(x.rep.name)+':clapper: Nudge from the Video Desk — '+parts.join('; ')+". Shout if you're stuck.");
+  var nmsg='Nudge from the Video Desk — '+parts.join('; ')+". Shout if you're stuck.";
+  if(!confirm('Send this to '+x.rep.name+' on Slack?\n\n'+nmsg)) return;
+  notifySlack(slackMention(x.rep.name)+':clapper: '+nmsg);
   VD_NUDGED[x.rep.name+'|'+WEEK]=Date.now();
   var entry={reporter:x.rep.name,pub:x.rep.pub,week:WEEK,ts:Date.now(),slots:x.problems.map(function(p){return {n:p.n,st:p.st};})};
   VD_NUDGELOG.unshift(entry);
