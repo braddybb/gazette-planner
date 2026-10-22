@@ -123,9 +123,24 @@ var TPL = {}; TEMPLATES.forEach(function (t) { TPL[t.key] = t; });
 function buildPage(key, B, S, c) { var r = TPL[key].make(B, S, c || {}); return { id: uid(), tpl: key, content: c ? JSON.parse(JSON.stringify(c)) : null, bg: r.bg, els: r.els }; }
 
 // A ready-to-post carousel from one story's content: cover, three beats, quote or number, then the link slide.
+// Long beats are split across extra slides at sentence breaks rather than shortened.
+function splitBody(body, max) {
+  body = String(body || '').trim(); if (!body || body.split(/\s+/).length <= max) return [body];
+  var chunks = [], cur = '', words = 0;
+  body.split(/\n\n+/).forEach(function (para, pi) {
+    para.split(/(?<=[.!?]["\u201D\u2019]?)\s+(?=["\u201C\u2018]?[A-Z0-9$])/).forEach(function (sent, si) {
+      var w = sent.split(/\s+/).length;
+      if (cur && words + w > max) { chunks.push(cur); cur = ''; words = 0; }
+      cur += (cur ? (si === 0 && pi > 0 ? '\n\n' : ' ') : '') + sent; words += w;
+    });
+  });
+  if (cur) chunks.push(cur); return chunks;
+}
 function buildCarousel(B, S, c) {
   var pages = [buildPage(c.photo ? 'cover_photo' : 'cover_bars', B, S, c)];
-  (c.slides || []).slice(0, 3).forEach(function (s) { pages.push(buildPage('slide_panel', B, S, Object.assign({}, c, { label: s.label, body: s.body }))); });
+  (c.slides || []).slice(0, 3).forEach(function (s) {
+    splitBody(s.body, 95).forEach(function (part, i) { pages.push(buildPage('slide_panel', B, S, Object.assign({}, c, { label: i ? s.label + ' (cont.)' : s.label, body: part }))); });
+  });
   if (c.quote) pages.push(buildPage('quote_dark', B, S, c)); else if (c.stat) pages.push(buildPage('stat_card', B, S, c));
   pages.push(buildPage('slide_end', B, S, c));
   return pages;

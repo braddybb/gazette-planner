@@ -105,6 +105,8 @@ textarea{min-height:110px;resize:vertical;line-height:1.35}
   <select id="sizeSel" title="Size"></select>
   <button class="btn pri" id="autoBtn">Auto-fill from a story</button>
   <span class="sp"></span>
+  <button class="btn" id="openBtn" title="Open a saved draft">Open</button>
+  <button class="btn" id="saveBtn" title="Save this work as a file you can reopen later">Save draft</button>
   <button class="btn" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
   <button class="btn" id="redoBtn" title="Redo (Ctrl+Y)">Redo</button>
   <select id="exportSel" title="Export"><option value="">Export…</option><option value="png">This slide (PNG)</option><option value="zip">All slides (ZIP of PNGs)</option><option value="pdf">All slides (PDF)</option></select>
@@ -133,6 +135,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.35}
 </main>
 
 <input type="file" id="fileIn" accept="image/*" hidden>
+<input type="file" id="draftIn" accept=".json,application/json" hidden>
 
 <div class="modal" id="autoModal"><div class="box">
   <h2>Auto-fill from a story</h2>

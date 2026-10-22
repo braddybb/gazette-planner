@@ -25,12 +25,14 @@ function fitScale() {
   var w = $('cwrap').clientWidth - 36, h = $('cwrap').clientHeight - 36; if (window.innerWidth <= 960) h = 9999;
   SCALE = Math.max(0.05, Math.min(w / S().w, h / S().h, 1.2));
 }
-function drawAll(full) {
+function drawMain() {
   var P = PG(), cv = $('cv'); if (!P) return;
   fitScale(); if (cv.width !== S().w || cv.height !== S().h) { cv.width = S().w; cv.height = S().h; }
   cv.style.width = Math.round(S().w * SCALE) + 'px'; cv.style.height = Math.round(S().h * SCALE) + 'px';
-  var ctx = cv.getContext('2d'); ctx.clearRect(0, 0, S().w, S().h); renderPage(ctx, P, S(), true);
-  drawOverlay(); drawStrip(); if (full) { drawInspector(); drawLayers(); drawTemplates(); drawLogos(); }
+  var ctx = cv.getContext('2d'); ctx.clearRect(0, 0, S().w, S().h); renderPage(ctx, P, S(), true); drawOverlay();
+}
+function drawAll(full) {
+  if (!PG()) return; drawMain(); drawStrip(); if (full) { drawInspector(); drawLayers(); drawTemplates(); drawLogos(); }
 }
 function drawOverlay() {
   var ov = $('ov'), el = EL(); ov.innerHTML = '';
@@ -78,7 +80,7 @@ function down(ev) {
   else { var t = hit(p); if (!t) { SEL = null; drawAll(true); return; }
     if (SEL !== t.id) { SEL = t.id; drawInspector(); drawLayers(); }
     hist(); DRAG = { mode: 'move', start: p, orig: { x: t.x, y: t.y }, id: t.id, moved: false }; }
-  try { $('ov').setPointerCapture(ev.pointerId); } catch (e) { } drawAll(false); ev.preventDefault();
+  try { $('ov').setPointerCapture(ev.pointerId); } catch (e) { } drawMain(); ev.preventDefault();
 }
 function move(ev) {
   if (!DRAG) return; var el = EL(); if (!el) return; var p = pt(ev), dx = p.x - DRAG.start.x, dy = p.y - DRAG.start.y;
@@ -90,7 +92,7 @@ function move(ev) {
     if (w < 20) { if (h.indexOf('w') > -1) x -= 20 - w; w = 20; } if (hh < 20) { if (h.indexOf('n') > -1) y -= 20 - hh; hh = 20; }
     el.x = Math.round(x); el.y = Math.round(y); el.w = Math.round(w); el.h = Math.round(hh);
   }
-  drawAll(false);
+  drawMain();
 }
 function up() { if (!DRAG) return; var was = DRAG; DRAG = null; GUIDES = []; if (was.mode === 'move' && !was.moved) { HIST.pop(); updHist(); } drawAll(true); }
 
@@ -222,8 +224,8 @@ function rebuildAll() {
 function changeTheme(kind, val) {
   var tplPages = DOC.pages.filter(function (p) { return p.tpl; }).length;
   if (tplPages && !confirm('Switching ' + kind + ' rebuilds the template slides, so any manual edits on them will be reset (you can Undo).')) { syncTop(); return; }
-  hist(); DOC[kind === 'masthead' ? 'brand' : 'size'] = val; $('tplList').dataset.k = ''; DOC.pages.forEach(function (p) { if (!p.tpl) { p.bg = p.bg; } });
-  if (kind === 'masthead') DOC.pages.forEach(function (p) { if (!p.tpl && p.bg) p.bg = B().primary; });
+  hist(); var old = S(); DOC[kind === 'masthead' ? 'brand' : 'size'] = val; $('tplList').dataset.k = '';
+  if (kind === 'size') { var sx = S().w / old.w, sy = S().h / old.h, sm = Math.min(sx, sy); DOC.pages.forEach(function (p) { if (p.tpl) return; p.els.forEach(function (e) { e.x = Math.round(e.x * sx); e.w = Math.round(e.w * sx); e.y = Math.round(e.y * sy); e.h = Math.round(e.h * sy); if (e.size) e.size = Math.round(e.size * sm); }); }); }
   rebuildAll(); syncTop();
 }
 
@@ -242,6 +244,17 @@ async function doExport(kind) {
     else if (kind === 'pdf') { if (!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); var w = S().w, h = S().h, pdf = new jspdf.jsPDF({ orientation: w > h ? 'l' : 'p', unit: 'px', format: [w, h], hotfixes: ['px_scaling'] }); for (var j = 0; j < DOC.pages.length; j++) { if (j) pdf.addPage([w, h], w > h ? 'l' : 'p'); pdf.addImage((await pageCanvas(DOC.pages[j])).toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, w, h); } dl(pdf.output('blob'), baseName() + '.pdf'); }
   } catch (e) { alert('Export failed: ' + e.message); }
   sel.value = ''; sel.disabled = false;
+}
+
+// ── save / open a draft file (includes uploaded photos) ─────────────────────
+function saveDraft() {
+  var used = {}; DOC.pages.forEach(function (p) { p.els.forEach(function (e) { if (e.type === 'image' && e.src && e.src.indexOf('u:') === 0) used[e.src.slice(2)] = UPL[e.src.slice(2)]; }); DOC.pages.forEach(function (pp) { if (pp.content && pp.content.photo && pp.content.photo.indexOf('u:') === 0) used[pp.content.photo.slice(2)] = UPL[pp.content.photo.slice(2)]; }); });
+  var blob = new Blob([JSON.stringify({ studio: 1, doc: JSON.parse(snap()), uploads: used })], { type: 'application/json' }); dl(blob, baseName() + '.studio.json');
+}
+function openDraft() {
+  var f = $('draftIn'); f.value = ''; f.onchange = function () {
+    var r = new FileReader(); r.onload = function () { try { var o = JSON.parse(r.result); if (!o.studio || !o.doc) throw 0; hist(); Object.keys(o.uploads || {}).forEach(function (k) { UPL[k] = o.uploads[k]; delete IMGC['u:' + k]; }); restore(JSON.stringify(o.doc)); $('tplList').dataset.k = ''; drawAll(true); } catch (e) { alert('That isn\u2019t a Studio draft file.'); } }; if (f.files[0]) r.readAsText(f.files[0]);
+  }; f.click();
 }
 
 // ── auto-fill ────────────────────────────────────────────────────────────────
@@ -295,13 +308,14 @@ function init() {
   $('brandSel').onchange = function () { changeTheme('masthead', this.value); }; $('sizeSel').onchange = function () { changeTheme('size', this.value); };
   $('autoBtn').onclick = openAuto; $('afCancel').onclick = function () { $('autoModal').classList.remove('on'); }; $('afGo').onclick = runAuto;
   $('afPlanner').onchange = function () { var i = this.value; if (i === '') return; var b = brandFromPub(PLANNER[+i].publication); if (b) $('afBrand').value = b; };
+  $('saveBtn').onclick = saveDraft; $('openBtn').onclick = openDraft;
   $('undoBtn').onclick = undo; $('redoBtn').onclick = redo; $('exportSel').onchange = function () { doExport(this.value); };
   document.querySelectorAll('.tabs button').forEach(function (b) { b.onclick = function () { document.querySelectorAll('.tabs button').forEach(function (x) { x.classList.toggle('on', x === b); }); document.querySelectorAll('.pane').forEach(function (p) { p.classList.toggle('on', p.id === 'pane-' + b.dataset.tab); }); if (b.dataset.tab === 'tpl') drawTemplates(); if (b.dataset.tab === 'layers') drawLayers(); }; });
   $('applyMode').onclick = function (e) { var m = e.target.dataset && e.target.dataset.m; if (!m) return; MODE = m; this.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.m === m); }); };
   var ov = $('ov'); ov.addEventListener('pointerdown', down); ov.addEventListener('pointermove', move); ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
   ov.addEventListener('dblclick', function (ev) { var t = hit(pt(ev)); if (t && t.type === 'text') { SEL = t.id; drawAll(true); var ti = $('txtIn'); if (ti) { ti.focus(); ti.select(); } } else if (t && t.type === 'image' && !t.logo) { SEL = t.id; drawAll(true); var ir = $('imgReplace'); if (ir) ir.click(); } });
   var cb = $('cvbox'); cb.addEventListener('dragover', function (e) { e.preventDefault(); }); cb.addEventListener('drop', function (e) { e.preventDefault(); var f = e.dataTransfer.files[0]; if (!f || !/^image\//.test(f.type)) return; var t = hit(pt(e)); readImage(f, function (ref) { hist(); if (t && t.type === 'image' && !t.logo) { t.src = ref; SEL = t.id; } else { var s0 = Math.round(S().w * 0.5), n = img({ src: ref, x: Math.round(S().w * 0.25), y: Math.round(S().h * 0.25), w: s0, h: Math.round(s0 * 0.75) }); PG().els.push(n); SEL = n.id; } drawAll(true); }); });
-  $('inspector').addEventListener('input', onInspect); $('inspector').addEventListener('click', onInspect); $('inspector').addEventListener('change', onInspect);
+  $('inspector').addEventListener('input', onInspect); $('inspector').addEventListener('click', onInspect);
   document.addEventListener('keydown', function (e) {
     var tg = e.target.tagName; if (tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT') return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; } if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
