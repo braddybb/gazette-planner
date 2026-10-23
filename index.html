@@ -3807,6 +3807,7 @@ refreshNoteDot(num);
 }
 
 let _lastFiledCount = 0;
+let _wasComplete = false;
 let _progressInitialised = false;
 const RING_CIRC = 175.93; // 2*pi*28
 
@@ -3852,20 +3853,34 @@ const extrasFiled = extras.filter(e => e.data.filed).length;
 const grandTotal = baseTotal + extrasFiled;
 
 // Extras (assigned stories, cover for a sick colleague) count toward the week, same as the big number
-const tgt = awayTarget(baseCount); // scaled down for days away
-const pct = tgt ? Math.round(Math.min(grandTotal / tgt, 1) * 100) : (AWAY_DAYS >= 5 ? 0 : 100);
+// Away days scale down the written stories only. Video is never scaled — every video slot
+// still has to be filed, and extra written stories can't stand in for a missing video.
+const isNatPub = STORIES.some(s => s.lbl === 'YouTube');
+const isVidSlot = s => s.t === 'vidfirst' || s.t === 'vidflip' || s.t === 'vidimp' || s.lbl === 'YouTube' || (isNatPub && s.t === 'imp');
+const vidSlots = STORIES.map((s,i) => isVidSlot(s) ? i : -1).filter(i => i >= 0);
+const vidTotal = vidSlots.length;
+const vidFiled = vidSlots.filter(i => stories[i].filed).length;
+const vidLeft = vidTotal - vidFiled;
+const fullyAway = AWAY_DAYS >= 5;
+const otherBase = baseCount - vidTotal;
+const otherTgt = fullyAway ? 0 : awayTarget(otherBase);
+const otherFiled = (baseTotal - vidFiled) + extrasFiled;
+const tgt = fullyAway ? 0 : vidTotal + otherTgt;
+const doneTowards = vidFiled + Math.min(otherFiled, otherTgt);
+const allDone = tgt > 0 && vidLeft === 0 && otherFiled >= otherTgt;
+const pct = tgt ? Math.round(Math.min(doneTowards / tgt, 1) * 100) : (fullyAway ? 0 : 100);
 
 // Display: show grand total if there are extras, otherwise just base
 document.getElementById('prog-count').textContent = grandTotal;
 document.getElementById('prog-pct').textContent   = pct + '%';
 const progLabel = document.querySelector('.prog-label');
-if (progLabel) progLabel.textContent = AWAY_DAYS >= 5 ? 'away this week' : 'of ' + tgt + ' filed this week' + (AWAY_DAYS ? ' (away ' + AWAY_DAYS + ' day' + (AWAY_DAYS > 1 ? 's' : '') + ')' : '');
+if (progLabel) progLabel.textContent = AWAY_DAYS >= 5 ? 'away this week' : 'of ' + tgt + ' filed this week' + (AWAY_DAYS ? ' (away ' + AWAY_DAYS + ' day' + (AWAY_DAYS > 1 ? 's' : '') + ', video target unchanged)' : '') + (!fullyAway && vidLeft ? ' \u00b7 ' + vidLeft + ' video still to file' : '');
 
 // Ring: same total as the number beside it (base stories + extras filed)
 const ring = document.getElementById('prog-ring-fill');
 if (ring) {
-ring.style.strokeDashoffset = RING_CIRC * (1 - (tgt ? Math.min(grandTotal / tgt, 1) : 0));
-ring.classList.toggle('complete', tgt > 0 && grandTotal >= tgt);
+ring.style.strokeDashoffset = RING_CIRC * (1 - (tgt ? Math.min(doneTowards / tgt, 1) : 0));
+ring.classList.toggle('complete', allDone);
 }
 
 // Video-first / video-flip pills only show for publications that have them
@@ -3939,7 +3954,7 @@ renderGlanceDots(stories);
 const pbMsg = updatePB(grandTotal);
 
 // Celebration on reaching the full weekly count (planned stories + extras such as assigned or cover stories)
-if (tgt > 0 && grandTotal >= tgt && _progressInitialised && _lastFiledCount < tgt && !opts.silent) {
+if (allDone && !_wasComplete && _progressInitialised && !opts.silent) {
 celebrateComplete(pbMsg);
 bumpStreak();
 awardGoldStar();
@@ -3951,6 +3966,7 @@ awardAboveBeyond();
 }
 
 _lastFiledCount = grandTotal;
+_wasComplete = allDone;
 _progressInitialised = true;
 renderBadges();
 }
