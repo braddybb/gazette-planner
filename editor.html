@@ -888,6 +888,8 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .vd-wp-lnk{font-size:11.5px;font-weight:600;color:#9A9A92;cursor:pointer;white-space:nowrap;flex:none}.vd-wp-lnk:hover{color:#C2410C;text-decoration:underline}
 .vd-wp-ok{margin-left:auto;font-size:12px;font-weight:600;color:#2E6B4F}
 .vd-wp-chk{width:20px;height:20px;border:1.5px solid #C9C9C0;border-radius:5px;background:#fff;cursor:pointer;flex:none;font-size:12px;color:#fff;line-height:1;padding:0}.vd-wp-chk.on{background:#2E6B4F;border-color:#2E6B4F}
+.vd-wp-done{font:inherit;font-size:12px;font-weight:700;padding:5px 11px;border-radius:8px;border:1.5px solid #2E6B4F;background:#fff;color:#2E6B4F;cursor:pointer;flex:none;white-space:nowrap}.vd-wp-done:hover{background:#EAF4EE}.vd-wp-done.on{background:#2E6B4F;color:#fff}
+.vd-wp-all{margin-left:10px;font-size:11px;font-weight:700;text-transform:none;letter-spacing:0;color:#2E6B4F;cursor:pointer}.vd-wp-all:hover{text-decoration:underline}
 .vd-wp-why{display:flex;gap:8px;align-items:center;padding:6px 0 8px 19px;font-size:12px;color:#C2410C}.vd-wp-why input{flex:1;font-family:inherit;font-size:12.5px;border:1px dashed #E8C3B3;background:#FFFAF7;border-radius:8px;padding:6px 10px}
 @media(max-width:700px){.vd-wp-row{flex-wrap:wrap}.vd-wp-how{flex:1 1 100%}}
 
@@ -5025,6 +5027,11 @@ function vdPlanItems(info){
 function vdPlanSave(){ clearTimeout(VD_PLAN_SAVE_T); VD_PLAN_SAVE_T=setTimeout(function(){ saveVD(); },600); }
 function vdPlanSet(id,k,v){ if(k==='done'&&id.indexOf('task:')===0){ vdToggleTask(id.slice(5),!!v); return; } var P=vdPlanOf(WEEK); if(!P.state[id]) P.state[id]={}; P.state[id][k]=v;
   if(k==='done'&&(id.indexOf('chk:')===0||id==='linkedin')){ if(!VD.checklist[WEEK]) VD.checklist[WEEK]={}; VD.checklist[WEEK][id==='linkedin'?'brandpub':id.slice(4)]=!!v; } vdPlanSave(); if(k==='day'||k==='done') renderVideoDesk(); }
+function vdPlanDoneAll(g){ var P=vdPlanOf(WEEK); vdPlanItems(VD_INFO).forEach(function(i){ if(i.grp!==g||i.done||i.skip||i.away) return;
+    if(i.id.indexOf('task:')===0){ vdToggleTask(i.id.slice(5),true); return; }
+    if(!P.state[i.id]) P.state[i.id]={}; P.state[i.id].done=true;
+    if(i.id.indexOf('chk:')===0||i.id==='linkedin'){ if(!VD.checklist[WEEK]) VD.checklist[WEEK]={}; VD.checklist[WEEK][i.id==='linkedin'?'brandpub':i.id.slice(4)]=true; } });
+  vdPlanSave(); renderVideoDesk(); }
 function vdPlanSkip(id,on){ var P=vdPlanOf(WEEK); if(!P.state[id]) P.state[id]={}; P.state[id].skip=on; if(!on) delete P.state[id].why; VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); if(on){ var el=document.querySelector('.vd-wp-skipwhy input[data-i="'+id+'"]'); if(el) el.focus(); } }
 function vdPlanAway(name,pub){ openAwayModal(name,pub); }
 function vdPlanToggle(){ VD_PLAN_OPEN=!VD_PLAN_OPEN; renderVideoDesk(); }
@@ -5061,7 +5068,8 @@ function vdPlanHtml(info,ds){
     var grps=[]; items.forEach(function(i){ if(grps.indexOf(i.grp)<0) grps.push(i.grp); });
     grps.forEach(function(g){
       var gi=items.filter(function(i){return i.grp===g;});
-      h+='<div class="vd-wp-grp">'+esc(g)+' <span>'+gi.filter(function(i){return i.done&&!i.away;}).length+'/'+gi.filter(function(i){return !i.away&&!i.skip;}).length+'</span></div>';
+      var openIds=gi.filter(function(i){return !i.done&&!i.skip&&!i.away;}).map(function(i){return i.id;});
+      h+='<div class="vd-wp-grp">'+esc(g)+' <span>'+gi.filter(function(i){return i.done&&!i.away;}).length+'/'+gi.filter(function(i){return !i.away&&!i.skip;}).length+'</span>'+(openIds.length>1?'<a class="vd-wp-all" onclick="vdPlanDoneAll(this.dataset.g)" data-g="'+esc(g).replace(/"/g,'&quot;')+'">Mark all done</a>':'')+'</div>';
       gi.forEach(function(i){
         var dot={done:'#2E6B4F',today:'#B7791F',slipped:'#C2410C',missed:'#C2410C',planned:'#9AA7D6',unplanned:'#D5D5CE',away:'#D5D5CE',skipped:'#B0B0A8'}[i.st];
         var idq=esc(i.id).replace(/'/g,'&#39;');
@@ -5072,7 +5080,7 @@ function vdPlanHtml(info,ds){
         else{
           h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+DAYS.map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
           h+='<input class="vd-wp-how" data-i="'+idq+'" value="'+esc(i.how)+'" placeholder="Note (optional)" onchange="vdPlanSet(this.dataset.i,\'how\',this.value)">';
-          h+='<button class="vd-wp-chk'+(i.done?' on':'')+'" title="Mark done" onclick="vdPlanSet(this.dataset.i,\'done\','+(i.done?'false':'true')+')" data-i="'+idq+'">'+(i.done?'✓':'')+'</button>';
+          h+='<button class="vd-wp-done'+(i.done?' on':'')+'" title="'+(i.done?'Click to undo':'Mark this as done')+'" onclick="vdPlanSet(this.dataset.i,\'done\','+(i.done?'false':'true')+')" data-i="'+idq+'">'+(i.done?'✓ Done':'Mark done')+'</button>';
           if(i.rep) h+='<a class="vd-wp-lnk" onclick="vdPlanAway(this.dataset.n,this.dataset.p)" data-n="'+esc(i.rep.name)+'" data-p="'+esc(i.rep.pub)+'" title="Mark '+esc(vdFirst(i.rep.name))+' as away">Away</a>';
           if(!i.done) h+='<a class="vd-wp-lnk" onclick="vdPlanSkip(this.dataset.i,true)" data-i="'+idq+'" title="Mark as not happening this week">Won’t happen</a>';
           if(i.custom) h+='<button class="vd-snz" onclick="vdPlanDel(this.dataset.i)" data-i="'+idq+'" title="Remove">×</button>';
