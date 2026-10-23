@@ -129,8 +129,11 @@ async function awayFull(week) {
   } catch { return new Set(); }
 }
 async function context(VD, week) {
-  const rows = await sget(`planner_stories?select=reporter,story_num,filed,file_day,headline&week_of=eq.${week}&story_num=in.(04,07)`);
-  const impactFiled = new Set(rows.filter((r) => r.filed).map((r) => r.reporter));
+  // The Impact video is slot 04 for the local mastheads and slot 07 for National Account.
+  // (Slot 07 on a local masthead is an ordinary story, so it must not count.)
+  const all = await sget(`planner_stories?select=reporter,publication,story_num,filed,file_day,headline&week_of=eq.${week}&story_num=in.(04,07)`);
+  const rows = all.filter((r) => (/national/i.test(r.publication || "") ? parseInt(r.story_num, 10) === 7 : parseInt(r.story_num, 10) === 4));
+  const impactFiled = new Set(rows.filter((r) => r.filed === true).map((r) => r.reporter));
   const flags = await sget("system_flags?select=key,value&key=like.videotask%25&order=key.asc&limit=1000");
   const done = {};
   flags.forEach((f) => { if (f.key.startsWith("videotaskdone:")) { try { const v = JSON.parse(f.value); done[v.id] = !!v.done; } catch {} } });
