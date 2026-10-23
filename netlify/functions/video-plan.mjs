@@ -42,6 +42,15 @@ export default async (req) => {
   let ok = false; try { ok = await signedIn(token); } catch { ok = false; }
   if (!ok) return json({ error: "not signed in" }, 401);
   let b; try { b = await req.json(); } catch { return json({ error: "bad json" }, 400); }
+  if (b && b.type === "wrap") {   // Nick's end-of-week wrap → DM to the editorial director
+    const text = String(b.text || "").slice(0, 3500), to = process.env.CHEF_SLACK_ID;
+    if (!text.trim() || !BOT_TOKEN || !to) return json({ ok: true, sent: false });
+    try {
+      const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST", headers: { Authorization: `Bearer ${BOT_TOKEN}`, "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify({ channel: to, text: ":clipboard: *End-of-week wrap from Nick*\n" + text, unfurl_links: false }) });
+      const j = await r.json(); if (!j.ok) console.warn("video-plan wrap DM:", j.error);
+      return json({ ok: true, sent: !!j.ok });
+    } catch (e) { console.warn("video-plan wrap failed", e); return json({ ok: true, sent: false }); }
+  }
   const items = cleanItems(b && b.items), week = clip(b && b.week, 10);
   if (!items.length || !/^\d{4}-\d{2}-\d{2}$/.test(week)) return json({ error: "bad request" }, 400);
   const to = process.env.CHEF_SLACK_ID;
