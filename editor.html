@@ -19,7 +19,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3037,7 +3036,7 @@ async function loadProgressData() {
   try {
     const rows = await supaFetch(
       TABLE + '?week_of=gte.' + encodeURIComponent(oldest) +
-      '&filed=eq.true&select=reporter,publication,week_of'
+      '&filed=eq.true&select=reporter,publication,week_of,story_num'
     );
     if (!rows) return {};
     // Build: { "Name|Pub": { weekStr: filedCount, ... }, ... }
@@ -3046,6 +3045,9 @@ async function loadProgressData() {
       const key = r.reporter + '|' + r.publication;
       if (!byReporter[key]) byReporter[key] = {};
       byReporter[key][r.week_of] = (byReporter[key][r.week_of] || 0) + 1;
+      // Video slots (local: 01–04; National Account: 01, 02, 07) are tracked separately — away days never reduce them.
+      var sn = parseInt(r.story_num, 10), nat = /national/i.test(r.publication || '');
+      if (nat ? (sn === 1 || sn === 2 || sn === 7) : (sn >= 1 && sn <= 4)) byReporter[key]['v:' + r.week_of] = (byReporter[key]['v:' + r.week_of] || 0) + 1;
     });
     return { byReporter, weeks };
   } catch(e) {
@@ -3095,9 +3097,16 @@ function renderProgressSection(data) {
     const rData = byReporter[key] || {};
     const maxBar = getStoryDefs(r.pub).length; // 8 for National Account, 10 for local mastheads
     const awayWk = weeks.map(w => awayInfo(r.name, r.pub, w));
-    // Weeks fully away are left out of the average and trend; part-away weeks are scaled to their target.
-    const counts = weeks.map((w, i) => awayWk[i].full ? null : Math.min(maxBar, Math.round((rData[w] || 0) * 5 / awayWk[i].avail)));
-    const live = counts.filter(c => c !== null);
+    // Weeks fully away are left out of the average and trend; in part-away weeks only the written stories are scaled — video is never scaled.
+    const nat = /national/i.test(r.pub || ''), vidTot = nat ? 3 : 4;
+    // Video counts at full value; only the written stories are scaled for days away.
+    const counts = weeks.map((w, i) => {
+      if (awayWk[i].full) return null;
+      const tot = rData[w] || 0, vid = Math.min(vidTot, rData['v:' + w] || 0), oth = Math.max(0, tot - vid);
+      return vid + Math.min(maxBar - vidTot, Math.round(oth * 5 / awayWk[i].avail));
+    });
+    // The week in progress is left out of the average and trend — it's always incomplete, so on a Monday it would read 0 and flag everyone as declining.
+    const live = counts.slice(0, -1).filter(c => c !== null);
     const avg = live.length ? (live.reduce((a,b)=>a+b,0) / live.length) : 0;
     const recent = live.slice(-3);
     const earlier = live.slice(0, -3);
