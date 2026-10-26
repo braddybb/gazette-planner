@@ -18,7 +18,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -886,6 +885,11 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
 
 /* Distribution gate warning */
+.story-card.is-unsaved{box-shadow:0 0 0 2px #E8A58C}
+.unsaved-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#C2410C;color:#fff;letter-spacing:.02em}
+.story-card.is-unsaved .dist-warning[id^=gate-warn]{background:#FFF1EA;border-color:#E8A58C;color:#9A3412;font-weight:600}
+.cxgroup.need-day{outline:2px solid #E8A58C;outline-offset:4px;border-radius:6px;background:#FFF8F4}
+.gate-banner{position:sticky;top:0;z-index:30;background:#C2410C;color:#fff;border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.5}.gate-banner a{color:#fff;text-decoration:underline;cursor:pointer;margin-right:10px;font-weight:600}
 .dist-warning{font-size:12.5px;color:#9A4400;background:#FFF7ED;border:1px solid #FFE0B8;border-radius:8px;padding:9px 12px;margin-top:8px;line-height:1.5;display:none}
 .dist-warning.shake{animation:distShake .4s ease}
 @keyframes distShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
@@ -4263,9 +4267,9 @@ const type = planCardType(num);
 const noDay = type !== 'poll' && !st.file_day;
 const noAngle = !((st.angle && st.angle.trim()) || (st.notes && st.notes.trim()));
 if (!noDay && !noAngle) return null;
-if (noDay && noAngle) return 'This card won\u2019t save yet — pick the day you\u2019ll file it and add something to Angle or Notes.';
-if (noDay) return 'This card won\u2019t save yet — pick the day you\u2019ll file it' + (type === 'newsletter' ? ' (send day)' : '') + '.';
-return 'This card won\u2019t save yet — add something to Angle or Notes.';
+if (noDay && noAngle) return 'Not saved yet — only you can see this card. Pick the day you\u2019ll file it and add something to Angle or Notes, and it will save.';
+if (noDay) return 'Not saved yet — only you can see this card. Pick the day you\u2019ll file it' + (type === 'newsletter' ? ' (send day)' : '') + ' and it will save.';
+return 'Not saved yet — only you can see this card. Add something to Angle or Notes and it will save.';
 }
 function draftKey(num) { return 'gz_draft|' + USER.name + '|' + USER.pub + '|' + WEEK + '|' + num; }
 function showPlanGate(num, msg) {
@@ -4282,12 +4286,44 @@ row.parentNode.insertBefore(el, row);
 }
 el.textContent = msg;
 el.style.display = 'block';
+updateGateUI();
 }
 function clearPlanGate(num) {
 delete PLAN_BLOCKED[num];
 try { localStorage.removeItem(draftKey(num)); } catch(e) {}
 const el = document.getElementById('gate-warn-' + num);
 if (el) el.style.display = 'none';
+updateGateUI();
+}
+// Make unsaved cards impossible to miss: a red tag on the card, a highlighted day picker,
+// and a banner at the top of the page listing every card that editors can't see yet.
+function updateGateUI() {
+  const nums = Object.keys(PLAN_BLOCKED);
+  document.querySelectorAll('.story-card.is-unsaved').forEach(c => { const n = c.id.replace('card-', ''); if (!PLAN_BLOCKED[n]) { c.classList.remove('is-unsaved'); const t = document.getElementById('unsaved-' + n); if (t) t.remove(); document.querySelectorAll('input[name="day' + n + '"]').forEach(i => { const g = i.closest('.cxgroup'); if (g) g.classList.remove('need-day'); }); } });
+  nums.forEach(n => {
+    const card = document.getElementById('card-' + n); if (!card) return;
+    card.classList.add('is-unsaved');
+    if (!document.getElementById('unsaved-' + n)) {
+      const chev = document.getElementById('chev-' + n), tag = document.createElement('span');
+      tag.id = 'unsaved-' + n; tag.className = 'unsaved-pill'; tag.textContent = 'Not saved';
+      if (chev && chev.parentNode) chev.parentNode.insertBefore(tag, chev);
+    }
+    const st = DATA[n] || {};
+    document.querySelectorAll('input[name="day' + n + '"]').forEach(i => { const g = i.closest('.cxgroup'); if (g) g.classList.toggle('need-day', !st.file_day && planCardType(n) !== 'poll'); });
+  });
+  let b = document.getElementById('gate-banner');
+  if (!nums.length) { if (b) b.remove(); return; }
+  if (!b) {
+    const ref = document.getElementById('stories-container'); if (!ref || !ref.parentNode) return;
+    b = document.createElement('div'); b.id = 'gate-banner'; b.className = 'gate-banner'; ref.parentNode.insertBefore(b, ref);
+  }
+  b.innerHTML = '<b>' + nums.length + ' card' + (nums.length > 1 ? 's aren\u2019t' : ' isn\u2019t') + ' saved yet.</b> Your editors can\u2019t see ' + (nums.length > 1 ? 'them' : 'it') + ' until each has a day and something in Angle or Notes. Jump to: ' +
+    nums.map(n => '<a onclick="gateJump(\'' + n + '\')">' + (/^\d+$/.test(n) ? '#' + n : esc(n)) + (DATA[n] && DATA[n].headline ? ' \u00b7 ' + esc(String(DATA[n].headline).slice(0, 28)) : '') + '</a>').join(' ');
+}
+function gateJump(n) {
+  const card = document.getElementById('card-' + n), body = document.getElementById('body-' + n);
+  if (body && !body.classList.contains('open') && typeof toggleCard === 'function') toggleCard(n);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 // Run the gate; returns true if the save may go ahead.
 function planGateAllows(num) {
