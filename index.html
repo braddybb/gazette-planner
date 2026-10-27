@@ -885,11 +885,13 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 
 
 /* Distribution gate warning */
-.story-card.is-unsaved{box-shadow:0 0 0 2px #E8A58C}
-.unsaved-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#C2410C;color:#fff;letter-spacing:.02em}
-.story-card.is-unsaved .dist-warning[id^=gate-warn]{background:#FFF1EA;border-color:#E8A58C;color:#9A3412;font-weight:600}
-.cxgroup.need-day{outline:2px solid #E8A58C;outline-offset:4px;border-radius:6px;background:#FFF8F4}
-.gate-banner{position:sticky;top:0;z-index:30;background:#C2410C;color:#fff;border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.5}.gate-banner a{color:#fff;text-decoration:underline;cursor:pointer;margin-right:10px;font-weight:600}
+.story-card.is-unsaved{box-shadow:0 0 0 2px #F2B66B}
+.unsaved-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#FFE0B8;color:#8A3B00;letter-spacing:.02em;white-space:nowrap}
+.cxgroup.need-day{outline:2px solid #F2B66B;outline-offset:4px;border-radius:6px;background:#FFF7ED}
+.gate-banner{max-width:1400px;margin:.75rem auto 0;padding:0 2rem}
+.gate-banner .gb{background:#FFF7ED;border:1px solid #FFE0B8;color:#8A3B00;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.6}
+.gate-banner .gb b{color:#8A3B00}
+.gate-banner a{display:inline-block;background:#fff;border:1px solid #F2B66B;color:#8A3B00;border-radius:999px;padding:1px 10px;margin:2px 4px 2px 0;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none}.gate-banner a:hover{background:#FFE0B8}
 .dist-warning{font-size:12.5px;color:#9A4400;background:#FFF7ED;border:1px solid #FFE0B8;border-radius:8px;padding:9px 12px;margin-top:8px;line-height:1.5;display:none}
 .dist-warning.shake{animation:distShake .4s ease}
 @keyframes distShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
@@ -4317,8 +4319,8 @@ function updateGateUI() {
     const ref = document.getElementById('stories-container'); if (!ref || !ref.parentNode) return;
     b = document.createElement('div'); b.id = 'gate-banner'; b.className = 'gate-banner'; ref.parentNode.insertBefore(b, ref);
   }
-  b.innerHTML = '<b>' + nums.length + ' card' + (nums.length > 1 ? 's aren\u2019t' : ' isn\u2019t') + ' saved yet.</b> Your editors can\u2019t see ' + (nums.length > 1 ? 'them' : 'it') + ' until each has a day and something in Angle or Notes. Jump to: ' +
-    nums.map(n => '<a onclick="gateJump(\'' + n + '\')">' + (/^\d+$/.test(n) ? '#' + n : esc(n)) + (DATA[n] && DATA[n].headline ? ' \u00b7 ' + esc(String(DATA[n].headline).slice(0, 28)) : '') + '</a>').join(' ');
+  b.innerHTML = '<div class="gb"><b>' + nums.length + ' card' + (nums.length > 1 ? 's aren\u2019t' : ' isn\u2019t') + ' saved yet.</b> Editors can\u2019t see ' + (nums.length > 1 ? 'them' : 'it') + ' until each has a day and something in Angle or Notes. ' +
+    nums.sort().map(n => '<a title="' + esc(DATA[n] && DATA[n].headline ? DATA[n].headline : '') + '" onclick="gateJump(\'' + n + '\')">#' + esc(n) + '</a>').join('') + '</div>';
 }
 function gateJump(n) {
   const card = document.getElementById('card-' + n), body = document.getElementById('body-' + n);
