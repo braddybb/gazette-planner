@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // /assign  —  Slack slash command that drops an "Editor assignment" card into a
-// reporter's Planner, under Extra stories, in the current week.
+// reporter's Planner, under Extra stories, in the chosen week (defaults to this week).
 //
 // One Netlify function handles both halves of the Slack round-trip:
 //   • the /assign slash command  → opens a modal (reporter + headline + notes)
@@ -25,28 +25,7 @@ const SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
 const BOT_TOKEN      = process.env.SLACK_BOT_TOKEN;                 // xoxb-… (scopes: commands, chat:write)
 const SUPABASE_URL   = process.env.SUPABASE_URL || "https://asgyshkafnrqknnmkbfo.supabase.co";
 const SERVICE_KEY    = process.env.SUPABASE_SERVICE_ROLE_KEY;      // secret — server only
-const WEBHOOK_URL    = process.env.SLACK_WEBHOOK_URL;             // Incoming Webhook → #editorial (same one the Planner uses)
 const TABLE = "planner_stories";
-
-// Reporter → Slack member ID, mirrored from the Editor Dashboard so the ping @mentions them.
-const REPORTER_SLACK_IDS = {
-  "Zara Cuthbertson": "U08LY1YR6E8",
-  "Matthew Sims":     "U07SHH3RB46",
-  "Jacob Wallace":    "U08DG9R5A6R",
-  "Huw Bradshaw":     "U08P2C7862Z",
-  "Darcie Humphreys": "U0AFJML3A1G",
-  "Douglas Connor":   "U0B71KH9Y0K",
-  "Archie Milligan":  "U08DQ26CEE7",
-};
-function slackMention(name) {
-  if (!name) return "";
-  if (REPORTER_SLACK_IDS[name]) return "<@" + REPORTER_SLACK_IDS[name] + "> ";
-  const n = name.trim().toLowerCase();
-  for (const k in REPORTER_SLACK_IDS) if (k.toLowerCase() === n) return "<@" + REPORTER_SLACK_IDS[k] + "> ";
-  const surname = n.split(/\s+/).pop();
-  for (const k in REPORTER_SLACK_IDS) if (k.toLowerCase().split(/\s+/).pop() === surname) return "<@" + REPORTER_SLACK_IDS[k] + "> ";
-  return "";
-}
 
 // ── pure helpers (unit-tested) ───────────────────────────────────────────────
 function verifySlack(rawBody, sig, ts, secret = SIGNING_SECRET) {
@@ -64,6 +43,18 @@ function mondayOfNow(now = new Date()) {
   const day = dt.getUTCDay();                 // 0 Sun … 6 Sat
   dt.setUTCDate(dt.getUTCDate() + (day === 0 ? -6 : 1 - day));
   return dt.toISOString().slice(0, 10);
+}
+
+function addDays(ymd, n) { const [y, m, d] = ymd.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); }
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function weekLabel(ymd) { const [y, m, d] = ymd.split("-").map(Number); return `Mon ${d} ${MONTHS[m - 1]} ${y}`; }
+// This week, the next four, and last week (to catch up on a missed one).
+function weekOptions(now = new Date()) {
+  const thisWeek = mondayOfNow(now);
+  return [-1, 0, 1, 2, 3, 4].map(k => {
+    const w = addDays(thisWeek, 7 * k);
+    return { text: { type: "plain_text", text: `${weekLabel(w)}${k === 0 ? " (this week)" : k === 1 ? " (next week)" : k === -1 ? " (last week)" : ""}` }, value: w };
+  });
 }
 
 function baseCountFor(pub) { return /^National Account/.test(pub || "") ? 8 : 10; }
@@ -122,28 +113,21 @@ async function slack(method, payload) {
   return res.json();
 }
 
-// Posts to #editorial via the same Incoming Webhook the Planner uses.
-async function postChannel(text) {
-  if (!WEBHOOK_URL) return;
-  await fetch(WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-}
-
 function buildModal(reporters) {
-  const options = [
-    { text: { type: "plain_text", text: "\uD83C\uDF10 Everyone \u2014 all reporters", emoji: true }, value: JSON.stringify({ all: true }) },
-    ...reporters.slice(0, 99).map(r => ({
-      text: { type: "plain_text", text: `${r.reporter} \u2014 ${r.publication}`.slice(0, 75) },
-      value: JSON.stringify({ r: r.reporter, p: r.publication }).slice(0, 75),
-    })),
-  ];
+  const options = reporters.slice(0, 100).map(r => ({
+    text: { type: "plain_text", text: `${r.reporter} — ${r.publication}`.slice(0, 75) },
+    value: JSON.stringify({ r: r.reporter, p: r.publication }).slice(0, 150),
+  }));
   return {
     type: "modal", callback_id: "assign_story",
     title: { type: "plain_text", text: "Assign a story" },
     submit: { type: "plain_text", text: "Assign" },
     close: { type: "plain_text", text: "Cancel" },
     blocks: [
-      { type: "input", block_id: "reporter", label: { type: "plain_text", text: "Reporter(s)" },
-        element: { type: "multi_static_select", action_id: "v", placeholder: { type: "plain_text", text: "Choose one, several, or everyone" }, options } },
+      { type: "input", block_id: "reporter", label: { type: "plain_text", text: "Reporter" },
+        element: { type: "static_select", action_id: "v", placeholder: { type: "plain_text", text: "Choose a reporter" }, options } },
+      { type: "input", block_id: "week", label: { type: "plain_text", text: "Week commencing" },
+        element: (() => { const opts = weekOptions(); return { type: "static_select", action_id: "v", options: opts, initial_option: opts.find(o => o.text.text.includes("(this week)")) }; })() },
       { type: "input", block_id: "headline", label: { type: "plain_text", text: "Headline / working title" },
         element: { type: "plain_text_input", action_id: "v" } },
       { type: "input", block_id: "angle", optional: true, label: { type: "plain_text", text: "Angle" },
@@ -177,37 +161,25 @@ export default async (req) => {
     const payload = JSON.parse(params.get("payload"));
     if (payload.type === "view_submission" && payload.view.callback_id === "assign_story") {
       try {
-        // Reporters — a multi-select; "Everyone" expands to the whole list.
-        const rblock = payload.view.state.values.reporter;
-        const selected = (rblock && rblock.v && rblock.v.selected_options) || [];
-        let targets;
-        if (selected.some(o => { try { return JSON.parse(o.value).all; } catch { return false; } })) {
-          targets = await listReporters(); // [{ reporter, publication }]
-        } else {
-          targets = selected.map(o => { const x = JSON.parse(o.value); return { reporter: x.r, publication: x.p }; });
-        }
-        if (!targets.length) {
-          return new Response(JSON.stringify({ response_action: "errors", errors: { reporter: "Pick at least one reporter (or Everyone)." } }),
-            { status: 200, headers: { "Content-Type": "application/json" } });
-        }
-        const week = mondayOfNow();
-        const headline = val(payload.view, "headline");
-        const angle = val(payload.view, "angle");
-        const notes = val(payload.view, "notes");
-        const editorNote = val(payload.view, "editor_note");
-        const assignedBy = payload.user?.name || payload.user?.username || "Editor";
-        // Give each reporter their own pre-filled card in their own next extra slot (in parallel).
-        await Promise.all(targets.map(async t => {
-          const num = await nextExtraNum(t.reporter, t.publication, week);
-          const row = buildRow({ reporter: t.reporter, pub: t.publication, week, num, headline, angle, notes, editorNote, assignedBy });
-          await supa("POST", TABLE, row, "return=minimal");
-        }));
-        // One #editorial ping tagging everyone assigned.
-        const who = targets.map(t => { const m = slackMention(t.reporter).trim(); return m || ("*" + t.reporter + "*"); });
-        await postChannel(":clipboard: A story was assigned to " + who.join(", ") + ': "' + (headline || "Untitled") + '"').catch(() => {});
+        const sel = JSON.parse(val(payload.view, "reporter"));
+        const picked = val(payload.view, "week");
+        const week = /^\d{4}-\d{2}-\d{2}$/.test(picked) ? picked : mondayOfNow();
+        const num = await nextExtraNum(sel.r, sel.p, week);
+        const row = buildRow({
+          reporter: sel.r, pub: sel.p, week, num,
+          headline: val(payload.view, "headline"),
+          angle: val(payload.view, "angle"),
+          notes: val(payload.view, "notes"),
+          editorNote: val(payload.view, "editor_note"),
+          assignedBy: payload.user?.name || payload.user?.username || "Editor",
+        });
+        await supa("POST", TABLE, row, "return=minimal");
+        await slack("chat.postMessage", {
+          channel: payload.user.id,
+          text: `:white_check_mark: Assigned to *${sel.r}* — ${sel.p}, week of ${week}, extra slot ${num}.\n> ${row.headline || "(no headline yet)"}`,
+        }).catch(() => {});
         return new Response("", { status: 200 }); // empty 200 closes the modal
       } catch (e) {
-        console.error("save failed:", e);
         return new Response(JSON.stringify({ response_action: "errors", errors: { headline: "Couldn't save: " + String(e.message).slice(0, 140) } }),
           { status: 200, headers: { "Content-Type": "application/json" } });
       }
@@ -220,21 +192,8 @@ export default async (req) => {
     try {
       const reporters = await listReporters();
       const r = await slack("views.open", { trigger_id: params.get("trigger_id"), view: buildModal(reporters) });
-      if (!r.ok) {
-        console.error("views.open failed:", JSON.stringify(r));
-        const msgs = r.response_metadata && r.response_metadata.messages ? " — " + r.response_metadata.messages.join("; ") : "";
-        return new Response(JSON.stringify({
-          response_type: "ephemeral",
-          text: ":warning: Couldn't open the assign form. Slack said: `" + (r.error || "unknown") + "`" + msgs,
-        }), { status: 200, headers: { "Content-Type": "application/json" } });
-      }
-    } catch (e) {
-      console.error("open modal failed:", e);
-      return new Response(JSON.stringify({
-        response_type: "ephemeral",
-        text: ":warning: The /assign command hit an error: `" + String(e.message).slice(0, 200) + "`",
-      }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
+      if (!r.ok) console.error("views.open failed:", r);
+    } catch (e) { console.error("open modal failed:", e); }
     return new Response("", { status: 200 });
   }
 
