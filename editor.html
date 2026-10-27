@@ -2921,28 +2921,36 @@ async function openAssign(r) {
   document.getElementById('am-angle').value = '';
   document.getElementById('am-notes').value = '';
   document.getElementById('am-format').value = '';
-  // Auto-assign slot: next extra number, beyond this reporter's own base count
-  // (8 for National Account, 10 for local mastheads). Fetch fresh from
-  // Supabase rather than trusting local ALL_DATA cache — shrinks the race
-  // window where a reporter self-adding an extra at the same moment could
-  // compute the same slot number and one save silently overwrites the other.
+  // Week picker: last week, this week, and the next four.
+  var wsel=document.getElementById('am-week'), opts='';
+  for(var k=-1;k<=4;k++){ var w=vdAddDays(WEEK,7*k); opts+='<option value="'+w+'"'+(k===0?' selected':'')+'>'+vdAssignWeekLabel(w)+(k===0?' (current view)':(k===1?' (next week)':(k===-1?' (last week)':'')))+'</option>'; }
+  wsel.innerHTML=opts;
+  await assignRefreshSlot();
+  document.getElementById('assign-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('am-headline').focus(), 50);
+}
+function vdAssignWeekLabel(ymd){ var d=new Date(Date.UTC.apply(null,[].concat(ymd.split('-').map(Number)).map(function(n,i){return i===1?n-1:n;}))); return 'Mon '+d.getUTCDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+// Auto-assign slot: next extra number, beyond this reporter's own base count
+// (8 for National Account, 10 for local mastheads). Fetched fresh from Supabase for the
+// chosen week rather than trusting the local cache, which shrinks the race window where a
+// reporter self-adding an extra at the same moment could compute the same slot number.
+async function assignRefreshSlot() {
+  const r = window._assignReporter; if (!r) return;
+  const wk = document.getElementById('am-week').value || WEEK;
   const baseCount = getStoryDefs(r.pub).length;
   let freshNums = [];
   try {
     const rows = await supaFetch(
-      `${TABLE}?reporter=eq.${encodeURIComponent(r.name)}&publication=eq.${encodeURIComponent(r.pub)}&week_of=eq.${encodeURIComponent(WEEK)}&select=story_num`
+      `${TABLE}?reporter=eq.${encodeURIComponent(r.name)}&publication=eq.${encodeURIComponent(r.pub)}&week_of=eq.${encodeURIComponent(wk)}&select=story_num`
     );
     freshNums = (rows || []).map(n => parseInt(n.story_num, 10));
   } catch(e) {
     console.warn('Could not fetch fresh story numbers for assignment, falling back to local cache', e);
   }
-  const data = getReporterData(r.name, r.pub);
-  const localNums = Object.keys(data).map(n => parseInt(n, 10));
+  const localNums = wk === WEEK ? Object.keys(getReporterData(r.name, r.pub)).map(n => parseInt(n, 10)) : [];
   const used = freshNums.concat(localNums).filter(n => n > baseCount);
   const nextNum = String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0');
   document.getElementById('am-slot').innerHTML = '<option value="' + nextNum + '">Extra slot ' + nextNum + ' (new card)</option>';
-  document.getElementById('assign-overlay').classList.add('show');
-  setTimeout(() => document.getElementById('am-headline').focus(), 50);
 }
 function closeAssign() { document.getElementById('assign-overlay').classList.remove('show'); window._assignItem=null; window._assignFromRadar=false; }
 
@@ -2966,7 +2974,7 @@ async function saveAssignment() {
   const row = {
     reporter: r.name,
     publication: r.pub,
-    week_of: WEEK,
+    week_of: document.getElementById('am-week').value || WEEK,
     story_num: slot,
     headline: headline,
     angle: document.getElementById('am-angle').value.trim(),
@@ -2978,7 +2986,7 @@ async function saveAssignment() {
 
   try {
     await editorUpsert(row);
-    notifySlack(slackMention(r.name) + ':clipboard: A story was assigned to *' + r.name + '*: "' + headline + '"');
+    notifySlack(slackMention(r.name) + ':clipboard: A story was assigned to *' + r.name + '*: "' + headline + '"' + (row.week_of !== getMondayOf(new Date().toLocaleDateString('en-CA')) ? ' — for the week commencing ' + vdAssignWeekLabel(row.week_of) : ''));
     const fromRadar = window._assignFromRadar && window._assignItem;
     if (fromRadar) await irMarkAssigned(window._assignItem, r.name);
     closeAssign();
@@ -3546,6 +3554,11 @@ document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.i
       <div class="am-field">
         <label>Notes / brief</label>
         <textarea id="am-notes" placeholder="Context, sources to chase, what you want from this story..."></textarea>
+      </div>
+      <div class="am-field">
+        <label>Week commencing</label>
+        <select id="am-week" onchange="assignRefreshSlot()"></select>
+        <div style="font-size:11px;color:#888;margin-top:3px">Which week's planner this lands in. The reporter sees it when they open that week.</div>
       </div>
       <div class="am-field">
         <label>Story slot</label>
