@@ -18,6 +18,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -906,6 +907,16 @@ color:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;fon
 .carried-badge{font-size:11px;font-weight:600;color:#8A6209;background:#FBEFCF;border-radius:999px;padding:3px 10px;margin:0 0 8px 6px;display:inline-block}
 .abandon-btn{font:inherit;font-size:11.5px;font-weight:600;color:#B4532A;background:#fff;border:1px solid #E7C4B4;border-radius:999px;padding:3px 11px;margin:0 0 8px 6px;cursor:pointer}
 .abandon-btn:hover{background:#FBEFE9}
+.gc-btn{font:inherit;font-size:11.5px;font-weight:600;color:#fff;background:#4A56B8;border:1px solid #4A56B8;border-radius:999px;padding:3px 11px;margin:0 0 8px 0;cursor:pointer}
+.gc-btn:hover{background:#3C47A0}.gc-btn:disabled{opacity:.6;cursor:default}
+.gc-panel{background:#F6F7FE;border:1px solid #D9DDF5;border-radius:10px;padding:12px 14px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#1F2340}
+.gc-head{display:flex;align-items:center;gap:10px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#4A56B8;margin-bottom:6px}
+.gc-head .sp{flex:1}.gc-head a{font-size:11.5px;font-weight:600;text-transform:none;letter-spacing:0;color:#4A56B8;cursor:pointer;text-decoration:underline}
+.gc-sec{margin-top:8px}.gc-sec b{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#6B6F94;margin-bottom:2px}
+.gc-sec ul{margin:0;padding-left:18px}.gc-sec li{margin:2px 0}
+.gc-sec.q li{font-weight:600}.gc-sec.w b{color:#9A4400}
+.gc-foot{margin-top:10px;font-size:11.5px;color:#6B6F94}
+.gc-err{color:#9A3412}
 .vh-btn{font:inherit;font-size:11.5px;font-weight:600;color:#4A56B8;background:#fff;border:1px solid #C9CEF0;border-radius:999px;padding:3px 11px;margin:0 0 8px 6px;cursor:pointer}
 .vh-btn:hover{background:#F1F2FC}
 .vh-btn.sent{color:#2E6B4F;border-color:#BBD8C8;background:#F1F8F4;cursor:default}
@@ -3004,6 +3015,17 @@ banner.innerHTML = '<b>Abandoned.</b> ' + esc(st.abandon_reason || '') + ' <butt
 body.appendChild(banner);
 }
 
+// Any open story: Ask GARI for a read of the plan, and a panel for its answer
+if (!filed && st.status !== 'abandoned') {
+const gc = document.createElement('button');
+gc.type = 'button'; gc.className = 'gc-btn'; gc.id = 'gc-btn-' + s.n; gc.textContent = '\u2726 Ask GARI';
+gc.title = 'GARI reads this card against your masthead\u2019s standards and asks the questions an editor would';
+gc.onclick = function(ev) { ev.stopPropagation(); askGariCard(s.n, s.lbl); };
+body.appendChild(gc);
+const gp = document.createElement('div'); gp.id = 'gc-' + s.n; gp.style.display = 'none'; body.appendChild(gp);
+setTimeout(function() { gariCardShow(s.n); }, 0);
+}
+
 // Any open story: one tap to ask the Head of Video for a hand or some time
 if (!filed && st.status !== 'abandoned') {
 const vh = document.createElement('button');
@@ -4351,6 +4373,64 @@ Object.keys(DATA).forEach(num => { if (DATA[num] && DATA[num].assigned_by && !DA
 window.addEventListener('beforeunload', function(e) {
 if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; }
 });
+
+// ── Ask GARI: a short read of a story card's plan ────────────────────────────
+// Sends the card (headline, angle, notes, format, file day) to GARI, which answers with what's
+// strong, questions to answer before filing, and anything to watch. It asks; it never writes for you.
+const GARI_CARD_URL = 'https://gari-gazette.netlify.app/.netlify/functions/gari-card';
+function gariCardKey(num) { return 'gz_gari|' + WEEK + '|' + (USER ? USER.name : '') + '|' + num; }
+function gariCardLoad(num) { try { return JSON.parse(localStorage.getItem(gariCardKey(num)) || 'null'); } catch(e) { return null; } }
+function gariCardSave(num, r) { try { localStorage.setItem(gariCardKey(num), JSON.stringify(r)); } catch(e) {} }
+function gariCardPanel(num, state) {
+  const el = document.getElementById('gc-' + num); if (!el) return;
+  el.innerHTML = '';
+  if (!state) { el.style.display = 'none'; return; }
+  el.style.display = 'block'; el.className = 'gc-panel';
+  const head = document.createElement('div'); head.className = 'gc-head';
+  head.innerHTML = '<span>\u2726 GARI\u2019s read</span><span class="sp"></span>';
+  if (state.result) { const a = document.createElement('a'); a.textContent = 'Ask again'; a.onclick = function(ev) { ev.stopPropagation(); askGariCard(num); }; head.appendChild(a); }
+  const x = document.createElement('a'); x.textContent = 'Close'; x.onclick = function(ev) { ev.stopPropagation(); gariCardPanel(num, null); }; head.appendChild(x);
+  el.appendChild(head);
+  if (state.loading) { const d = document.createElement('div'); d.textContent = 'GARI is reading your card\u2026'; el.appendChild(d); return; }
+  if (state.error) { const d = document.createElement('div'); d.className = 'gc-err'; d.textContent = state.error; el.appendChild(d); return; }
+  const r = state.result;
+  [['strong', 'What\u2019s strong', ''], ['questions', 'Questions to answer before you file', 'q'], ['watch', 'Watch', 'w']].forEach(function(sec) {
+    const items = r[sec[0]] || []; if (!items.length) return;
+    const box = document.createElement('div'); box.className = 'gc-sec ' + sec[2];
+    const b = document.createElement('b'); b.textContent = sec[1]; box.appendChild(b);
+    const ul = document.createElement('ul'); items.forEach(function(t) { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    box.appendChild(ul); el.appendChild(box);
+  });
+  const f = document.createElement('div'); f.className = 'gc-foot';
+  f.textContent = 'GARI asks questions \u2014 it doesn\u2019t write for you, and your editor makes the call. Answer them in your Notes.';
+  el.appendChild(f);
+}
+function gariCardShow(num) { const r = gariCardLoad(num); if (r && r.result) gariCardPanel(num, r); }
+async function askGariCard(num, lbl) {
+  const st = getStory(num), btn = document.getElementById('gc-btn-' + num);
+  if (!st.headline || !String(st.headline).trim()) { gariCardPanel(num, { error: 'Add a headline first, then ask GARI.' }); return; }
+  const def = STORIES.find(x => x.n === num);
+  if (btn) { btn.disabled = true; btn.textContent = '\u2726 GARI is reading\u2026'; }
+  gariCardPanel(num, { loading: true });
+  try {
+    const sess = await supa.auth.getSession();
+    const token = sess && sess.data && sess.data.session ? sess.data.session.access_token : '';
+    const res = await fetch(GARI_CARD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ reporter: USER.name, publication: USER.pub, week: WEEK, num: num, slot: lbl || (def && def.lbl) || 'Extra story',
+        headline: st.headline, angle: st.angle || '', notes: st.notes || '', format: st.format || '', wordCount: st.word_count || '', fileDay: st.file_day || '' })
+    });
+    let data = null; try { data = await res.json(); } catch(e) {}
+    if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || 'GARI couldn\u2019t answer just now. Try again.');
+    const state = { result: { strong: data.strong, questions: data.questions, watch: data.watch }, at: Date.now() };
+    gariCardSave(num, state); gariCardPanel(num, state);
+  } catch(e) {
+    gariCardPanel(num, { error: e && e.message ? e.message : 'GARI couldn\u2019t answer just now. Try again.' });
+  } finally {
+    const b2 = document.getElementById('gc-btn-' + num); if (b2) { b2.disabled = false; b2.textContent = '\u2726 Ask GARI'; }
+  }
+}
 
 // ── Video help: tell the Head of Video you need a hand ───────────────────────
 // Goes through /.netlify/functions/video-help (signed in as you), which files the
