@@ -19,7 +19,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -228,6 +227,9 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .splash-lockout-reload{margin-top:20px;background:#fff;color:#E11900;border:none;border-radius:8px;padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .splash-lockout-reload:hover{background:#ffe9e6}
 
+/* ── FOI builder ── */
+.foi-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.foi-nav:hover{background:#222}
 .bank-nav{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 .bank-nav:hover{background:#222}
 .bank-nav.full{border-color:#E8CE7A;color:#F0D890}
@@ -276,39 +278,40 @@ background:#FFF7ED;border:0.5px solid #FFE0B8;border-radius:12px;flex-shrink:0;t
 .rl-item a:hover{text-decoration:underline}
 .rl-item.done a{color:#999;text-decoration:line-through}
 .res-empty{color:var(--grey-md,#999);font-size:13.5px;font-style:italic;padding:20px 0}
-/* ── Background (person lookup) ── */
-.bg-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:6px}
-@media (max-width:700px){.bg-form{grid-template-columns:1fr}}
-.bg-form input{border:0.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink)}
-.bg-btn{background:var(--ink);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-.bg-btn:disabled{opacity:.45;cursor:default}
-.bg-status{font-size:13px;color:var(--grey-md);min-height:18px;margin:10px 0}
-.bg-status.err{color:#C0362C}
-.bg-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px}
-.bg-card h3{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.bg-pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--grey-lt);color:var(--grey-dk)}
-.bg-meta{font-size:12px;color:var(--grey-md);line-height:1.5}
-.bg-abn{border-top:0.5px solid var(--border);padding:8px 0}
-.bg-abn:first-of-type{border-top:none}
-.bg-abn b{display:block;font-size:13px;color:var(--ink)}
-.bg-list{list-style:disc;padding-left:18px;font-size:13px;line-height:1.5;color:var(--ink)}
-.bg-list li{margin:3px 0}
-.bg-list.flag li{color:#946200}
-.bg-list.reply li{color:#C0362C}
-.bg-tl{list-style:none;font-size:13px}
-.bg-tl li{display:grid;grid-template-columns:84px 1fr;gap:10px;padding:6px 0;border-bottom:0.5px dashed var(--border)}
-.bg-date{color:var(--grey-md);font-size:12px;font-variant-numeric:tabular-nums}
-.bg-cat{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-md);margin-right:6px;font-weight:600}
-.bg-sensitive{color:#946200}
-.bg-src{font-size:11.5px;margin-left:4px}
-.bg-card a{color:var(--blue)}
-.bg-links{display:flex;flex-wrap:wrap;gap:6px}
-.bg-links a{border:0.5px solid var(--border);border-radius:999px;padding:4px 10px;font-size:12px;text-decoration:none;color:var(--ink);background:#fff}
-.bg-links a:hover{background:var(--grey-lt)}
-.bg-dig{background:var(--grey-lt);border-radius:10px;padding:14px;margin-top:10px}
-.bg-dig h4{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-dk);margin:12px 0 6px}
-.bg-dig p{font-size:13px;line-height:1.5}
-.bg-foot{font-size:11.5px;color:var(--grey-md);margin-top:6px}
+.foi-wrap{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
+.foi-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.foi-title{font-size:22px;font-weight:600;color:var(--ink);margin:0}
+.foi-back-btn{background:none;border:0.5px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.foi-back-btn:hover{background:var(--grey-lt)}
+.foi-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.foi-layout{grid-template-columns:1fr}}
+.foi-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:18px}
+.foi-card-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cf select,.cf input[type=date]{width:100%;border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:#111;outline:none}
+.cf select:focus,.cf input[type=date]:focus{border-color:var(--blue)}
+.foi-generate-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
+.foi-letter-preview{width:100%;min-height:260px;border:0.5px solid var(--border);border-radius:8px;padding:12px;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical;color:var(--ink)}
+.foi-letter-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.foi-letter-actions button{border-radius:6px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:0.5px solid var(--border);background:#fff;color:var(--ink)}
+.foi-letter-actions button:hover{background:var(--grey-lt)}
+.foi-sent-btn{background:var(--success)!important;border-color:var(--success)!important;color:#fff!important}
+.foi-hint{font-size:11px;color:var(--grey-md);margin-top:8px;line-height:1.4}
+.foi-tracker{max-width:1400px;margin:20px auto 0;padding:0 2rem 2rem}
+.foi-tracker-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.foi-tracker-item{background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:12px 14px}
+.foi-tracker-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.foi-tracker-agency{font-size:13px;font-weight:600;color:var(--ink)}
+.foi-status-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.foi-status-good{background:var(--success-lt);color:var(--success)}
+.foi-status-partial{background:#FFF7E0;color:#946200}
+.foi-status-bad{background:#FDEDEC;color:#C0362C}
+.foi-status-pending{background:var(--blue-lt);color:var(--blue-dk)}
+.foi-tracker-desc{font-size:12.5px;color:var(--grey-dk);margin-bottom:4px}
+.foi-tracker-meta{font-size:11px;color:var(--grey-md)}
+.foi-tracker-actions{margin-top:8px}
+.foi-tracker-actions select{font-size:12px;border:0.5px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit}
+.foi-empty{font-size:13px;color:var(--grey-md);padding:8px 0}
 
 /* ── STORY CARD ── */
 .story-card{background:#fff;border:0.5px solid var(--border);border-radius:14px;overflow:hidden;position:relative;
@@ -1094,8 +1097,8 @@ padding:5px 12px;border-radius:999px}
 <button class="bank-nav" id="patch-nav" onclick="showPatchView()" title="Local news, council, court and politician leads for your patch">
 <span>&#128205;</span><span id="patch-nav-label">Patch</span>
 </button>
-<button class="bank-nav" id="bg-nav" onclick="showBackgroundView()" title="Look up a person in public records">
-<span>&#128270;</span><span>Background</span>
+<button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
+<span>&#128196;</span><span>FOI</span>
 </button>
 <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()" title="Sound on completion">&#128266;</button>
 <button class="signout-btn" onclick="signOut()">Sign out</button>
@@ -1222,7 +1225,7 @@ padding:5px 12px;border-radius:999px}
 <div id="cal-container"></div>
 </div>
 
-<!-- BANK VIEW -->
+<!-- FOI BUILDER VIEW -->
 <div id="bank-view" style="display:none">
 <div class="bank-wrap">
 <button class="bank-back" onclick="showStoriesView()">&#8592; Back to my week</button>
@@ -1254,19 +1257,65 @@ padding:5px 12px;border-radius:999px}
 <div id="res-list"></div>
 </div>
 </div>
-<div id="background-view" style="display:none">
-<div class="res-wrap">
-<button class="bank-back" onclick="showStoriesView()">&#8592; Back to my week</button>
-<h2 style="margin:0 0 6px">&#128270; Background</h2>
-<p class="res-intro">Look someone up in public records: the business register, our own coverage, and quick links to the official registers. Dig deeper for a web search with angles and questions.</p>
-<form class="bg-form" id="bg-form">
-<input type="text" id="bg-name" placeholder="Full name" required maxlength="120" autocomplete="off">
-<input type="text" id="bg-region" placeholder="Town / region (optional)" maxlength="80" autocomplete="off">
-<input type="text" id="bg-role" placeholder="Business / role (optional)" maxlength="80" autocomplete="off">
-<button type="submit" class="bg-btn" id="bg-go">Search</button>
-</form>
-<div class="bg-status" id="bg-status" role="status"></div>
-<div id="bg-out"></div>
+<div id="foi-view" style="display:none">
+<div class="foi-wrap">
+<div class="foi-header-row">
+<h2 class="foi-title">FOI Builder</h2>
+<button class="foi-back-btn" onclick="showStoriesView()">&larr; Back to stories</button>
+</div>
+<div class="foi-layout">
+<div class="foi-builder-col">
+<div class="foi-card">
+<div class="foi-card-title">New request</div>
+<div class="cf"><div class="cl">Jurisdiction</div>
+<select id="foi-jurisdiction">
+<option value="Federal">Federal — Freedom of Information Act 1982 — free</option>
+<option value="NSW">NSW — Government Information (Public Access) Act — $30</option>
+<option value="VIC">VIC — Freedom of Information Act — $32.70</option>
+<option value="QLD">QLD — Right to Information Act — $55.75 (no waiver available)</option>
+<option value="SA">SA — Freedom of Information Act — $42</option>
+<option value="WA">WA — Freedom of Information Act — $30</option>
+<option value="TAS">TAS — Right to Information Act — $46.75</option>
+<option value="NT">NT — Information Act — $30</option>
+<option value="ACT">ACT — Freedom of Information Act — free</option>
+</select>
+</div>
+<div class="cf"><div class="cl">Agency</div>
+<input type="text" id="foi-agency" placeholder="e.g. Department of Transport and Planning">
+</div>
+<div class="cf"><div class="cl">Agency FOI email (if known)</div>
+<input type="text" id="foi-email" placeholder="foi@agency.gov.au">
+</div>
+<div class="cf"><div class="cl">Document(s) sought — be specific</div>
+<textarea id="foi-docs" placeholder="e.g. A copy of the final council report into the Bendigo Street overpass, including cost estimates and community consultation summaries."></textarea>
+</div>
+<div class="cf-row">
+<div class="cf"><div class="cl">From</div><input type="date" id="foi-date-from"></div>
+<div class="cf"><div class="cl">To</div><input type="date" id="foi-date-to"></div>
+</div>
+<div class="cf"><div class="cl">Story / notes (internal — not sent)</div>
+<textarea id="foi-notes" placeholder="Which story this is for, why you're asking..."></textarea>
+</div>
+<button class="foi-generate-btn" onclick="generateFOILetter()">Generate letter</button>
+</div>
+</div>
+<div class="foi-letter-col">
+<div class="foi-card">
+<div class="foi-card-title">Letter preview</div>
+<textarea id="foi-letter-preview" class="foi-letter-preview" placeholder="Fill in the form and click Generate letter — you can edit the wording here before sending."></textarea>
+<div class="foi-letter-actions">
+<button class="foi-copy-btn" onclick="copyFOILetter()">Copy letter</button>
+<button class="foi-mailto-btn" onclick="mailtoFOILetter()">Open in Mail</button>
+<button class="foi-sent-btn" onclick="markFOISent()">Mark as sent &amp; track</button>
+</div>
+<div class="foi-hint">Marking as sent saves this to your tracker below, starts the 30-day decision clock, and drops a chase-up reminder into your to-do list.</div>
+</div>
+</div>
+</div>
+<div class="foi-tracker">
+<div class="foi-card-title">Your FOI requests</div>
+<div id="foi-tracker-list" class="foi-tracker-list"></div>
+</div>
 </div>
 </div>
 </div>
@@ -2120,17 +2169,223 @@ ov.innerHTML = `<div class="splash-lockout-inner">
 <button class="splash-lockout-reload" onclick="location.reload()">An editor has cleared me — reload</button>`;
 }
 
+// ══════════════════════════════════════════════════════════════
+// FOI BUILDER — generates a compliant FOI request letter from a
+// short form, tracks it in Supabase (foi_requests) once sent, and
+// auto-calculates decision/appeal deadlines. No auto-sending —
+// reporters copy the letter or open it in Mail themselves.
+// ══════════════════════════════════════════════════════════════
+const FOI_JURISDICTIONS = {
+Federal: { act: 'Freedom of Information Act 1982' },
+NSW:     { act: 'Government Information (Public Access) Act 2009' },
+VIC:     { act: 'Freedom of Information Act 1982' },
+QLD:     { act: 'Right to Information Act 2009' },
+SA:      { act: 'Freedom of Information Act 1991' },
+WA:      { act: 'Freedom of Information Act 1992' },
+TAS:     { act: 'Right to Information Act 2009' },
+NT:      { act: 'Information Act 2002' },
+ACT:     { act: 'Freedom of Information Act 2016' },
+};
+
+let FOI_REQUESTS = [];
+
+function formatDateAU(d) {
+if (!d) return '';
+try {
+const dt = new Date(d + 'T00:00:00');
+return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+} catch(e) { return d; }
+}
+
+function addDays(dateObj, days) {
+const d = new Date(dateObj);
+d.setDate(d.getDate() + days);
+return d;
+}
+
+function toISODate(d) {
+const yyyy = d.getFullYear();
+const mm = String(d.getMonth() + 1).padStart(2, '0');
+const dd = String(d.getDate()).padStart(2, '0');
+return `${yyyy}-${mm}-${dd}`;
+}
+
+function generateFOILetter() {
+const jur = document.getElementById('foi-jurisdiction').value;
+const agency = document.getElementById('foi-agency').value.trim();
+const docs = document.getElementById('foi-docs').value.trim();
+const from = document.getElementById('foi-date-from').value;
+const to = document.getElementById('foi-date-to').value;
+const act = (FOI_JURISDICTIONS[jur] || FOI_JURISDICTIONS.Federal).act;
+
+if (!agency || !docs) {
+alert("Add the agency and what you're asking for before generating the letter.");
+return;
+}
+
+let dateLine = '';
+if (from && to) dateLine = ` created between ${formatDateAU(from)} and ${formatDateAU(to)}`;
+else if (from) dateLine = ` created since ${formatDateAU(from)}`;
+
+const letter = `To: ${agency} FOI team\n\n` +
+`Dear FOI team,\n\n` +
+`Under the terms of the ${act}, I would like to request access to the following document(s)${dateLine}:\n\n` +
+`${docs}\n\n` +
+`Please send any correspondence or documents to this email address.\n\n` +
+`Kind regards,\n${USER.name}\n${USER.pub}, Gazette News`;
+
+document.getElementById('foi-letter-preview').value = letter;
+}
+
+function copyFOILetter() {
+const ta = document.getElementById('foi-letter-preview');
+if (!ta.value.trim()) { alert('Generate the letter first.'); return; }
+ta.select();
+document.execCommand('copy');
+showToast();
+}
+
+function mailtoFOILetter() {
+const letter = document.getElementById('foi-letter-preview').value;
+if (!letter.trim()) { alert('Generate the letter first.'); return; }
+const email = document.getElementById('foi-email').value.trim();
+const agency = document.getElementById('foi-agency').value.trim();
+const subject = encodeURIComponent(`FOI request — ${agency}`);
+const body = encodeURIComponent(letter);
+window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+}
+
+async function markFOISent() {
+const jur = document.getElementById('foi-jurisdiction').value;
+const agency = document.getElementById('foi-agency').value.trim();
+const email = document.getElementById('foi-email').value.trim();
+const docs = document.getElementById('foi-docs').value.trim();
+const notes = document.getElementById('foi-notes').value.trim();
+const letter = document.getElementById('foi-letter-preview').value.trim();
+
+if (!agency || !docs || !letter) {
+alert('Generate the letter first.');
+return;
+}
+
+const sentDate = new Date();
+const decisionDue = addDays(sentDate, 30);
+const internalReviewDeadline = addDays(decisionDue, 30);
+const oaicReviewDeadline = addDays(decisionDue, 60);
+
+const record = {
+reporter: USER.name,
+publication: USER.pub,
+jurisdiction: jur,
+agency: agency,
+agency_email: email,
+document_description: docs,
+letter_text: letter,
+notes: notes,
+date_sent: toISODate(sentDate),
+decision_due: toISODate(decisionDue),
+internal_review_deadline: toISODate(internalReviewDeadline),
+oaic_review_deadline: toISODate(oaicReviewDeadline),
+status: 'pending',
+};
+
+try {
+const [row] = await supaFetch('POST', 'foi_requests', record);
+if (row) FOI_REQUESTS.unshift(row);
+renderFOITracker();
+['foi-agency','foi-email','foi-docs','foi-notes'].forEach(id => document.getElementById(id).value = '');
+document.getElementById('foi-date-from').value = '';
+document.getElementById('foi-date-to').value = '';
+document.getElementById('foi-letter-preview').value = '';
+showToast();
+// Drop a chase-up reminder into the to-do list so the deadline doesn't get lost.
+try {
+const [t] = await supaFetch('POST', 'reporter_todos', {
+reporter: USER.name, publication: USER.pub,
+item: `Chase FOI decision from ${agency} (due ${formatDateAU(record.decision_due)})`, done: false
+});
+if (t) { TODOS.push(t); renderTodos(); }
+} catch(e) { console.warn('Could not add FOI reminder to to-do list:', e); }
+} catch(e) {
+console.error('Could not save FOI request:', e);
+alert('Could not save the request — check your connection and try again.');
+}
+}
+
+async function loadFOIRequests() {
+try {
+const rows = await supaFetch('GET',
+`foi_requests?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&order=date_sent.desc`);
+FOI_REQUESTS = rows || [];
+} catch(e) {
+console.warn('Could not load FOI requests:', e);
+FOI_REQUESTS = [];
+}
+renderFOITracker();
+}
+
+function daysUntil(dateStr) {
+const target = new Date(dateStr + 'T00:00:00');
+const now = new Date(); now.setHours(0,0,0,0);
+return Math.round((target - now) / 86400000);
+}
+
+function renderFOITracker() {
+const list = document.getElementById('foi-tracker-list');
+if (!list) return;
+if (!FOI_REQUESTS.length) {
+list.innerHTML = '<div class="foi-empty">No FOI requests tracked yet — generate a letter above and mark it as sent once it\'s gone out.</div>';
+return;
+}
+list.innerHTML = FOI_REQUESTS.map(r => {
+const dd = daysUntil(r.decision_due);
+let statusLabel, statusClass;
+if (r.status === 'full') { statusLabel = 'Released in full'; statusClass = 'foi-status-good'; }
+else if (r.status === 'partial') { statusLabel = 'Partially released'; statusClass = 'foi-status-partial'; }
+else if (r.status === 'refused') { statusLabel = 'Refused'; statusClass = 'foi-status-bad'; }
+else if (dd < 0) { statusLabel = `Overdue by ${Math.abs(dd)} days`; statusClass = 'foi-status-bad'; }
+else { statusLabel = `Decision due in ${dd} days`; statusClass = 'foi-status-pending'; }
+return `<div class="foi-tracker-item">
+<div class="foi-tracker-top">
+<span class="foi-tracker-agency">${esc(r.agency)}</span>
+<span class="foi-status-pill ${statusClass}">${statusLabel}</span>
+</div>
+<div class="foi-tracker-desc">${esc(r.document_description)}</div>
+<div class="foi-tracker-meta">Sent ${formatDateAU(r.date_sent)} &middot; ${esc(r.jurisdiction)}</div>
+<div class="foi-tracker-actions">
+<select onchange="updateFOIStatus('${r.id}', this.value)">
+<option value="pending" ${r.status === 'pending' ? 'selected' : ''}>Pending</option>
+<option value="full" ${r.status === 'full' ? 'selected' : ''}>Released in full</option>
+<option value="partial" ${r.status === 'partial' ? 'selected' : ''}>Partially released</option>
+<option value="refused" ${r.status === 'refused' ? 'selected' : ''}>Refused</option>
+</select>
+</div>
+</div>`;
+}).join('');
+}
+
+async function updateFOIStatus(id, status) {
+const r = FOI_REQUESTS.find(x => String(x.id) === String(id));
+if (r) r.status = status;
+renderFOITracker();
+try { await supaFetch('PATCH', `foi_requests?id=eq.${id}`, { status }); }
+catch(e) { console.error('Could not update FOI status:', e); }
+}
+
 function showStoriesView() {
 document.getElementById('stories-view').style.display = 'block';
 document.getElementById('patch-view').style.display = 'none';
-document.getElementById('background-view').style.display = 'none';
+document.getElementById('foi-view').style.display = 'none';
 document.getElementById('bank-view').style.display = 'none';
 document.getElementById('resources-view').style.display = 'none';
 }
-function showBackgroundView() {
-['stories-view','patch-view','bank-view','resources-view'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-document.getElementById('background-view').style.display = 'block';
-const inp = document.getElementById('bg-name'); if (inp) inp.focus();
+function showFOIView() {
+document.getElementById('stories-view').style.display = 'none';
+document.getElementById('patch-view').style.display = 'none';
+document.getElementById('foi-view').style.display = 'block';
+document.getElementById('bank-view').style.display = 'none';
+document.getElementById('resources-view').style.display = 'none';
+loadFOIRequests();
 }
 
 // ── The Bank — up to 3 evergreen stories, stored as planner_stories rows under a 'bank' week ──
@@ -2181,7 +2436,7 @@ if (ml) ml.textContent = n>3 ? (n+' items · full') : (n>=3 ? '100% full' : (n+'
 let PATCH_ITEMS = [], PATCH_FILTER = 'top', PATCH_LOADED = false, PATCH_PITCHED = {}, PATCH_HIDDEN = {};
 function ptStore(k, v){ try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || '{}'); localStorage.setItem(k, JSON.stringify(v)); } catch(e){ return v === undefined ? {} : null; } }
 function showPatchView(){
-['stories-view','background-view','bank-view','resources-view'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+['stories-view','foi-view','bank-view','resources-view'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 document.getElementById('patch-view').style.display = 'block';
 PATCH_PITCHED = ptStore('pt_pitched_' + USER.name); PATCH_HIDDEN = ptStore('pt_hidden_' + USER.name);
 loadPatchItems(); ptLoadAlert();
@@ -2267,7 +2522,7 @@ ptStore('pt_pitched_' + USER.name, PATCH_PITCHED);
 }
 function showBankView(){
 document.getElementById('stories-view').style.display='none';
-document.getElementById('background-view').style.display='none';
+document.getElementById('foi-view').style.display='none';
 document.getElementById('resources-view').style.display='none';
 document.getElementById('patch-view').style.display='none';
 document.getElementById('bank-view').style.display='block';
@@ -2315,7 +2570,7 @@ catch(e){ MY_READ.done[k] = !on; renderResources(RES_ALL); updateReadBadge(); al
 // ── Resources (read-only list of editor-curated links, stored in system_flags) ──
 function showResourcesView(){
 document.getElementById('stories-view').style.display='none';
-document.getElementById('background-view').style.display='none';
+document.getElementById('foi-view').style.display='none';
 document.getElementById('bank-view').style.display='none';
 document.getElementById('patch-view').style.display='none';
 document.getElementById('resources-view').style.display='block';
@@ -4108,12 +4363,16 @@ try {
 const num = k.split('|')[4];
 const d = JSON.parse(localStorage.getItem(k));
 if (d && DATA[num] && DATA[num].assigned_by && !d.assigned_by) { try { localStorage.removeItem(k); } catch(e) {} return; }   // an editor assignment landed in this slot: it wins over a stale local draft
+const same = DATA[num] && ['headline','angle','notes','format','word_count','file_day'].every(f => String(d && d[f] || '') === String(DATA[num][f] || ''));
+if (same) { try { localStorage.removeItem(k); } catch(e) {} return; }   // nothing unsaved here: the saved card already says this
 if (d && !(DATA[num] && DATA[num].filed)) DATA[num] = Object.assign({}, DATA[num] || {}, d);
 } catch(e) {}
 });
 }
 function showPlanGateWarnings() {
-Object.keys(DATA).forEach(num => { if (DATA[num] && DATA[num].assigned_by && !DATA[num].file_day && !(localStorage.getItem(draftKey(num)))) return; /* untouched editor assignment: don't nag or block until the reporter edits it */ const p = planGateProblem(num); if (p) showPlanGate(num, p); });
+// Only cards with a kept local draft are genuinely unsaved. Cards already saved in the database
+// (older ones, filed ones, editor assignments) are not "unsaved", even if they lack a day or angle.
+Object.keys(DATA).forEach(num => { let d = null; try { d = localStorage.getItem(draftKey(num)); } catch(e) {} if (!d) return; const p = planGateProblem(num); if (p) showPlanGate(num, p); });
 }
 window.addEventListener('beforeunload', function(e) {
 if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; }
@@ -4987,125 +5246,5 @@ showResetPanel();
 });
 
 </script>
-<script>
-// ── Background: person lookup over public records (/api/background) ──
-(() => {
-  const API = "/api/background";
-  const CAT = { business:"Business", politics:"Politics", public_role:"Public role", legal:"Legal", media:"Media", own_voice:"Own voice", sensitive:"Handle with care" };
-  const $ = (id) => document.getElementById(id);
-  const e = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "source"; } };
-  const link = (u, t) => /^https?:\/\//i.test(u || "") ? `<a href="${e(u)}" target="_blank" rel="noopener">${e(t || hostOf(u))}</a>` : "";
-  const status = (msg, err) => { const el = $("bg-status"); el.textContent = msg || ""; el.classList.toggle("err", !!err); };
-  const fmt = (d) => { const t = new Date(d); return isNaN(t) ? (d || "") : t.toLocaleDateString("en-AU", { day:"numeric", month:"short", year:"numeric" }); };
-
-  async function call(body) {
-    const { data: { session } } = await supa.auth.getSession();
-    if (!session) throw new Error("You're signed out. Sign in again and retry.");
-    const r = await fetch(API, { method:"POST", headers:{ "content-type":"application/json", authorization:"Bearer " + session.access_token }, body: JSON.stringify(body) });
-    const out = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(out.error || `Request failed (${r.status})`);
-    return out;
-  }
-
-  let q = null, abnRecords = [];
-
-  $("bg-form").addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    q = { name: $("bg-name").value.trim(), region: $("bg-region").value.trim(), role: $("bg-role").value.trim() };
-    if (!q.name) return;
-    $("bg-out").innerHTML = ""; $("bg-go").disabled = true;
-    status("Searching…");
-    try {
-      const res = await call({ action: "lookup", ...q });
-      abnRecords = res.abn?.records || [];
-      render(res);
-      status("");
-    } catch (err) { status(err.message, true); }
-    finally { $("bg-go").disabled = false; }
-  });
-
-  function render(res) {
-    $("bg-out").innerHTML = `
-      ${abnBlock(res.abn)}
-      ${archiveBlock(res.archive)}
-      ${linksBlock(q.name)}
-      <div class="bg-card">
-        <h3>Dig deeper <span class="bg-pill" id="bg-left">${res.digs_left} left today</span></h3>
-        <p class="bg-meta">Searches the web for candidacies, public roles, court and regulator decisions and coverage, then suggests angles and questions. Takes about 20 seconds.</p>
-        ${res.shared ? `<div class="bg-dig"><span class="bg-pill">Already dug by a colleague · ${e(fmt(res.shared.created_at))}${res.shared.region ? " · " + e(res.shared.region) : ""}</span>${digHtml(res.shared.dossier)}</div>` : ""}
-        <div style="margin-top:10px"><button class="bg-btn" id="bg-dig-btn" ${res.digs_left ? "" : "disabled"}>${res.shared ? "Dig again" : "Dig deeper"}</button></div>
-        <div id="bg-dig-out"></div>
-      </div>
-      <p class="bg-foot">Not found is not the same as cleared. Same names are common: check the postcode, business and dates match before using anything.</p>`;
-    $("bg-dig-btn").onclick = runDig;
-  }
-
-  function abnBlock(abn) {
-    if (abn?.error) return `<div class="bg-card"><h3>Business register</h3><p class="bg-meta">${e(abn.error)}</p></div>`;
-    const recs = abn?.records || [];
-    return `<div class="bg-card"><h3>Business register <span class="bg-pill">ABN Lookup · ${recs.length}</span></h3>
-      ${recs.length ? recs.map((r) => `<div class="bg-abn"><b>${e(r.entity)}</b>
-        <span class="bg-meta">${e(r.type)} · ${e(r.status)} from ${e(fmt(r.status_from))} · ${e(r.state)} ${e(r.postcode)} · ABN ${e(r.abn)} · ${link(r.url, "register")}</span>
-        ${r.business_names.length ? `<div class="bg-meta">Trading as: ${r.business_names.map(e).join(", ")}</div>` : ""}</div>`).join("")
-      : `<p class="bg-meta">No matching entities.</p>`}
-      <p class="bg-foot">Current trading names only. Name history is on each register page.</p></div>`;
-  }
-
-  function archiveBlock(a) {
-    if (a?.error) return `<div class="bg-card"><h3>Our coverage</h3><p class="bg-meta">${e(a.error)}</p></div>`;
-    const s = a?.stories || [];
-    return `<div class="bg-card"><h3>Our coverage <span class="bg-pill">${s.length}</span></h3>
-      ${s.length ? `<ul class="bg-list">${s.map((x) => `<li>${link(x.link, x.title)} <span class="bg-meta">${e(fmt(x.date))} · ${e(x.feed)}</span></li>`).join("")}</ul>`
-      : `<p class="bg-meta">Nothing in recent masthead feeds.</p>`}</div>`;
-  }
-
-  function linksBlock(name) {
-    const n = encodeURIComponent(name);
-    const links = [
-      ["NSW Caselaw", `https://www.caselaw.nsw.gov.au/search/advanced?body=${n}`],
-      ["AustLII", `https://www.austlii.edu.au/cgi-bin/sinosrch.cgi?query=${n}`],
-      ["AFCA decisions", "https://www.afca.org.au/what-to-expect/search-published-decisions"],
-      ["ACNC charities", `https://www.acnc.gov.au/charity/charities?search=${n}`],
-      ["AEC donations", "https://transparency.aec.gov.au/"],
-      ["NSW disclosures", "https://efadisclosures.elections.nsw.gov.au/"],
-      ["VEC disclosures", "https://disclosures.vec.vic.gov.au/"],
-      ["Trove", `https://trove.nla.gov.au/search?keyword=${n}`],
-      ["ASIC (paid extracts)", "https://connectonline.asic.gov.au/"],
-      ["Bankruptcy register (paid)", "https://www.afsa.gov.au/online-services/bankruptcy-register-search"],
-    ];
-    return `<div class="bg-card"><h3>Check the registers</h3><div class="bg-links">${links.map(([t, u]) => link(u, t)).join("")}</div></div>`;
-  }
-
-  async function runDig() {
-    const btn = $("bg-dig-btn"); btn.disabled = true;
-    status("Digging… about 20 seconds.");
-    try {
-      const res = await call({ action: "dig", ...q, abn_records: abnRecords });
-      $("bg-dig-out").innerHTML = `<div class="bg-dig">${digHtml(res.result)}</div>`;
-      $("bg-left").textContent = `${res.digs_left} left today`;
-      btn.disabled = !res.digs_left;
-      status("");
-    } catch (err) { status(err.message, true); btn.disabled = false; }
-  }
-
-  const list = (title, arr, cls) => arr && arr.length
-    ? `<h4>${e(title)}</h4><ul class="bg-list ${cls || ""}">${arr.map((x) => `<li>${e(x)}</li>`).join("")}</ul>` : "";
-
-  function digHtml(d) {
-    if (!d) return "";
-    const f = (d.findings || []).slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
-    return `${d.summary ? `<p style="margin-top:8px">${e(d.summary)}</p>` : ""}
-      ${f.length ? `<h4>Found</h4><ul class="bg-tl">${f.map((x) => `<li><span class="bg-date">${e(x.date || "—")}</span>
-        <span class="${x.category === "sensitive" ? "bg-sensitive" : ""}"><span class="bg-cat">${e(CAT[x.category] || x.category)}</span>${e(x.fact)}<span class="bg-src">${link(x.source_url)}</span></span></li>`).join("")}</ul>` : ""}
-      ${d.contacts?.length ? `<h4>How to reach them</h4><ul class="bg-list">${d.contacts.map((c) => `<li>${e(c.label || "Contact")}: ${e(c.value)} <span class="bg-src">${link(c.source_url)}</span></li>`).join("")}</ul>` : ""}
-      ${list("Flags", d.flags, "flag")}
-      ${list("Possible angles", d.angles)}
-      ${list("Questions to ask", d.questions)}
-      ${list("Put to them before publishing", d.right_of_reply, "reply")}`;
-  }
-})();
-</script>
-
 </body>
 </html>
