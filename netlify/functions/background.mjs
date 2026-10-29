@@ -170,7 +170,17 @@ Then give 2–3 story angles, 3–5 hard but fair questions, and anything advers
 
 // ---------- Handler ----------
 export default async (req) => {
+  try {
+    return await handle(req);
+  } catch (e) {
+    return json(500, { error: `Background search error: ${e.message || e}` });
+  }
+};
+
+async function handle(req) {
   if (req.method !== "POST") return json(405, { error: "POST only" });
+  const missing = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"].filter((k) => !process.env[k]);
+  if (missing.length) return json(500, { error: `Setup needed in Netlify: missing ${missing.join(", ")}` });
   const user = await verifyUser(req);
   if (!user) return json(401, { error: "Not signed in" });
 
@@ -199,6 +209,7 @@ export default async (req) => {
     }
 
     if (p.action === "dig") {
+      if (!process.env.ANTHROPIC_API_KEY) return json(500, { error: "Setup needed in Netlify: missing ANTHROPIC_API_KEY" });
       const usedToday = await sb(`background_searches?user_id=eq.${user.id}&dug=eq.true&created_at=gte.${today.toISOString()}&select=id`);
       if (usedToday.length >= DAILY_CAP) return json(429, { error: `Daily limit of ${DAILY_CAP} digs reached` });
       const result = await dig(p, p.abn_records);
@@ -213,6 +224,6 @@ export default async (req) => {
   } catch (e) {
     return json(500, { error: String(e.message || e) });
   }
-};
+}
 
 export const config = { path: "/api/background" };
