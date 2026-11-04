@@ -2937,20 +2937,41 @@ function vdAssignWeekLabel(ymd){ var d=new Date(Date.UTC.apply(null,[].concat(ym
 async function assignRefreshSlot() {
   const r = window._assignReporter; if (!r) return;
   const wk = document.getElementById('am-week').value || WEEK;
-  const baseCount = getStoryDefs(r.pub).length;
-  let freshNums = [];
+  const defs = getStoryDefs(r.pub, wk);
+  const baseCount = defs.length;
+  const sel = document.getElementById('am-slot');
+  const prev = sel.value;
+  // Fresh read for the chosen week (not the local cache) so we don't clash with a reporter adding a card at the same moment.
+  const taken = {};   // story_num -> headline (non-empty cards only)
+  const seen = [];    // every story_num that has a row
+  let ok = false;
   try {
     const rows = await supaFetch(
-      `${TABLE}?reporter=eq.${encodeURIComponent(r.name)}&publication=eq.${encodeURIComponent(r.pub)}&week_of=eq.${encodeURIComponent(wk)}&select=story_num`
+      `${TABLE}?reporter=eq.${encodeURIComponent(r.name)}&publication=eq.${encodeURIComponent(r.pub)}&week_of=eq.${encodeURIComponent(wk)}&select=story_num,headline`
     );
-    freshNums = (rows || []).map(n => parseInt(n.story_num, 10));
+    (rows || []).forEach(x => { const n = String(parseInt(x.story_num, 10)).padStart(2, '0'); seen.push(parseInt(x.story_num, 10)); if ((x.headline || '').trim()) taken[n] = x.headline.trim(); });
+    ok = true;
   } catch(e) {
     console.warn('Could not fetch fresh story numbers for assignment, falling back to local cache', e);
   }
-  const localNums = wk === WEEK ? Object.keys(getReporterData(r.name, r.pub)).map(n => parseInt(n, 10)) : [];
-  const used = freshNums.concat(localNums).filter(n => n > baseCount);
-  const nextNum = String(Math.max(baseCount + 1, ...used.map(n => n + 1))).padStart(2, '0');
-  document.getElementById('am-slot').innerHTML = '<option value="' + nextNum + '">Extra slot ' + nextNum + ' (new card)</option>';
+  if (!ok && wk === WEEK) {
+    const local = getReporterData(r.name, r.pub) || {};
+    Object.keys(local).forEach(n => { seen.push(parseInt(n, 10)); if ((local[n].headline || '').trim()) taken[String(n).padStart(2, '0')] = local[n].headline.trim(); });
+  }
+  const nextNum = String(Math.max(baseCount + 1, ...seen.filter(n => n > baseCount).map(n => n + 1))).padStart(2, '0');
+  const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const short = t => t.length > 40 ? t.slice(0, 40) + '…' : t;
+  const opt = (val, label, dis) => '<option value="' + val + '"' + (dis ? ' disabled' : '') + '>' + esc(label) + '</option>';
+  let html = opt(nextNum, 'Extra slot ' + nextNum + ' (new card)');
+  const firstEmpty = defs.find(d => !taken[d.n]);
+  if (firstEmpty) html += opt(firstEmpty.n, 'First empty (slot ' + firstEmpty.n + ' · ' + firstEmpty.lbl + ')');
+  defs.filter(d => d.t === 'imp' || d.t === 'election').forEach(d => {
+    html += taken[d.n]
+      ? opt(d.n, d.lbl + ' slot ' + d.n + ' — already has “' + short(taken[d.n]) + '”', true)
+      : opt(d.n, d.lbl + ' slot ' + d.n);
+  });
+  sel.innerHTML = html;
+  if (prev && Array.from(sel.options).some(o => o.value === prev && !o.disabled)) sel.value = prev;
 }
 function closeAssign() { document.getElementById('assign-overlay').classList.remove('show'); window._assignItem=null; window._assignFromRadar=false; }
 
@@ -3563,7 +3584,7 @@ document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.i
       <div class="am-field">
         <label>Story slot</label>
         <select id="am-slot"></select>
-        <div style="font-size:11px;color:#888;margin-top:3px">Pick the slot, or leave on "First empty" to fill the next available one.</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Extra adds a new card. Impact and Election put the story in that reporter's own Impact or Election slot (greyed out if it's already in use).</div>
       </div>
     </div>
     <div class="am-foot">
