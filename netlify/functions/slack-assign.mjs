@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // /assign  —  Slack slash command that drops an "Editor assignment" card into a
-// reporter's Planner, under Extra stories, in the chosen week (defaults to this week).
+// reporter's Planner, under Extra stories (or into their Impact / Election / first-empty slot), in the chosen week (defaults to this week).
 //
 // One Netlify function handles both halves of the Slack round-trip:
 //   • the /assign slash command  → opens a modal (reporter + headline + notes)
@@ -10,8 +10,7 @@
 // identical to a reporter-added extra — except `assigned_by` is set, which the
 // Planner already uses to label the card "Editor assignment".
 //
-// Extras are story_num beyond the base slots (8 for National Account, 10 for the
-// local mastheads); this computes the next free extra slot for that reporter's week.
+// Extras are story_num beyond the base slots (10 for every masthead); this computes the next free extra slot for that reporter's week.
 //
 // Security: every request is verified against the Slack signing secret, so even
 // though the endpoint is public only Slack can trigger it. The Supabase writes use
@@ -28,14 +27,14 @@ const SERVICE_KEY    = process.env.SUPABASE_SERVICE_ROLE_KEY;      // secret —
 const TABLE = "planner_stories";
 
 // ── pure helpers (unit-tested) ───────────────────────────────────────────────
-function verifySlack(rawBody, sig, ts, secret = SIGNING_SECRET) {
+export function verifySlack(rawBody, sig, ts, secret = SIGNING_SECRET) {
   if (!sig || !ts || !secret) return false;
   if (Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false; // >5 min old → reject (replay guard)
   const mac = "v0=" + crypto.createHmac("sha256", secret).update(`v0:${ts}:${rawBody}`).digest("hex");
   try { return crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(sig)); } catch { return false; }
 }
 
-function mondayOfNow(now = new Date()) {
+export function mondayOfNow(now = new Date()) {
   // "today" in Australian eastern time, then wind back to that week's Monday
   const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
   const [y, m, d] = ymd.split("-").map(Number);
@@ -49,7 +48,7 @@ function addDays(ymd, n) { const [y, m, d] = ymd.split("-").map(Number); return 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function weekLabel(ymd) { const [y, m, d] = ymd.split("-").map(Number); return `Mon ${d} ${MONTHS[m - 1]} ${y}`; }
 // This week, the next four, and last week (to catch up on a missed one).
-function weekOptions(now = new Date()) {
+export function weekOptions(now = new Date()) {
   const thisWeek = mondayOfNow(now);
   return [-1, 0, 1, 2, 3, 4].map(k => {
     const w = addDays(thisWeek, 7 * k);
@@ -57,14 +56,50 @@ function weekOptions(now = new Date()) {
   });
 }
 
-function baseCountFor(pub) { return /^National Account/.test(pub || "") ? 8 : 10; }
+// Every masthead (National Account included) has 10 base slots; extras start at 11.
+export function baseCountFor(pub) { return 10; }
 
-function computeNextNum(existingNums, base) {
+// Slot choices offered in the modal. Resolved on submit, once reporter + week are known.
+const ELECTION_START_WEEK = "2026-08-03";
+const VICTORIAN_PUBS = ["West Vic Brolga — Wannon", "West Vic Brolga — Ballarat", "Gippsland Monitor", "Eastern Melburnian"];
+export function slotOptions() {
+  return [
+    { text: { type: "plain_text", text: "Extra slot (new card)" }, value: "extra" },
+    { text: { type: "plain_text", text: "First empty slot" }, value: "first" },
+    { text: { type: "plain_text", text: "Impact slot" }, value: "impact" },
+    { text: { type: "plain_text", text: "Election slot (Victorian mastheads)" }, value: "election" },
+  ];
+}
+// rows: [{story_num, headline}] already in that reporter's week. Returns {num} or {error}.
+export function resolveSlot(choice, pub, week, rows) {
+  const taken = {};
+  (rows || []).forEach(r => { if ((r.headline || "").trim()) taken[String(parseInt(r.story_num, 10)).padStart(2, "0")] = r.headline.trim(); });
+  const nextExtra = () => computeNextNum((rows || []).map(r => r.story_num), baseCountFor(pub));
+  const isNat = /^National Account/.test(pub || "");
+  if (choice === "first") {
+    for (let i = 1; i <= 10; i++) { const n = String(i).padStart(2, "0"); if (!taken[n]) return { num: n, label: `slot ${n}` }; }
+    return { num: nextExtra(), label: `extra slot ${nextExtra()}` };
+  }
+  if (choice === "impact" || choice === "election") {
+    let n;
+    if (choice === "impact") n = isNat ? "07" : "09";
+    else {
+      if (!VICTORIAN_PUBS.includes(pub) || week < ELECTION_START_WEEK) return { error: "Election slots only exist for the Victorian mastheads (not National Account). Pick Extra or Impact instead." };
+      n = "08";
+    }
+    if (taken[n]) return { error: `${choice === "impact" ? "Impact" : "Election"} slot ${n} already has “${taken[n].slice(0, 50)}”. Pick Extra instead.` };
+    return { num: n, label: `${choice === "impact" ? "Impact" : "Election"} slot ${n}` };
+  }
+  const n = nextExtra();
+  return { num: n, label: `extra slot ${n}` };
+}
+
+export function computeNextNum(existingNums, base) {
   const used = (existingNums || []).map(n => parseInt(n, 10)).filter(n => n > base);
   return String(Math.max(base + 1, ...used.map(n => n + 1))).padStart(2, "0");
 }
 
-function buildRow({ reporter, pub, week, num, headline, angle, notes, editorNote, assignedBy }) {
+export function buildRow({ reporter, pub, week, num, headline, angle, notes, editorNote, assignedBy }) {
   return {
     reporter, publication: pub, week_of: week, story_num: num,
     headline: headline || "", angle: angle || "", notes: notes || "",
@@ -97,10 +132,9 @@ async function listReporters() {
     .map(r => ({ reporter: r.reporter_name || r.name, publication: r.publication }));
 }
 
-async function nextExtraNum(reporter, pub, week) {
-  const rows = await supa("GET",
-    `${TABLE}?reporter=eq.${encodeURIComponent(reporter)}&publication=eq.${encodeURIComponent(pub)}&week_of=eq.${encodeURIComponent(week)}&select=story_num`);
-  return computeNextNum((rows || []).map(r => r.story_num), baseCountFor(pub));
+async function weekRows(reporter, pub, week) {
+  return supa("GET",
+    `${TABLE}?reporter=eq.${encodeURIComponent(reporter)}&publication=eq.${encodeURIComponent(pub)}&week_of=eq.${encodeURIComponent(week)}&select=story_num,headline`);
 }
 
 // ── Slack Web API ────────────────────────────────────────────────────────────
@@ -128,6 +162,8 @@ function buildModal(reporters) {
         element: { type: "static_select", action_id: "v", placeholder: { type: "plain_text", text: "Choose a reporter" }, options } },
       { type: "input", block_id: "week", label: { type: "plain_text", text: "Week commencing" },
         element: (() => { const opts = weekOptions(); return { type: "static_select", action_id: "v", options: opts, initial_option: opts.find(o => o.text.text.includes("(this week)")) }; })() },
+      { type: "input", block_id: "slot", label: { type: "plain_text", text: "Story slot" },
+        element: (() => { const opts = slotOptions(); return { type: "static_select", action_id: "v", options: opts, initial_option: opts[0] }; })() },
       { type: "input", block_id: "headline", label: { type: "plain_text", text: "Headline / working title" },
         element: { type: "plain_text_input", action_id: "v" } },
       { type: "input", block_id: "angle", optional: true, label: { type: "plain_text", text: "Angle" },
@@ -164,7 +200,9 @@ export default async (req) => {
         const sel = JSON.parse(val(payload.view, "reporter"));
         const picked = val(payload.view, "week");
         const week = /^\d{4}-\d{2}-\d{2}$/.test(picked) ? picked : mondayOfNow();
-        const num = await nextExtraNum(sel.r, sel.p, week);
+        const slot = resolveSlot(val(payload.view, "slot") || "extra", sel.p, week, await weekRows(sel.r, sel.p, week));
+        if (slot.error) return new Response(JSON.stringify({ response_action: "errors", errors: { slot: slot.error } }), { status: 200, headers: { "Content-Type": "application/json" } });
+        const num = slot.num;
         const row = buildRow({
           reporter: sel.r, pub: sel.p, week, num,
           headline: val(payload.view, "headline"),
@@ -176,7 +214,7 @@ export default async (req) => {
         await supa("POST", TABLE, row, "return=minimal");
         await slack("chat.postMessage", {
           channel: payload.user.id,
-          text: `:white_check_mark: Assigned to *${sel.r}* — ${sel.p}, week of ${week}, extra slot ${num}.\n> ${row.headline || "(no headline yet)"}`,
+          text: `:white_check_mark: Assigned to *${sel.r}* — ${sel.p}, week of ${week}, ${slot.label}.\n> ${row.headline || "(no headline yet)"}`,
         }).catch(() => {});
         return new Response("", { status: 200 }); // empty 200 closes the modal
       } catch (e) {
