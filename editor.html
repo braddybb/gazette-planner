@@ -5038,20 +5038,32 @@ function vdPlanOf(w){ if(!VD.plan||typeof VD.plan!=='object'||Array.isArray(VD.p
 function vdPlanDone(w,id){
   var P=(VD.plan&&VD.plan[w])||{state:{}}; var st=(P.state||{})[id]||{};
   if(id.indexOf('impact:')===0){ var nm=id.slice(7); var x=(VD_INFO||[]).filter(function(i){return i.rep.name===nm;})[0]; if(!x) return !!st.done; var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; var row=sl&&(x.d[w]||{})[sl.n]; return !!(row&&row.filed)||!!st.done; }
+  if(id.indexOf('shoot:')===0){ var sn=id.slice(6); var sx=(VD_INFO||[]).filter(function(i){return i.rep.name===sn;})[0]; var ssl=sx&&sx.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,sx.rep.pub));})[0]; var lo=vdAddDays(w,4), hi=vdAddDays(w,9);
+    return !!st.done||!!(ssl&&(VD.projects||[]).some(function(p){ return p.reporter===sn&&p.slot===ssl.n&&p.shootDate&&p.shootDate>=lo&&p.shootDate<=hi; })); }
   if(id==='series') return (VD.series||[]).some(function(s){return s.started===w;})||!!st.done;
   if(id.indexOf('chk:')===0) return !!(VD.checklist&&VD.checklist[w]&&VD.checklist[w][id.slice(4)]);
   if(id==='linkedin') return !!st.done||!!(VD.checklist&&VD.checklist[w]&&VD.checklist[w].brandpub);
   if(id.indexOf('task:')===0){ var t=VD_TASKS.filter(function(t){return 'task:'+t.id===id;})[0]; return !!(t&&t.done); }
   return !!st.done;
 }
+function vdPlanPre(id){ return id.indexOf('impact:')===0?'Impact video — ':(id.indexOf('shoot:')===0?'Next Impact shoot — ':''); }
 function vdPlanItems(info){
   var P=vdPlanOf(WEEK), items=[], lockedIds={};
   ((P.locked&&P.locked.items)||[]).forEach(function(i){ lockedIds[i.id]=1; });
-  info.forEach(function(x){
+  // Wed→Wed Impact starts with pitches on Wed 11 Nov, so no Impact video is due in w/c 9 Nov; first ones land Wed 18 Nov.
+  var impactOn=!(WEEK>='2026-11-09'&&WEEK<'2026-11-16');
+  if(impactOn) info.forEach(function(x){
     var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; if(!sl) return;
     var row=(x.d[WEEK]||{})[sl.n];
-    items.push({id:'impact:'+x.rep.name,grp:'Impact videos',label:vdFirst(x.rep.name),sub:row&&row.headline?row.headline:'',owner:'reporter',rep:x.rep,away:!!x.ai.full});
+    items.push({id:'impact:'+x.rep.name,grp:'Impact videos',label:vdFirst(x.rep.name),sub:(row&&row.headline?row.headline+' · ':'')+(WEEK>='2026-11-16'?'due Wed EoD':''),owner:'reporter',rep:x.rep,away:!!x.ai.full,due:WEEK>='2026-11-16'?2:undefined});
   });
+  // Next cycle: the Impact pitched this Wednesday is filed next Wednesday, so its shoot has to be booked by Friday.
+  if(WEEK>='2026-11-09') info.forEach(function(x){
+    var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; if(!sl) return;
+    var nrow=(x.d[vdAddDays(WEEK,7)]||{})[sl.n];
+    items.push({id:'shoot:'+x.rep.name,grp:'Next Impact shoots',label:vdFirst(x.rep.name),sub:(nrow&&nrow.headline?nrow.headline+' · ':'')+'book by Fri',owner:'Nick',rep:x.rep,away:!!x.ai.full,due:4,shootSlot:sl.n});
+  });
+  if(WEEK>='2026-11-09') items.push({id:'pitchreview',grp:'Every week',label:'Review Impact pitches (video angle)',sub:'pitches land Wed, Kitty’s feedback Thu',owner:'Nick',due:3});
   items.push({id:'linkedin',grp:'Gazette LinkedIn',label:'Publish a video to the Gazette LinkedIn',owner:'Nick'});
   items.push({id:'series',grp:'New series',label:'One reporter tries a new series',owner:'Nick'});
   var chkNames={heat:'Run HEAT',casestudy:'Case study deck — written & filed',flag:'Friday wrap to Brad',pubteam:'Report to publishing team'};
@@ -5061,11 +5073,12 @@ function vdPlanItems(info){
   var ds=vdDayState();
   items.forEach(function(it){
     var s=P.state[it.id]||{}; it.day=s.day||''; it.how=s.how||''; it.why=s.why||''; it.skip=!!s.skip; it.done=vdPlanDone(WEEK,it.id);
-    it.manual=!(it.id.indexOf('impact:')===0||it.id==='series'||it.id.indexOf('task:')===0);
-    it.auto=it.done&&!s.done&&(it.id.indexOf('impact:')===0||it.id==='series'||it.id.indexOf('task:')===0);
-    var di=DAYS.indexOf(it.day);
+    it.manual=!(it.id.indexOf('impact:')===0||it.id.indexOf('shoot:')===0||it.id==='series'||it.id.indexOf('task:')===0);
+    it.auto=it.done&&!s.done&&(it.id.indexOf('impact:')===0||it.id.indexOf('shoot:')===0||it.id==='series'||it.id.indexOf('task:')===0);
+    var di=DAYS.indexOf(it.day); it.over=(it.due!==undefined&&di>it.due&&!it.done);
+    it.slipDay=(it.day&&di<=(it.due===undefined?9:it.due))?it.day:(it.due!==undefined?DAYS[it.due]:it.day);
     if(it.away) it.st='away'; else if(it.done) it.st='done'; else if(it.skip) it.st='skipped'; else if(!it.day) it.st='unplanned'; else if(ds.state==='past') it.st='missed';
-    else if(ds.state==='current'&&di<ds.idx) it.st='slipped'; else if(ds.state==='current'&&di===ds.idx) it.st='today'; else it.st='planned';
+    else if(ds.state==='current'&&(di<ds.idx||(it.due!==undefined&&ds.idx>it.due))) it.st='slipped'; else if(ds.state==='current'&&di===ds.idx) it.st='today'; else it.st='planned';
   });
   return items;
 }
@@ -5085,17 +5098,17 @@ function vdPlanDel(id){ var P=vdPlanOf(WEEK); P.custom=P.custom.filter(function(
 function vdPlanCarry(label){ var P=vdPlanOf(WEEK); P.custom.push({id:'x:'+Date.now().toString(36),label:label}); VD_PLAN_OPEN=true; saveVD(); renderVideoDesk(); }
 function vdPlanMissed(){   // last week's locked items that never landed
   var pw=vdAddDays(WEEK,-7), P=VD.plan&&VD.plan[pw]; if(!P||!P.locked) return [];
-  return P.locked.items.filter(function(i){ return !vdPlanDone(pw,i.id)&&i.status!=='skip'&&i.status!=='away'&&!(((P.state||{})[i.id]||{}).skip); }).map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,why:((P.state||{})[i.id]||{}).why||''}; });
+  return P.locked.items.filter(function(i){ return !vdPlanDone(pw,i.id)&&i.status!=='skip'&&i.status!=='away'&&!(((P.state||{})[i.id]||{}).skip); }).map(function(i){ return {label:vdPlanPre(i.id)+i.label,why:((P.state||{})[i.id]||{}).why||''}; });
 }
 async function vdPlanLock(){
   var items=vdPlanItems(VD_INFO), live=items.filter(function(i){return !i.done&&!i.skip&&!i.away;}), gaps=live.filter(function(i){return !i.day;});
   if(gaps.length&&!confirm(gaps.length+' item'+(gaps.length>1?'s have':' has')+' no day yet:\n\n'+gaps.slice(0,6).map(function(i){return '• '+(i.grp==='Impact videos'?'Impact — ':'')+i.label;}).join('\n')+'\n\nLock the week anyway? Your summary will say these are unplanned.')) return;
   var P=vdPlanOf(WEEK), prev=vdClone();
   var stat=function(i){ return i.away?'away':(i.done?'done':(i.skip?'skip':'open')); };
-  P.locked={ts:Date.now(),items:items.map(function(i){ return {id:i.id,label:i.label,who:i.owner,day:i.day,how:i.how,status:stat(i),why:i.why}; })};
+  P.locked={ts:Date.now(),items:items.map(function(i){ return {id:i.id,label:i.label,who:i.owner,day:i.day,how:i.how,status:stat(i),why:i.why,due:i.due}; })};
   var ok=await saveVD(); if(!ok){ VD=prev; renderVideoDesk(); alert('Could not save the plan. Try again.'); return; }
   renderVideoDesk();
-  try{ var sess=await supa.auth.getSession(); fetch('/.netlify/functions/video-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess&&sess.data&&sess.data.session?sess.data.session.access_token:'')},body:JSON.stringify({type:'locked',week:WEEK,items:P.locked.items.map(function(i){ return {label:(i.id.indexOf('impact:')===0?'Impact video — ':'')+i.label,day:i.day,how:i.how,status:i.status,why:i.why}; })})}).catch(function(){}); }catch(e){}
+  try{ var sess=await supa.auth.getSession(); fetch('/.netlify/functions/video-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess&&sess.data&&sess.data.session?sess.data.session.access_token:'')},body:JSON.stringify({type:'locked',week:WEEK,items:P.locked.items.map(function(i){ return {label:vdPlanPre(i.id)+i.label,day:i.day,how:i.how,status:i.status,why:i.why}; })})}).catch(function(){}); }catch(e){}
 }
 function vdPlanHtml(info,ds){
   var items=vdPlanItems(info), P=vdPlanOf(WEEK), L=P.locked;
@@ -5120,10 +5133,10 @@ function vdPlanHtml(info,ds){
         var idq=esc(i.id).replace(/'/g,'&#39;');
         h+='<div class="vd-wp-row'+(i.done||i.skip||i.away?' done':'')+'"><span class="vd-wp-dot" style="background:'+dot+'"></span><div class="vd-wp-what"><b>'+esc(i.label)+'</b>'+(i.sub?' <em>· '+esc(i.sub)+'</em>':'')+(i.src?' <em>· '+i.src+'</em>':'')+'</div>';
         if(i.away) h+='<span class="vd-wp-ok" style="color:#8A8A82">Away this week</span>';
-        else if(i.done&&i.auto) h+='<span class="vd-wp-ok">Landed ✓</span>';
+        else if(i.done&&i.auto) h+='<span class="vd-wp-ok">'+(i.id.indexOf('shoot:')===0?'Shoot booked ✓':'Landed ✓')+'</span>';
         else if(i.skip) h+='<span class="vd-wp-ok" style="color:#8A8A82">Won’t happen</span><a class="vd-wp-lnk" onclick="vdPlanSkip(this.dataset.i,false)" data-i="'+idq+'">Put back</a>';
         else{
-          h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+DAYS.map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
+          h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+DAYS.slice(0,(i.due===undefined?5:i.due+1)).map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
           h+='<input class="vd-wp-how" data-i="'+idq+'" value="'+esc(i.how)+'" placeholder="Note (optional)" onchange="vdPlanSet(this.dataset.i,\'how\',this.value)">';
           h+='<button class="vd-wp-done'+(i.done?' on':'')+'" title="'+(i.done?'Click to undo':'Mark this as done')+'" onclick="vdPlanSet(this.dataset.i,\'done\','+(i.done?'false':'true')+')" data-i="'+idq+'">'+(i.done?'✓ Done':'Mark done')+'</button>';
           if(i.rep) h+='<a class="vd-wp-lnk" onclick="vdPlanAway(this.dataset.n,this.dataset.p)" data-n="'+esc(i.rep.name)+'" data-p="'+esc(i.rep.pub)+'" title="Mark '+esc(vdFirst(i.rep.name))+' as away">Away</a>';
@@ -5132,7 +5145,7 @@ function vdPlanHtml(info,ds){
         }
         h+='</div>';
         if(i.skip&&!i.away) h+='<div class="vd-wp-why vd-wp-skipwhy" style="color:#6A6A62"><span>Why not?</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Reason — this goes in your summary" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"></div>';
-        else if((i.st==='slipped'||i.st==='missed')&&!i.done) h+='<div class="vd-wp-why"><span>Slipped past '+esc(i.day)+' —</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Why, and what’s the new plan?" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"><button class="vd-btn ghost sm" onclick="vdPlanMove(this.dataset.i)" data-i="'+idq+'">Move to '+(vdDayState().idx>=4?'Fri':DAYS[Math.min(4,vdDayState().idx+1)])+'</button></div>';
+        else if((i.st==='slipped'||i.st==='missed')&&!i.done) h+='<div class="vd-wp-why"><span>Slipped past '+esc(i.slipDay)+' —</span><input data-i="'+idq+'" value="'+esc(i.why)+'" placeholder="Why, and what’s the new plan?" onchange="vdPlanSet(this.dataset.i,\'why\',this.value)"><button class="vd-btn ghost sm" onclick="vdPlanMove(this.dataset.i)" data-i="'+idq+'">Move to '+(vdDayState().idx>=4?'Fri':DAYS[Math.min(4,vdDayState().idx+1)])+'</button></div>';
       });
     });
     h+='<div class="vd-ne-add"><input id="vd-wp-new" placeholder="+ Add something Nick has committed to…" onkeydown="if(event.key===\'Enter\')vdPlanAdd()"><button class="vd-btn ghost sm" onclick="vdPlanAdd()">Add</button></div>';
