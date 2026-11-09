@@ -35,6 +35,7 @@ export function scorePlan(plan, ctx) {
   const rows = L.items.map((i) => {
     let done;
     if (i.id.startsWith("impact:")) done = ctx.impactFiled.has(i.id.slice(7));
+    else if (i.id.startsWith("shoot:")) done = !!(st[i.id] && st[i.id].done) || (ctx.shootBooked && ctx.shootBooked.has(i.id.slice(6)));
     else if (i.id === "series") done = ctx.seriesStarted || !!(st[i.id] && st[i.id].done);
     else if (i.id.startsWith("chk:")) done = !!(ctx.checklist && ctx.checklist[i.id.slice(4)]);
     else if (i.id === "linkedin") done = !!(st[i.id] && st[i.id].done) || !!(ctx.checklist && ctx.checklist.brandpub);
@@ -46,7 +47,7 @@ export function scorePlan(plan, ctx) {
   const live = rows.filter((r) => !r.away);
   return { landed: live.filter((r) => r.done), missed: live.filter((r) => !r.done && !r.skip), calledOff: live.filter((r) => !r.done && r.skip), away: rows.filter((r) => r.away) };
 }
-const nm = (i) => (i.id.startsWith("impact:") ? "Impact video — " : "") + i.label;
+const nm = (i) => (i.id.startsWith("impact:") ? "Impact video — " : i.id.startsWith("shoot:") ? "Next Impact shoot — " : "") + i.label;
 export function fridayText(week, sc) {
   const L = [`:chart_with_upwards_trend: *Video Desk — week of ${week}: ${sc.landed.length} of ${sc.landed.length + sc.missed.length} landed*`];
   if (sc.landed.length) L.push("*Landed:* " + sc.landed.map(nm).join(", "));
@@ -61,7 +62,7 @@ const DAYN = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 export function dueNotLanded(plan, ctx, today) {
   const sc = scorePlan(plan, ctx); if (!sc) return null;
   const ti = DAYN.indexOf(today);
-  return sc.missed.filter((m) => m.day && DAYN.indexOf(m.day) <= ti);
+  return sc.missed.filter((m) => (m.day && DAYN.indexOf(m.day) <= ti) || (typeof m.due === "number" && m.due <= ti));
 }
 export function closeText(list) {
   const L = [`:alarm_clock: *4pm check* — ${list.length} thing${list.length > 1 ? "s were" : " was"} planned for today or earlier and ${list.length > 1 ? "haven't" : "hasn't"} landed:`];
@@ -137,5 +138,11 @@ async function context(VD, week) {
   const flags = await sget("system_flags?select=key,value&key=like.videotask%25&order=key.asc&limit=1000");
   const done = {};
   flags.forEach((f) => { if (f.key.startsWith("videotaskdone:")) { try { const v = JSON.parse(f.value); done[v.id] = !!v.done; } catch {} } });
-  return { impactFiled, seriesStarted: (VD.series || []).some((s) => s.started === week), tasksDone: new Set(Object.keys(done).filter((k) => done[k])), checklist: (VD.checklist && VD.checklist[week]) || {}, impactRows: rows };
+  // Next Impact shoots: a video project for that reporter's Impact slot with a shoot date from this Friday to next Wednesday.
+  const addD = (ymd, n) => { const [y, m, d] = ymd.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };
+  const lo = addD(week, 4), hi = addD(week, 9), shootBooked = new Set();
+  (VD.projects || []).forEach((p) => { if (p.shootDate && p.shootDate >= lo && p.shootDate <= hi && p.reporter && (/national/i.test(p.pub || "") ? p.slot === "07" : p.slot === "04")) shootBooked.add(p.reporter); });
+  // Wed→Wed Impact starts with pitches on Wed 11 Nov: no Impact video is due in the week of 9 Nov.
+  if (week === "2026-11-09") rows.length = 0;
+  return { shootBooked, impactFiled, seriesStarted: (VD.series || []).some((s) => s.started === week), tasksDone: new Set(Object.keys(done).filter((k) => done[k])), checklist: (VD.checklist && VD.checklist[week]) || {}, impactRows: rows };
 }
