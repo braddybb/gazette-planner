@@ -12,7 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { parseFeed, fetchText, adapterHtml, db, titleKey, normUrl, sha, matchWatch, MAX_AGE_HOURS, BATCH, stripHtml, clip } from "./impact-lib.mjs";
 
-export const PATCHES = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga — Wannon", "West Vic Brolga — Ballarat", "Gippsland Monitor", "Mid North Coaster", "National Account"];
+export const PATCHES = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga — Wannon", "West Vic Brolga — Ballarat", "Gippsland Monitor", "Mid North Coaster", "The Moreton Bay Bugle", "National Account"];
 export const SCORE_PER_RUN = 400;
 export const ALERT_MIN = 85;     // default relevance needed for a Slack DM; each reporter can change theirs in their planner (system_flags patchpref:*)
 export const ALERT_FLOOR = 60;   // lowest threshold a reporter can pick

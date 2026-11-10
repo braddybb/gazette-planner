@@ -16,7 +16,7 @@ export const BATCH = 8;                 // items per AI call
 export const TOPICS = ["climate", "energy", "environment", "water", "land & agriculture", "mining & resources", "transport & EVs", "politics & policy", "corporate & finance", "science & data", "local & regional"];
 export const KINDS = ["news", "press release", "report / data", "announcement", "social", "opinion"];
 export const JURIS = ["national", "NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT", "unknown"];
-export const MASTHEADS = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga", "Gippsland Monitor", "Mid North Coaster", "National Account"];
+export const MASTHEADS = ["Eastern Melburnian", "North Shore Lorikeet", "West Vic Brolga", "Gippsland Monitor", "Mid North Coaster", "The Moreton Bay Bugle", "National Account"];
 
 // ── text helpers ─────────────────────────────────────────────────────────────
 export function stripHtml(html) {
@@ -169,7 +169,7 @@ For every numbered item give:
   70-89: strongly on-beat and worth the editor's attention today.
   40-69: useful background, commentary, an incremental development, or relevant only by a stretch.
   0-39: not our beat, non-Australian, trivia, a routine corporate/admin notice, or nothing new.
-- topics (from the allowed list), kind, jurisdiction (the Australian state or "national"; "unknown" if unclear), and mastheads: which of our mastheads' patches this could genuinely touch (Eastern Melburnian = Melbourne's east; North Shore Lorikeet = Sydney's north shore; West Vic Brolga = Ballarat and western Victoria; Gippsland Monitor = Gippsland and Western Port; Mid North Coaster = NSW mid north coast; National Account = national stories). Use [] if none.
+- topics (from the allowed list), kind, jurisdiction (the Australian state or "national"; "unknown" if unclear), and mastheads: which of our mastheads' patches this could genuinely touch (Eastern Melburnian = Melbourne's east; North Shore Lorikeet = Sydney's north shore; West Vic Brolga = Ballarat and western Victoria; Gippsland Monitor = Gippsland and Western Port; Mid North Coaster = NSW mid north coast; The Moreton Bay Bugle = the Moreton Bay region north of Brisbane, Queensland (Redcliffe, Caboolture, Strathpine, Bribie Island); National Account = national stories). Use [] if none.
 - why: one plain sentence (max 22 words) naming the concrete thing that is new or notable. No hype. If only a headline was given, say so.
 - angle: only if relevance >= 55; max 28 words; a reportable angle with an accountability or local hook. Otherwise an empty string.
 

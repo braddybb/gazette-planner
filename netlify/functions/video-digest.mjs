@@ -31,7 +31,7 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 export const ROSTER = [
   { name: "Douglas Connor", pub: "Mid North Coaster" }, { name: "Huw Bradshaw", pub: "North Shore Lorikeet" },
   { name: "Matthew Sims", pub: "Eastern Melburnian" }, { name: "Zara Cuthbertson", pub: "West Vic Brolga — Wannon" },
-  { name: "Darcie Humphreys", pub: "West Vic Brolga — Ballarat" }, { name: "Jacob Wallace", pub: "Gippsland Monitor" },
+  { name: "Darcie Humphreys", pub: "West Vic Brolga — Ballarat" }, { name: "Jacob Wallace", pub: "Gippsland Monitor" }, { name: "Tione Zylstra", pub: "The Moreton Bay Bugle" },
   { name: "Archie Milligan", pub: "National Account" },
 ];
 export const QUIET_DAYS = 14;
