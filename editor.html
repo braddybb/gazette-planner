@@ -1514,6 +1514,7 @@ const PUB_TO_BRAND = {
   'West Vic Brolga — Wannon': 'WVB',
   'West Vic Brolga — Ballarat': 'WVB',
   'Gippsland Monitor': 'GM',
+  'The Moreton Bay Bugle': 'MBB',
   'Eastern Melburnian': 'EM',
   'National Account': 'NA',
 };
@@ -1657,6 +1658,7 @@ const REPORTERS = [
   {name:'Zara Cuthbertson',    pub:'West Vic Brolga — Wannon',   region:'Victoria'},
   {name:'Darcie Humphreys',    pub:'West Vic Brolga — Ballarat', region:'Victoria'},
   {name:'Jacob Wallace',       pub:'Gippsland Monitor',          region:'Victoria'},
+  {name:'Tione Zylstra',       pub:'The Moreton Bay Bugle',      region:'Queensland'},
   {name:'Archie Milligan',     pub:'National Account',           region:'National'},
 ];
 
@@ -1678,7 +1680,7 @@ function slackMention(name) {
 }
 
 // Region display order
-const REGION_ORDER = ['New South Wales', 'Victoria', 'National'];
+const REGION_ORDER = ['New South Wales', 'Victoria', 'Queensland', 'National'];
 
 // Victorian mastheads get one "Story" slot relabelled to "Election" from
 // the week of Monday 3 August 2026 onward — mirrors the same logic in the
@@ -6579,7 +6581,7 @@ function irEl(){ return document.getElementById('impact-radar-view'); }
 
 // ── Patch Radar admin: scan, source health, on/off, add. Reporters read the results in their planner ("Your patch"). ──
 var PR={sources:[],runs:[],items:0,err:'',scanning:false,msg:'',patch:'all',tab:'results',rpatch:'Mid North Coaster',rows:[],counts:{},unscored:0};
-var PR_PATCHES=['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','National Account'];
+var PR_PATCHES=['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','The Moreton Bay Bugle','National Account'];
 function openPatchRadar(){ hideAllViews(); document.getElementById('patch-radar-view').style.display='block'; prLoad(); }
 function closePatchRadar(){ document.getElementById('patch-radar-view').style.display='none'; document.getElementById('main-view').style.display='block'; }
 async function prLoad(){
@@ -6624,7 +6626,7 @@ function prRender(){
   if(PR.tab==='results'){ el.innerHTML=h+prResultsHtml(); return; }
   var bad=PR.sources.filter(function(s){ return s.last_error; }).length, ok=PR.sources.filter(function(s){ return s.last_ok&&!s.last_error; }).length;
   h+='<div class="ir-panel"><h4>Sources — '+PR.sources.length+' ('+ok+' working'+(bad?', '+bad+' failing':'')+')</h4><p class="cap">Shared sources only keep items that name a place or politician from a patch. “Page” sources have no feed, so the headline links are read. Failing sources probably need a different address — edit the address and the next scan retries.</p>';
-  var pats=['all'].concat(['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','National Account']);
+  var pats=['all'].concat(['Eastern Melburnian','North Shore Lorikeet','West Vic Brolga — Wannon','West Vic Brolga — Ballarat','Gippsland Monitor','Mid North Coaster','The Moreton Bay Bugle','National Account']);
   h+='<div class="ir-form" style="margin-bottom:8px"><select onchange="PR.patch=this.value;prRender()">'+pats.map(function(p){ return '<option value="'+esc(p)+'"'+(PR.patch===p?' selected':'')+'>'+(p==='all'?'All patches':esc(p))+'</option>'; }).join('')+'</select><label><input type="checkbox" '+(PR.onlyBad?'checked ':'')+'onchange="PR.onlyBad=this.checked;prRender()"> Only failing</label></div>';
   PR.sources.filter(function(s){ return (PR.patch==='all'||(s.patches||[]).indexOf(PR.patch)>-1)&&(!PR.onlyBad||s.last_error); }).forEach(function(s){
     h+='<div class="ir-row"><label><input type="checkbox"'+(s.active?' checked':'')+' onchange="prActive(\''+esc(s.id)+'\',this.checked)"></label><span class="nm">'+esc(s.name)+'</span><span class="ir-tag">'+esc(s.scope)+'</span><a class="ir-tag" href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">open ↗</a><span class="grow">'+prHealth(s)+'</span><button class="vd-btn sm" onclick="prEditUrl(\''+esc(s.id)+'\')">Edit address</button><button class="vd-del" onclick="prDel(\''+esc(s.id)+'\')" title="Remove">×</button></div>';
