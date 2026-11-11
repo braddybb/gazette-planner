@@ -26,7 +26,7 @@ export const REPORTERS = [
   { name: "Zara Cuthbertson", pub: "West Vic Brolga — Wannon",   slack: "U08LY1YR6E8", base: 10 },
   { name: "Darcie Humphreys", pub: "West Vic Brolga — Ballarat", slack: "U0AFJML3A1G", base: 10 },
   { name: "Jacob Wallace",    pub: "Gippsland Monitor",          slack: "U08DG9R5A6R", base: 10 },
-  { name: "Archie Milligan",  pub: "National Account",           slack: "U08DQ26CEE7", base: 8 },
+  { name: "Archie Milligan",  pub: "National Account",           slack: "U08DQ26CEE7", base: 10 },
 ];
 
 export function shouldRun(now = new Date()) {

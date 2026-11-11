@@ -38,7 +38,7 @@ export const shouldRun = (now = new Date()) => { const s = sydneyParts(now); ret
 const utc = (ymd) => { const [y, m, d] = ymd.split("-").map(Number); return Date.UTC(y, m - 1, d); };
 export const addDays = (ymd, n) => new Date(utc(ymd) + n * 864e5).toISOString().slice(0, 10);
 export const mondayOf = (ymd) => { const d = new Date(utc(ymd)); const dow = d.getUTCDay(); d.setUTCDate(d.getUTCDate() + (dow === 0 ? -6 : 1 - dow)); return d.toISOString().slice(0, 10); };
-export const baseCountFor = (pub) => (/^National Account/.test(pub || "") ? 8 : 10);
+export const baseCountFor = (pub) => (/^National Account/.test(pub || "") ? 10 : 10);
 
 export function shouldCarry(row) {
   return !!(row && row.assigned_by && !row.filed && (!row.status || row.status === "open") && row.headline);
