@@ -526,8 +526,10 @@ border:0.5px solid #AABBEE;border-radius:7px;padding:6px 12px;cursor:pointer;fon
 .suggest-results{margin-top:8px}
 .stk-btn{font-size:12px;font-weight:600;color:#fff;background:var(--blue);border:0;border-radius:6px;padding:6px 10px;cursor:pointer;margin-left:6px}
 .stk-btn:hover{background:var(--blue-dk)}
-.stk-panel{margin-top:10px;border:1px solid var(--blue);border-radius:8px;padding:12px;background:#FAFAFF}
-.stk-panel:empty{display:none}
+.stk-overlay{position:fixed;inset:0;background:rgba(17,17,17,.45);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px 16px;overflow-y:auto}
+.stk-panel{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:480px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.stk-title{font-size:16px;font-weight:700;color:#111}
+.stk-sub{font-size:12.5px;color:var(--grey-md,#888);margin:2px 0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stk-g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .stk-l{font-size:11px;font-weight:600;color:var(--grey-md,#888);margin:8px 0 3px}
 .stk-g .stk-l:first-child,.stk-g > div:nth-child(-n+2) .stk-l{margin-top:0}
@@ -3130,7 +3132,6 @@ sgDiv.className = 'suggest-contacts-wrap';
 sgDiv.innerHTML =
 '<button class="suggest-contacts-btn" onclick="suggestContacts(\'' + s.n + '\')">&#128100; Suggest contacts</button>' +
 '<button class="stk-btn" onclick="stkOpen(\'' + s.n + '\')">&#65291; Add a source to the tracker</button>' +
-'<div class="stk-panel" id="stk-' + s.n + '"></div>' +
 '<div class="suggest-results" id="suggest-' + s.n + '"></div>';
 body.appendChild(sgDiv);
 
@@ -5262,12 +5263,25 @@ function stkTopics(num) {
   const words = [st.headline, st.angle].filter(Boolean).join(' ').toLowerCase().replace(/[^\w\s-]/g, ' ').split(/\s+/).filter(w => w.length > 3 && !stop.has(w));
   return Array.from(new Set(words)).slice(0, 4).join(', ');
 }
+function stkOverlay() {
+  let o = document.getElementById('stk-overlay');
+  if (!o) {
+    o = document.createElement('div'); o.id = 'stk-overlay'; o.className = 'stk-overlay'; o.style.display = 'none';
+    o.innerHTML = '<div class="stk-panel" id="stk-panel"></div>';
+    o.addEventListener('mousedown', function(ev) { if (ev.target === o) stkClose(STK.cur, false); });
+    document.addEventListener('keydown', function(ev) { if (ev.key === 'Escape' && o.style.display !== 'none') stkClose(STK.cur, false); });
+    document.body.appendChild(o);
+  }
+  return o;
+}
 function stkOpen(num, filing) {
-  const box = document.getElementById('stk-' + num); if (!box) return;
-  STK[num] = { tier: 'network' };
+  const o = stkOverlay(); const box = document.getElementById('stk-panel');
+  STK.cur = num; STK[num] = { tier: 'network' };
   const e = v => esc(v || '');
+  const hl = (DATA[num] && DATA[num].headline) ? DATA[num].headline : '';
   box.innerHTML =
-    (filing ? '<div class="stk-fil"><b>Story filed ✓</b> — speak to anyone new for this one?</div>' : '') +
+    '<div class="stk-title">' + (filing ? 'Story filed ✓ — speak to anyone new for this one?' : 'Add a source to the tracker') + '</div>' +
+    '<div class="stk-sub">' + (hl ? e(hl) : '&nbsp;') + '</div>' +
     '<div class="stk-g"><div><div class="stk-l">Name *</div><input type="text" id="stk-name-' + num + '" placeholder="Full name"></div>' +
     '<div><div class="stk-l">Role / organisation</div><input type="text" id="stk-role-' + num + '" placeholder="e.g. Resident, Redcliffe Ferry Users"></div>' +
     '<div><div class="stk-l">Phone or email</div><input type="text" id="stk-contact-' + num + '"></div>' +
@@ -5276,6 +5290,7 @@ function stkOpen(num, filing) {
     '<div class="stk-l">Who can see this contact?</div>' +
     '<div class="stk-seg" id="stk-seg-' + num + '"><span class="on" data-t="network" onclick="stkTier(\'' + num + '\',\'network\')">Network — everyone</span><span data-t="private" onclick="stkTier(\'' + num + '\',\'private\')">Only me</span><span data-t="confidential" onclick="stkTier(\'' + num + '\',\'confidential\')">Confidential</span></div>' +
     '<div class="stk-row"><button class="stk-save" id="stk-save-' + num + '" onclick="stkSave(\'' + num + '\')">Save to tracker</button><button class="stk-cancel" onclick="stkClose(\'' + num + '\',' + (filing ? 'true' : 'false') + ')">' + (filing ? 'Nobody new' : 'Cancel') + '</button><span class="stk-msg" id="stk-msg-' + num + '"></span></div>';
+  o.style.display = 'flex';
   const n = document.getElementById('stk-name-' + num); if (n) n.focus();
 }
 function stkTier(num, t) {
@@ -5283,14 +5298,15 @@ function stkTier(num, t) {
   document.querySelectorAll('#stk-seg-' + num + ' span').forEach(x => x.classList.toggle('on', x.dataset.t === t));
 }
 function stkClose(num, skip) {
-  const box = document.getElementById('stk-' + num); if (box) box.innerHTML = '';
-  if (skip) { try { localStorage.setItem(stkSkipKey(num), '1'); } catch(e) {} }
+  const o = document.getElementById('stk-overlay'); if (o) o.style.display = 'none';
+  if (skip && num) { try { localStorage.setItem(stkSkipKey(num), '1'); } catch(e) {} }
 }
 function stkFilingPrompt(num) {
   let skipped = false; try { skipped = !!localStorage.getItem(stkSkipKey(num)); } catch(e) {}
   if (skipped) return;
-  const box = document.getElementById('stk-' + num);
-  if (box && !box.innerHTML.trim()) stkOpen(num, true);
+  const o = document.getElementById('stk-overlay');
+  if (o && o.style.display !== 'none') return;
+  stkOpen(num, true);
 }
 async function stkSave(num) {
   const g = id => { const el = document.getElementById(id + '-' + num); return el ? el.value.trim() : ''; };
