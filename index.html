@@ -524,6 +524,25 @@ border:0.5px solid #AABBEE;border-radius:7px;padding:6px 12px;cursor:pointer;fon
 .suggest-contacts-btn:hover{background:var(--blue);color:#fff}
 .suggest-contacts-btn:disabled{opacity:.5;cursor:default}
 .suggest-results{margin-top:8px}
+.stk-btn{font-size:12px;font-weight:600;color:#fff;background:var(--blue);border:0;border-radius:6px;padding:6px 10px;cursor:pointer;margin-left:6px}
+.stk-btn:hover{background:var(--blue-dk)}
+.stk-panel{margin-top:10px;border:1px solid var(--blue);border-radius:8px;padding:12px;background:#FAFAFF}
+.stk-panel:empty{display:none}
+.stk-g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stk-l{font-size:11px;font-weight:600;color:var(--grey-md,#888);margin:8px 0 3px}
+.stk-g .stk-l:first-child,.stk-g > div:nth-child(-n+2) .stk-l{margin-top:0}
+.stk-panel input[type=text]{width:100%;border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:#111;outline:none}
+.stk-panel input[type=text]:focus{border-color:var(--blue)}
+.stk-seg{display:flex;border:0.5px solid var(--border);border-radius:6px;overflow:hidden;width:max-content;max-width:100%}
+.stk-seg span{padding:6px 12px;font-size:12px;background:#fff;cursor:pointer;user-select:none}
+.stk-seg span.on{background:var(--blue);color:#fff}
+.stk-row{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.stk-save{font-size:12px;font-weight:600;color:#fff;background:var(--blue);border:0;border-radius:6px;padding:7px 12px;cursor:pointer}
+.stk-save:disabled{opacity:.5;cursor:default}
+.stk-cancel{font-size:12px;font-weight:600;color:#444;background:#eee;border:0;border-radius:6px;padding:7px 12px;cursor:pointer}
+.stk-msg{font-size:12.5px;color:var(--grey-dk,#444)}
+.stk-msg.ok{color:#15803D;font-weight:600}.stk-msg.err{color:#B91C1C}
+.stk-fil{font-size:13px;color:#111;margin-bottom:2px}
 .suggest-results:empty{margin-top:0}
 .suggest-card{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--border);
 border-radius:9px;padding:10px 12px;margin-bottom:6px;animation:rise .25s ease}
@@ -3110,6 +3129,8 @@ const sgDiv = document.createElement('div');
 sgDiv.className = 'suggest-contacts-wrap';
 sgDiv.innerHTML =
 '<button class="suggest-contacts-btn" onclick="suggestContacts(\'' + s.n + '\')">&#128100; Suggest contacts</button>' +
+'<button class="stk-btn" onclick="stkOpen(\'' + s.n + '\')">&#65291; Add a source to the tracker</button>' +
+'<div class="stk-panel" id="stk-' + s.n + '"></div>' +
 '<div class="suggest-results" id="suggest-' + s.n + '"></div>';
 body.appendChild(sgDiv);
 
@@ -3489,6 +3510,7 @@ refreshFiledStamp(num);
 if (checked) stampFiled(num);
 updateProgress();
 scheduleSave(num);
+if (checked) stkFilingPrompt(num);
 }
 
 function bounceFiledCheckbox(num) {
@@ -5229,6 +5251,71 @@ console.error('suggestContacts failed:', err);
 } finally {
 if (btn) btn.disabled = false;
 }
+}
+
+// ══ Add a source to the Source Tracker — one button, one small form (card button + filing prompt) ══
+const STK = {};   // per-card form state: { tier }
+function stkSkipKey(num) { return 'gz_stkskip|' + USER.name + '|' + USER.pub + '|' + WEEK + '|' + num; }
+function stkTopics(num) {
+  const st = DATA[num] || {};
+  const stop = new Set(['the','and','for','with','from','this','that','are','was','were','will','what','about','into','over','after','before','their','have','has','how','why','who','new','under','near','still','says','say','not','but','its','your','our','more','than','they','them','been','can','could','should','would','local','council']);
+  const words = [st.headline, st.angle].filter(Boolean).join(' ').toLowerCase().replace(/[^\w\s-]/g, ' ').split(/\s+/).filter(w => w.length > 3 && !stop.has(w));
+  return Array.from(new Set(words)).slice(0, 4).join(', ');
+}
+function stkOpen(num, filing) {
+  const box = document.getElementById('stk-' + num); if (!box) return;
+  STK[num] = { tier: 'network' };
+  const e = v => esc(v || '');
+  box.innerHTML =
+    (filing ? '<div class="stk-fil"><b>Story filed ✓</b> — speak to anyone new for this one?</div>' : '') +
+    '<div class="stk-g"><div><div class="stk-l">Name *</div><input type="text" id="stk-name-' + num + '" placeholder="Full name"></div>' +
+    '<div><div class="stk-l">Role / organisation</div><input type="text" id="stk-role-' + num + '" placeholder="e.g. Resident, Redcliffe Ferry Users"></div>' +
+    '<div><div class="stk-l">Phone or email</div><input type="text" id="stk-contact-' + num + '"></div>' +
+    '<div><div class="stk-l">Suburb</div><input type="text" id="stk-suburb-' + num + '"></div></div>' +
+    '<div class="stk-l">Topics (from this story — edit if wrong)</div><input type="text" id="stk-topics-' + num + '" value="' + e(stkTopics(num)) + '">' +
+    '<div class="stk-l">Who can see this contact?</div>' +
+    '<div class="stk-seg" id="stk-seg-' + num + '"><span class="on" data-t="network" onclick="stkTier(\'' + num + '\',\'network\')">Network — everyone</span><span data-t="private" onclick="stkTier(\'' + num + '\',\'private\')">Only me</span><span data-t="confidential" onclick="stkTier(\'' + num + '\',\'confidential\')">Confidential</span></div>' +
+    '<div class="stk-row"><button class="stk-save" id="stk-save-' + num + '" onclick="stkSave(\'' + num + '\')">Save to tracker</button><button class="stk-cancel" onclick="stkClose(\'' + num + '\',' + (filing ? 'true' : 'false') + ')">' + (filing ? 'Nobody new' : 'Cancel') + '</button><span class="stk-msg" id="stk-msg-' + num + '"></span></div>';
+  const n = document.getElementById('stk-name-' + num); if (n) n.focus();
+}
+function stkTier(num, t) {
+  if (STK[num]) STK[num].tier = t;
+  document.querySelectorAll('#stk-seg-' + num + ' span').forEach(x => x.classList.toggle('on', x.dataset.t === t));
+}
+function stkClose(num, skip) {
+  const box = document.getElementById('stk-' + num); if (box) box.innerHTML = '';
+  if (skip) { try { localStorage.setItem(stkSkipKey(num), '1'); } catch(e) {} }
+}
+function stkFilingPrompt(num) {
+  let skipped = false; try { skipped = !!localStorage.getItem(stkSkipKey(num)); } catch(e) {}
+  if (skipped) return;
+  const box = document.getElementById('stk-' + num);
+  if (box && !box.innerHTML.trim()) stkOpen(num, true);
+}
+async function stkSave(num) {
+  const g = id => { const el = document.getElementById(id + '-' + num); return el ? el.value.trim() : ''; };
+  const name = g('stk-name'); const msg = document.getElementById('stk-msg-' + num); const btn = document.getElementById('stk-save-' + num);
+  if (!name) { if (msg) { msg.className = 'stk-msg err'; msg.textContent = 'Add a name first.'; } document.getElementById('stk-name-' + num).focus(); return; }
+  const ct = g('stk-contact'); const isEmail = ct.indexOf('@') > -1;
+  btn.disabled = true; msg.className = 'stk-msg'; msg.textContent = 'Saving…';
+  try {
+    const mine = await supaFetch('GET', `${CONTACTS_TABLE}?reporter=eq.${encodeURIComponent(USER.name)}&publication=eq.${encodeURIComponent(USER.pub)}&select=id,name`) || [];
+    if (mine.some(c => (c.name || '').toLowerCase().trim() === name.toLowerCase())) {
+      msg.className = 'stk-msg ok'; msg.textContent = '✓ Already in your tracker'; btn.disabled = false; return;
+    }
+    await supaFetch('POST', CONTACTS_TABLE, {
+      reporter: USER.name, publication: USER.pub, name: name,
+      role: g('stk-role'), organisation: '', suburb: g('stk-suburb'),
+      phone: isEmail ? '' : ct, email: isEmail ? ct : '',
+      topics: g('stk-topics'), last_contact: null, notes: '',
+      tier: (STK[num] && STK[num].tier) || 'network', updated_at: new Date().toISOString()
+    });
+    msg.className = 'stk-msg ok'; msg.textContent = '✓ Saved to your tracker';
+    setTimeout(() => stkClose(num, false), 1400);
+  } catch (err) {
+    console.error('stkSave failed:', err);
+    msg.className = 'stk-msg err'; msg.textContent = 'Couldn\'t save. Try again, or add it in the Source Tracker.'; btn.disabled = false;
+  }
 }
 
 // ── Password recovery link detection ──
