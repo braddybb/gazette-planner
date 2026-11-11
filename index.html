@@ -1029,6 +1029,7 @@ padding:5px 12px;border-radius:999px}
 
 #patch-nav-label:empty::before{content:'Patch'}
 .more-menu .sound-toggle::after{content:'Sound';margin-left:2px;font-size:13px}
+.story-card.is-open{grid-column:1/-1}
 .tools-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
 .tools-row .stk-btn{margin-left:0}
 .tools-row button{font-size:11.5px;padding:5px 9px}
@@ -3617,6 +3618,22 @@ scheduleSave(num);
 if (checked) stkFilingPrompt(num);
 }
 
+
+// Open cards span the full row, placed directly under the row they were opened in.
+function layoutOpenCards() {
+const grid = document.querySelector('#stories-container .stories-grid'); if (!grid) return;
+const cols = Math.max(1, getComputedStyle(grid).gridTemplateColumns.split(' ').length);
+const cards = [...grid.children].filter(c => c.classList && c.classList.contains('story-card'));
+cards.forEach((c, i) => {
+const open = !!c.querySelector('.card-body.open, [id^="body-"].open');
+c.classList.toggle('is-open', open);
+c.style.order = open ? (Math.min(cards.length - 1, Math.floor(i / cols) * cols + cols - 1) * 2 + 1) : (i * 2);
+});
+}
+let _loRaf = null;
+function queueLayout() { if (_loRaf) return; _loRaf = requestAnimationFrame(() => { _loRaf = null; layoutOpenCards(); }); }
+window.addEventListener('resize', queueLayout);
+new MutationObserver(queueLayout).observe(document.getElementById('stories-container'), { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
 function toggleMore(e) { if (e) e.stopPropagation(); const m = document.getElementById('more-menu'); if (m) { m.classList.toggle('show'); if (m.classList.contains('show')) logUse('open_more_menu'); } }
 document.addEventListener('click', function(e) { const m = document.getElementById('more-menu'); if (m && m.classList.contains('show') && !(e.target.closest && e.target.closest('.more-wrap') && e.target.closest('.more-menu'))) m.classList.remove('show'); });
 function toggleCardMenu(num) {
