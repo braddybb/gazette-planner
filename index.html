@@ -1002,7 +1002,7 @@ padding:5px 12px;border-radius:999px}
 
 
 #patch-nav,#patch-nav span{white-space:nowrap}
-@media(max-width:1480px){#patch-nav-label{display:none}}
+
 .pt-wrap{max-width:820px}
 .pt-prefs{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 12px;font-size:12.5px;color:#4a4a44}
 .pt-prefs select{margin-left:6px;border:1px solid #D9D6CC;border-radius:8px;padding:4px 8px;font-family:inherit;font-size:12.5px;background:#fff}
@@ -1026,6 +1026,51 @@ padding:5px 12px;border-radius:999px}
 .pt-btn:disabled{opacity:.55;cursor:default}
 .pt-mention{display:inline-block;background:#FFF1C9;color:#6b5000;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600;margin-left:6px}
 .pt-empty{padding:28px 8px;color:#8a887e;font-size:13.5px;text-align:center}
+
+#patch-nav-label:empty::before{content:'Patch'}
+.more-menu .sound-toggle::after{content:'Sound';margin-left:2px;font-size:13px}
+.tools-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.tools-row .stk-btn{margin-left:0}
+.tools-row button{font-size:11.5px;padding:5px 9px}
+.suggest-contacts-wrap{margin-top:0}
+/* ── Cleanup: lock-in, card menu, before-you-file, More menu, radar, banners ── */
+.filed-row{flex-wrap:wrap}
+.filed-spacer{flex:1}
+.save-state{font-size:12px;color:var(--grey-md);white-space:nowrap}
+.save-state.locked{color:var(--success)}
+.save-state.draft{color:#9A4400}
+.lock-btn{font-size:12.5px;font-weight:600;padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--grey-md);cursor:pointer;font-family:inherit}
+.lock-btn:disabled{opacity:.5;cursor:default}
+.lock-btn.ready{background:var(--blue);border-color:var(--blue);color:#fff}
+.lock-btn.ready:hover{opacity:.9}
+.card-more-wrap{position:relative}
+.card-more-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:16px;line-height:1;color:var(--grey-md);font-family:inherit}
+.card-more-btn:hover{background:#f4f4f4}
+.card-menu{display:none;position:absolute;right:0;bottom:36px;min-width:190px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:5px;z-index:30}
+.card-menu.show{display:block}
+.card-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;color:#222}
+.card-menu button:hover{background:#f2f4ff}
+.card-menu button.danger{color:#b00020}
+.card-menu button.danger:hover{background:#fff1f1}
+.before-file{margin-top:10px;border:1px solid var(--border);border-radius:10px;background:#fafafa}
+.before-file>summary{cursor:pointer;padding:9px 12px;font-size:12.5px;font-weight:600;color:#444;list-style:none}
+.before-file>summary::-webkit-details-marker{display:none}
+.before-file>summary::before{content:'\25B8';display:inline-block;margin-right:7px;transition:transform .15s}
+.before-file[open]>summary::before{transform:rotate(90deg)}
+.bf-count{font-weight:500;color:#888;margin-left:4px}
+.bf-inner{padding:2px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.more-wrap{position:relative}
+.more-btn{background:transparent;border:0.5px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.more-btn:hover{background:#222}
+.more-menu{display:none;position:absolute;right:0;top:40px;min-width:230px;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 10px 32px rgba(0,0,0,.22);padding:6px;z-index:200;flex-direction:column;gap:2px}
+.more-menu.show{display:flex}
+.more-menu .bank-nav,.more-menu .menu-item,.more-menu .sound-toggle{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#222;border-radius:8px;padding:9px 12px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;cursor:pointer;text-align:left;font-family:inherit;opacity:1;box-sizing:border-box}
+.more-menu .bank-nav:hover,.more-menu .menu-item:hover,.more-menu .sound-toggle:hover{background:#f2f4ff;color:#222}
+.more-menu .sound-toggle{font-size:13px}
+.ppill.ppill-done{display:none !important}
+.splash-note{background:#FFF7ED;border-bottom:1px solid #FFE0B8;color:#8A3B00;font-size:13px;padding:10px 2rem}
+.splash-note a{margin-left:10px;color:#8A3B00;font-weight:600;text-decoration:underline;cursor:pointer}
+.cal-showall{margin:8px 0 0;background:none;border:none;color:var(--blue-dk);font-weight:600;font-size:12.5px;cursor:pointer;font-family:inherit}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1092,8 +1137,6 @@ padding:5px 12px;border-radius:999px}
 <div class="app-header">
 <span class="app-wordmark">Gazette News</span>
 <div class="app-divider"></div>
-<a class="perf-nav-link" href="https://analytics.gazettenews.au/" target="_blank" rel="noopener noreferrer" title="Open the Performance Dashboard">Performance Dashboard <span class="perf-ext">&#8599;</span></a>
-<div class="app-divider"></div>
 <span class="app-reporter" id="hdr-reporter"></span>
 <span class="gs-hdr" id="gs-hdr" onclick="openAchievements()" title="Your star chart" style="cursor:pointer;display:none"></span>
 <div class="app-divider"></div>
@@ -1107,6 +1150,9 @@ padding:5px 12px;border-radius:999px}
 </div>
 <button class="change-week-btn" onclick="toggleWeekBanner()" title="Jump to a specific date">Jump to date</button>
 <span class="aab-hdr" id="aab-hdr" title="Above &amp; Beyond — filed more than your weekly expectation" style="display:none">&#11088;</span>
+<div class="more-wrap"><button class="more-btn" id="more-btn" onclick="toggleMore(event)">More &#9662;</button>
+<div class="more-menu" id="more-menu">
+<a class="perf-nav-link menu-item" href="https://analytics.gazettenews.au/" target="_blank" rel="noopener noreferrer" title="Open the Performance Dashboard">Performance Dashboard <span class="perf-ext">&#8599;</span></a>
 <button class="bank-nav" id="vh-gen" onclick="openVideoHelp('', '')" title="Request time with Nick, or flag that you need a hand">&#127916; Ask Nick</button>
 <button class="bank-nav" id="bank-nav" onclick="showBankView()" title="Your evergreen bank — content ready for when you're away">
 <span>&#127974;</span><span id="bank-nav-label">Bank</span>
@@ -1117,10 +1163,9 @@ padding:5px 12px;border-radius:999px}
 <button class="bank-nav" id="patch-nav" onclick="showPatchView()" title="Local news, council, court and politician leads for your patch">
 <span>&#128205;</span><span id="patch-nav-label">Patch</span>
 </button>
-<button class="foi-nav" id="foi-nav" onclick="showFOIView()" title="Build and track an FOI request">
-<span>&#128196;</span><span>FOI</span>
-</button>
+
 <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()" title="Sound on completion">&#128266;</button>
+</div></div>
 <button class="signout-btn" onclick="signOut()">Sign out</button>
 </div>
 
@@ -1922,7 +1967,7 @@ const dupeNums = [];
 (rows || []).forEach(r => {
 if (seenNums[r.story_num]) dupeNums.push(r.story_num);
 seenNums[r.story_num] = true;
-DATA[r.story_num] = r; DATA[r.story_num].editor_notes = parseEditorNotes(r);
+DATA[r.story_num] = r; DATA[r.story_num]._locked = true; DATA[r.story_num].editor_notes = parseEditorNotes(r);
 });
 restorePlanDrafts();
 if (dupeNums.length) {
@@ -1941,6 +1986,7 @@ showAwayBanner();
 renderCalendar();
 renderStreak();
 renderSoundToggle();
+applyTodoCollapse();
 updateProgress({ silent: true });
 maybeShowReflection();
 initRealtime();
@@ -1983,7 +2029,8 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').re
 // slots — general admin tasks (IG posts, calls, FOI chase-ups).
 // ══════════════════════════════════════════════════════════════
 let TODOS = [];
-let todoPanelCollapsed = false;
+let todoPanelCollapsed = true;
+function applyTodoCollapse() { const bd = document.getElementById('todo-panel-body'), ch = document.getElementById('todo-chevron'); if (bd) bd.style.display = todoPanelCollapsed ? 'none' : 'block'; if (ch) ch.textContent = todoPanelCollapsed ? '\u25B8' : '\u25BE'; }
 
 async function loadTodos() {
 try {
@@ -2179,15 +2226,22 @@ locked = !done && !cleared;
 renderSplashLockout(locked);
 }
 
+const SPLASH_HARD_BLOCK = false;   // true = old behaviour: full-screen block until an editor clears the reporter
 function renderSplashLockout(show) {
 let ov = document.getElementById('splash-lockout');
-if (!show) { if (ov) ov.remove(); return; }
+const old = document.getElementById('splash-note');
+if (!show) { if (ov) ov.remove(); if (old) old.remove(); return; }
+if (SPLASH_HARD_BLOCK) {
 if (!ov) { ov = document.createElement('div'); ov.id = 'splash-lockout'; document.body.appendChild(ov); }
 ov.innerHTML = `<div class="splash-lockout-inner">
 <div class="splash-lockout-stamp">Change your splash</div>
 </div>
 <div class="splash-lockout-msg">You didn't refresh the home page splash on the last splash day. An editor has to clear this before you can keep working.</div>
 <button class="splash-lockout-reload" onclick="location.reload()">An editor has cleared me — reload</button>`;
+return;
+}
+ov = old; if (!ov) { ov = document.createElement('div'); ov.id = 'splash-note'; ov.className = 'splash-note'; const ref = document.getElementById('stories-view') || document.body; ref.parentNode.insertBefore(ov, ref); }
+ov.innerHTML = `<div class="sn-in"><b>Splash reminder.</b> The home page splash wasn\u2019t refreshed on the last splash day. Please update it when you can, then tell an editor so they can clear this. <a onclick="location.reload()">Editor cleared me \u2014 reload</a></div>`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2659,51 +2713,58 @@ clearTimeout(bankSaveTimers[num]);
 updateBankBadge(); renderBankCards(); saveBankSlot(num);
 }
 
+function radarMoments() {
+const brand = PUB_TO_BRAND[USER.pub];
+const lim = new Date(); lim.setHours(0,0,0,0); lim.setDate(lim.getDate() + 60);
+return getActiveCalendarMoments().filter(m => {
+if (!brand || !m.brands.includes(brand)) return false;
+const exp = parseCalendarMomentExpiry(m.timeframe);
+return !exp || new Date(exp) <= lim;   // dated items only once they're within ~8 weeks
+});
+}
+const RADAR_SHOW = 4;
 function renderCalendar() {
 const container = document.getElementById('cal-container');
 if (!container) return;
-const brand = PUB_TO_BRAND[USER.pub];
-// National Account sees NA items; Victorians see their brand's items
-const moments = getActiveCalendarMoments().filter(m => m.brands.includes(brand));
-if (!brand || moments.length === 0) {
-container.innerHTML = '';
-return;
-}
-
-// Classify timeframe chip style
+const moments = radarMoments();
+if (moments.length === 0) { container.innerHTML = ''; return; }
 function chipClass(tf) {
 const t = tf.toLowerCase();
 if (t.includes('tbc') || t.includes('imminent') || t.includes('unknown')) return 'tbc';
-// "soon" if June/July/end of June/this month-ish
 if (t.includes('june') || t.includes('july') || t.includes('imminent') || t.includes('end of')) return 'soon';
 return '';
 }
-
 let html = '<div class="cal-section">';
-html += '<div class="cal-head"><h2>On the radar</h2><span class="cal-sub">Upcoming reporting moments for your patch</span></div>';
-html += '<div class="cal-strip">';
+html += '<div class="cal-head"><h2>On the radar</h2><span class="cal-sub">Coming up for your patch</span></div>';
+html += '<div class="cal-strip" id="cal-strip">';
 moments.forEach((m, i) => {
 const cc = chipClass(m.timeframe);
-html += '<div class="cal-card" id="cal-card-' + i + '">';
+html += '<div class="cal-card' + (i >= RADAR_SHOW ? ' cal-extra' : '') + '" id="cal-card-' + i + '"' + (i >= RADAR_SHOW ? ' style="display:none"' : '') + '>';
 html += '<span class="cal-chip ' + cc + '">' + esc(m.timeframe) + '</span>';
 html += '<div class="cal-moment">' + esc(m.moment) + '</div>';
 if (m.why) {
 html += '<div class="cal-why" id="cal-why-' + i + '">' + esc(m.why) + '</div>';
-if (m.why.length > 120) {
-html += '<span class="cal-more" onclick="toggleCalWhy(' + i + ')">Read more</span>';
-}
+if (m.why.length > 120) html += '<span class="cal-more" onclick="toggleCalWhy(' + i + ')">Read more</span>';
 }
 html += '<button class="cal-plan-btn" onclick="planFromMoment(' + i + ')">+ Plan a story</button>';
 html += '</div>';
 });
-html += '</div></div>';
+html += '</div>';
+if (moments.length > RADAR_SHOW) html += '<button class="cal-showall" onclick="calShowAll(this)">Show ' + (moments.length - RADAR_SHOW) + ' more</button>';
+html += '</div>';
 container.innerHTML = html;
+}
+function calShowAll(btn) {
+const hidden = document.querySelectorAll('.cal-extra');
+const show = btn.dataset.open !== '1';
+hidden.forEach(c => c.style.display = show ? '' : 'none');
+btn.dataset.open = show ? '1' : '0';
+btn.textContent = show ? 'Show fewer' : 'Show ' + hidden.length + ' more';
 }
 
 // Turn a calendar moment into a story slot — fills the first empty standard slot
 function planFromMoment(i) {
-const brand = PUB_TO_BRAND[USER.pub];
-const moments = getActiveCalendarMoments().filter(m => m.brands.includes(brand));
+const moments = radarMoments();
 const m = moments[i];
 if (!m) return;
 // Find first empty story slot (prefer standard slots 01-05)
@@ -3135,20 +3196,33 @@ sgDiv.innerHTML =
 '<div class="suggest-results" id="suggest-' + s.n + '"></div>';
 body.appendChild(sgDiv);
 
-// Format + Word count + File by (shown as "Record day" for National Account)
+// File by (shown as "Record day" for National Account) stays on the card face
 const isNat = USER && USER.pub && USER.pub.toLowerCase().includes('national');
 const fileByLabel = isNat ? 'Record day' : 'File by';
+const fileDiv = document.createElement('div');
+fileDiv.className = 'cf';
+fileDiv.innerHTML = '<div class="cl">' + fileByLabel + '</div><div class="cxgroup">' +
+DAYS.map(d => '<label><input type="radio" name="day' + s.n + '" value="' + d + '" ' + (st.file_day === d ? 'checked' : '') + ' onchange="fieldUpdate(\'' + s.n + '\',\'file_day\',\'' + d + '\')"> ' + d + '</label>').join('') +
+'</div>';
+body.appendChild(fileDiv);
+
+// Everything needed only at filing time lives under one quiet "Before you file" fold
+const bf = document.createElement('details');
+bf.className = 'before-file';
+bf.id = 'bf-' + s.n;
+bf.innerHTML = '<summary>Before you file <span class="bf-count" id="bfc-' + s.n + '"></span></summary>';
+const bfIn = document.createElement('div');
+bfIn.className = 'bf-inner';
+bf.appendChild(bfIn);
+
 const fmtDiv = document.createElement('div');
-fmtDiv.className = 'grid3';
+fmtDiv.className = 'grid2';
 fmtDiv.innerHTML =
 '<div class="cf"><div class="cl">Format</div><div class="cxgroup">' +
 FMT_ITEMS.map(f => '<label><input type="radio" name="fmt' + s.n + '" value="' + f + '" ' + (st.format === f ? 'checked' : '') + ' onchange="fieldUpdate(\'' + s.n + '\',\'format\',\'' + f + '\')"> ' + f + '</label>').join('') +
 '</div></div>' +
-'<div class="cf"><div class="cl">Word count</div><input type="text" placeholder="e.g. 400" value="' + esc(st.word_count) + '" oninput="fieldUpdate(\'' + s.n + '\',\'word_count\',this.value)"></div>' +
-'<div class="cf"><div class="cl">' + fileByLabel + '</div><div class="cxgroup">' +
-DAYS.map(d => '<label><input type="radio" name="day' + s.n + '" value="' + d + '" ' + (st.file_day === d ? 'checked' : '') + ' onchange="fieldUpdate(\'' + s.n + '\',\'file_day\',\'' + d + '\')"> ' + d + '</label>').join('') +
-'</div></div>';
-body.appendChild(fmtDiv);
+'<div class="cf"><div class="cl">Word count</div><input type="text" placeholder="e.g. 400" value="' + esc(st.word_count) + '" oninput="fieldUpdate(\'' + s.n + '\',\'word_count\',this.value)"></div>';
+bfIn.appendChild(fmtDiv);
 
 // Reporting
 const tdDiv = document.createElement('div');
@@ -3156,7 +3230,7 @@ tdDiv.className = 'cf';
 tdDiv.innerHTML = '<div class="cl">Reporting</div><div class="cxgroup">' +
 TODO_ITEMS.map(t => '<label><input type="checkbox" value="' + t + '" ' + ((st.todo||[]).includes(t) ? 'checked' : '') + ' onchange="arrUpdate(\'' + s.n + '\',\'todo\',\'' + t + '\',this.checked)"> ' + t + '</label>').join('') +
 '</div>';
-body.appendChild(tdDiv);
+bfIn.appendChild(tdDiv);
 
 // Posted to — National Account's YouTube/Podcast cards get two extra
 // distribution options (Treatment, Carousel) on top of the usual set.
@@ -3167,9 +3241,20 @@ ptDiv.className = 'cf';
 ptDiv.innerHTML = '<div class="cl">Posted to</div><div class="cxgroup">' +
 postItemsForCard.map(p => '<label><input type="checkbox" value="' + p + '" ' + ((st.posted||[]).includes(p) ? 'checked' : '') + ' onchange="arrUpdate(\'' + s.n + '\',\'posted\',\'' + p + '\',this.checked)"> ' + p + '</label>').join('') +
 '</div>';
-body.appendChild(ptDiv);
+bfIn.appendChild(ptDiv);
+body.appendChild(bf);
 
 } // end of "every other card type" branch
+
+// Tools row: Ask GARI, Ask Nick, Suggest contacts and Add a source, gathered into one line
+const toolsRow = document.createElement('div');
+toolsRow.className = 'tools-row';
+['#gc-btn-' + s.n, '#vh-btn-' + s.n, '.suggest-contacts-btn', '.stk-btn'].forEach(function(sel) { const el = body.querySelector(sel); if (el) toolsRow.appendChild(el); });
+const stkB = toolsRow.querySelector('.stk-btn'); if (stkB) { stkB.textContent = '\uFF0B Add source'; stkB.title = 'Add a source to the Source Tracker'; }
+if (toolsRow.children.length) {
+const anchor = body.querySelector('#gc-' + s.n) || body.querySelector('.suggest-contacts-wrap');
+body.insertBefore(toolsRow, anchor);
+}
 
 // Filed row
 const filedRow = document.createElement('div');
@@ -3191,38 +3276,54 @@ filedTime.className = 'filed-time';
 filedTime.id = 'filedtime-' + s.n;
 filedTime.textContent = filed ? timeAgo(getFiledTimes()[s.n]) : '';
 const isExtraCard = parseInt(s.n, 10) > STORIES.length;
-const clearBtn = document.createElement('button');
-clearBtn.className = 'clear-slot-btn' + (isExtraCard ? ' del' : '');
-clearBtn.textContent = isExtraCard ? 'Delete' : 'Clear slot';
-clearBtn.title = isExtraCard ? 'Remove this extra story' : 'Clear this story slot';
-clearBtn.onclick = function(e) { isExtraCard ? deleteExtra(s.n, e) : clearSlot(s.n, e); };
-const saveBtn = document.createElement('button');
-saveBtn.className = 'save-card-btn';
-saveBtn.textContent = 'Save';
-saveBtn.id = 'savebtn-' + s.n;
-saveBtn.onclick = function(e) {
-e.stopPropagation();
-manualSave(s.n);
-};
 const saveErr = document.createElement('span');
 saveErr.className = 'save-err';
 saveErr.id = 'saveerr-' + s.n;
-saveErr.textContent = 'Save failed — check connection';
-const sendNextBtn = document.createElement('button');
-sendNextBtn.className = 'send-next-btn';
-sendNextBtn.textContent = 'Send to next week \u2192';
-sendNextBtn.title = 'Move this story to next week\u2019s planner';
-sendNextBtn.onclick = function(e) { sendToNextWeek(s.n, e); };
+saveErr.textContent = 'Save failed \u2014 check connection';
+const saveSt = document.createElement('span');
+saveSt.id = 'savest-' + s.n;
+saveSt.className = 'save-state';
+const lockBtn = document.createElement('button');
+lockBtn.className = 'lock-btn';
+lockBtn.id = 'lockbtn-' + s.n;
+lockBtn.textContent = 'Lock it in';
+lockBtn.title = 'Needs a headline, a file day, and an angle or notes. Editors can see the card once it\u2019s locked in.';
+lockBtn.onclick = function(e) { lockIn(s.n, e); };
+const moreWrap = document.createElement('div');
+moreWrap.className = 'card-more-wrap';
+const moreBtn = document.createElement('button');
+moreBtn.className = 'card-more-btn';
+moreBtn.textContent = '\u22EF';
+moreBtn.title = 'More actions';
+moreBtn.onclick = function(e) { e.stopPropagation(); toggleCardMenu(s.n); };
+const menu = document.createElement('div');
+menu.className = 'card-menu';
+menu.id = 'cmenu-' + s.n;
+const miNext = document.createElement('button');
+miNext.textContent = 'Send to next week \u2192';
+miNext.title = 'Move this story to next week\u2019s planner';
+miNext.onclick = function(e) { logUse('send_next_week', s.n); closeCardMenus(); sendToNextWeek(s.n, e); };
+const miClear = document.createElement('button');
+miClear.className = 'danger';
+miClear.textContent = isExtraCard ? 'Delete this story' : 'Clear this slot';
+miClear.onclick = function(e) { logUse(isExtraCard ? 'delete_extra' : 'clear_slot', s.n); closeCardMenus(); isExtraCard ? deleteExtra(s.n, e) : clearSlot(s.n, e); };
+menu.appendChild(miNext);
+menu.appendChild(miClear);
+moreWrap.appendChild(moreBtn);
+moreWrap.appendChild(menu);
 filedRow.appendChild(filedLabel);
 filedRow.appendChild(filedOk);
 filedRow.appendChild(filedTime);
+const sp = document.createElement('span'); sp.className = 'filed-spacer';
+filedRow.appendChild(sp);
 filedRow.appendChild(saveErr);
-filedRow.appendChild(sendNextBtn);
-filedRow.appendChild(saveBtn);
-filedRow.appendChild(clearBtn);
+filedRow.appendChild(saveSt);
+filedRow.appendChild(lockBtn);
+filedRow.appendChild(moreWrap);
 body.appendChild(filedRow);
 
 wrap.appendChild(body);
+setTimeout(function() { refreshLockUI(s.n); refreshBF(s.n); }, 0);
 return wrap;
 }
 
@@ -3323,6 +3424,7 @@ const p = document.getElementById('prev-' + num);
 if (p) p.textContent = val || emptyPrompt(num);
 }
 refreshCardState(num);
+refreshLockUI(num); refreshBF(num);
 scheduleSave(num);
 }
 
@@ -3357,6 +3459,7 @@ if (checked && !arr.includes(val)) arr = [...arr, val];
 if (!checked) arr = arr.filter(x => x !== val);
 DATA[num][field] = arr;
 refreshCardState(num);
+refreshLockUI(num); refreshBF(num);
 scheduleSave(num);
 }
 
@@ -3514,6 +3617,30 @@ scheduleSave(num);
 if (checked) stkFilingPrompt(num);
 }
 
+function toggleMore(e) { if (e) e.stopPropagation(); const m = document.getElementById('more-menu'); if (m) { m.classList.toggle('show'); if (m.classList.contains('show')) logUse('open_more_menu'); } }
+document.addEventListener('click', function(e) { const m = document.getElementById('more-menu'); if (m && m.classList.contains('show') && !(e.target.closest && e.target.closest('.more-wrap') && e.target.closest('.more-menu'))) m.classList.remove('show'); });
+function toggleCardMenu(num) {
+const m = document.getElementById('cmenu-' + num); if (!m) return;
+const was = m.classList.contains('show');
+closeCardMenus();
+if (!was) m.classList.add('show');
+}
+function closeCardMenus() { document.querySelectorAll('.card-menu.show').forEach(m => m.classList.remove('show')); }
+document.addEventListener('click', function(e) { if (!e.target.closest || !e.target.closest('.card-more-wrap')) closeCardMenus(); });
+function refreshBF(num) {
+const c = document.getElementById('bfc-' + num); if (!c) return;
+const st = DATA[num] || {};
+c.textContent = st.format ? '\u00B7 ' + st.format + (st.posted && st.posted.length ? ', ' + st.posted.length + ' posted' : '') : '\u00B7 pick a format';
+}
+// Light usage log (fire-and-forget; silently does nothing if the ui_events table doesn't exist)
+function logUse(action, num) {
+try {
+if (!USER || typeof supa === 'undefined') return;
+const done = supa.from('ui_events').insert({ reporter: USER.name, publication: USER.pub, action: action, story_num: num ? String(num) : null, week_of: WEEK });
+if (done && done.then) done.then(function(){}, function(){});
+} catch(e) {}
+}
+
 function bounceFiledCheckbox(num) {
 const cb = document.querySelector('#card-' + num + ' .filed-label input[type=checkbox]');
 if (cb) { cb.checked = false; }
@@ -3529,6 +3656,7 @@ el.id = 'dist-warn-' + num;
 el.className = 'dist-warning';
 row.parentNode.insertBefore(el, row.nextSibling);
 }
+const bfd = document.getElementById('bf-' + num); if (bfd) bfd.open = true;
 el.textContent = msg;
 el.style.display = 'block';
 // gentle shake
@@ -3862,6 +3990,13 @@ let _wasComplete = false;
 let _progressInitialised = false;
 const RING_CIRC = 175.93; // 2*pi*28
 
+function tidyPills() {
+document.querySelectorAll('.prog-pills .ppill').forEach(p => {
+if (p.style.display === 'none') return;
+const m = /^(\d+)\s*\/\s*(\d+)/.exec(p.textContent || '');
+p.classList.toggle('ppill-done', !!(m && +m[1] >= +m[2] && +m[2] > 0));
+});
+}
 function updateProgress(opts) {
 opts = opts || {};
 const stories = STORIES.map(s => getStory(s.n));
@@ -4283,6 +4418,7 @@ updated_at:  new Date().toISOString(),
 };
 try {
 await upsertRow(row);
+DATA[num]._locked = true; refreshLockUI(num);
 if (btn) { btn.classList.remove('saving'); btn.classList.add('saved'); btn.textContent = 'Saved ✓'; }
 setTimeout(() => {
 if (btn) { btn.classList.remove('saved'); btn.textContent = 'Save'; }
@@ -4307,6 +4443,10 @@ function planCardType(num) {
 const def = STORIES.find(s => s.n === num) || (getExtras().find(e => e.num === num) ? {t: (DATA[num] && DATA[num].assigned_by ? 'imp' : 'std')} : null);
 return def ? def.t : null;
 }
+function cardIsLocked(num) {
+const st = DATA[num];
+return !!(st && (st._locked || st.assigned_by || st.filed));
+}
 function planGateProblem(num) {
 const st = DATA[num];
 if (!st || !st.headline || !String(st.headline).trim()) return null;   // clearing a card is always fine
@@ -4314,10 +4454,14 @@ const type = planCardType(num);
 const noDay = type !== 'poll' && !st.file_day;
 const noAngle = !((st.angle && st.angle.trim()) || (st.notes && st.notes.trim()));
 if (!noDay && !noAngle) return null;
-if (noDay && noAngle) return 'Not saved yet — only you can see this card. Pick the day you\u2019ll file it and add something to Angle or Notes, and it will save.';
-if (noDay) return 'Not saved yet — only you can see this card. Pick the day you\u2019ll file it' + (type === 'newsletter' ? ' (send day)' : '') + ' and it will save.';
-return 'Not saved yet — only you can see this card. Add something to Angle or Notes and it will save.';
+const locked = cardIsLocked(num);
+const pre = locked ? 'Your latest change isn\u2019t saved yet \u2014 ' : 'Not locked in yet \u2014 editors can\u2019t see this card. ';
+const post = locked ? ' and it will save.' : ' Then press Lock it in.';
+if (noDay && noAngle) return pre + 'Pick the day you\u2019ll file it and add something to Angle or Notes.' + (locked ? '' : ' Then press Lock it in.');
+if (noDay) return pre + 'Pick the day you\u2019ll file it' + (type === 'newsletter' ? ' (send day)' : '') + (locked ? ' and it will save.' : '. Then press Lock it in.');
+return pre + 'Add something to Angle or Notes' + post;
 }
+const READY_MSG = 'Ready to lock in. Press Lock it in and editors will see this card.';
 function draftKey(num) { return 'gz_draft|' + USER.name + '|' + USER.pub + '|' + WEEK + '|' + num; }
 function showPlanGate(num, msg) {
 PLAN_BLOCKED[num] = true;
@@ -4334,6 +4478,7 @@ row.parentNode.insertBefore(el, row);
 el.textContent = msg;
 el.style.display = 'block';
 updateGateUI();
+refreshLockUI(num);
 }
 function clearPlanGate(num) {
 delete PLAN_BLOCKED[num];
@@ -4341,6 +4486,7 @@ try { localStorage.removeItem(draftKey(num)); } catch(e) {}
 const el = document.getElementById('gate-warn-' + num);
 if (el) el.style.display = 'none';
 updateGateUI();
+refreshLockUI(num);
 }
 // Make unsaved cards impossible to miss: a red tag on the card, a highlighted day picker,
 // and a banner at the top of the page listing every card that editors can't see yet.
@@ -4352,7 +4498,7 @@ function updateGateUI() {
     card.classList.add('is-unsaved');
     if (!document.getElementById('unsaved-' + n)) {
       const chev = document.getElementById('chev-' + n), tag = document.createElement('span');
-      tag.id = 'unsaved-' + n; tag.className = 'unsaved-pill'; tag.textContent = 'Not saved';
+      tag.id = 'unsaved-' + n; tag.className = 'unsaved-pill'; tag.textContent = cardIsLocked(n) ? 'Not saved' : 'Not locked in';
       if (chev && chev.parentNode) chev.parentNode.insertBefore(tag, chev);
     }
     const st = DATA[n] || {};
@@ -4364,7 +4510,8 @@ function updateGateUI() {
     const ref = document.getElementById('stories-container'); if (!ref || !ref.parentNode) return;
     b = document.createElement('div'); b.id = 'gate-banner'; b.className = 'gate-banner'; ref.parentNode.insertBefore(b, ref);
   }
-  b.innerHTML = '<div class="gb"><b>' + nums.length + ' card' + (nums.length > 1 ? 's aren\u2019t' : ' isn\u2019t') + ' saved yet.</b> Editors can\u2019t see ' + (nums.length > 1 ? 'them' : 'it') + ' until each has a day and something in Angle or Notes. ' +
+  b.innerHTML = '<div class="gb"><b>' + nums.length + ' card' + (nums.length > 1 ? 's aren\u2019t' : ' isn\u2019t') + ' locked in yet.</b> Nothing is lost \u2014 drafts are saved on this device \u2014 but editors can\u2019t see ' + (nums.length > 1 ? 'them' : 'it') + ' until you press Lock it in.<br>' +
+    nums.sort().map(n => '<a title="' + esc(DATA[n] && DATA[n].headline ? DATA[n].headline : '') + '" onclick="gateJump(\'' + n + '\')">#' + esc(n) + '</a>').join('') + '</div>';
     nums.sort().map(n => '<a title="' + esc(DATA[n] && DATA[n].headline ? DATA[n].headline : '') + '" onclick="gateJump(\'' + n + '\')">#' + esc(n) + '</a>').join('') + '</div>';
 }
 function gateJump(n) {
@@ -4373,11 +4520,44 @@ function gateJump(n) {
   if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 // Run the gate; returns true if the save may go ahead.
-function planGateAllows(num) {
+function planGateAllows(num, force) {
 const p = planGateProblem(num);
 if (p) { showPlanGate(num, p); return false; }
+const st = DATA[num];
+if (!force && st && !cardIsLocked(num)) {
+  // Not locked in yet: keep a private draft on this device, don't write to the database.
+  if (st.headline && String(st.headline).trim()) { showPlanGate(num, READY_MSG); }
+  else { try { const any = ['angle','notes','format','word_count','file_day'].some(f => st[f] && String(st[f]).trim()); if (any) localStorage.setItem(draftKey(num), JSON.stringify(st)); else localStorage.removeItem(draftKey(num)); } catch(e) {} }
+  return false;
+}
 clearPlanGate(num);
 return true;
+}
+function refreshLockUI(num) {
+const btn = document.getElementById('lockbtn-' + num), st = document.getElementById('savest-' + num);
+if (!btn && !st) return;
+const d = DATA[num], locked = cardIsLocked(num), has = !!(d && d.headline && String(d.headline).trim());
+const ready = has && !planGateProblem(num);
+if (btn) { btn.style.display = locked ? 'none' : ''; btn.classList.toggle('ready', ready && !locked); btn.disabled = !has; }
+if (st) {
+  st.className = 'save-state' + (locked ? ' locked' : ' draft');
+  st.textContent = locked ? '\u2713 Saved' : (has ? 'Draft \u2014 saved on this device' : '');
+}
+}
+async function lockIn(num, e) {
+if (e) e.stopPropagation();
+const d = DATA[num];
+if (!d || !d.headline || !String(d.headline).trim()) { showPlanGate(num, 'Add a headline first, then press Lock it in.'); return; }
+const p = planGateProblem(num);
+if (p) { showPlanGate(num, p); return; }
+clearTimeout(saveTimer);
+const btn = document.getElementById('lockbtn-' + num);
+if (btn) { btn.textContent = 'Locking\u2026'; btn.disabled = true; }
+const ok = await saveStory(num, true);
+if (btn) { btn.textContent = 'Lock it in'; btn.disabled = false; }
+if (ok) { clearPlanGate(num); logUse('lock_it_in', num); }
+else { const err = document.getElementById('saveerr-' + num); if (err) err.classList.add('show'); }
+refreshLockUI(num);
 }
 // After loading, put back any unsaved drafts and re-show their warnings.
 function restorePlanDrafts() {
@@ -4397,9 +4577,7 @@ function showPlanGateWarnings() {
 // (older ones, filed ones, editor assignments) are not "unsaved", even if they lack a day or angle.
 Object.keys(DATA).forEach(num => { let d = null; try { d = localStorage.getItem(draftKey(num)); } catch(e) {} if (!d) return; const p = planGateProblem(num); if (p) showPlanGate(num, p); });
 }
-window.addEventListener('beforeunload', function(e) {
-if (Object.keys(PLAN_BLOCKED).length) { e.preventDefault(); e.returnValue = ''; }
-});
+// (No leave-page prompt: unlocked drafts are kept on this device, so nothing is lost.)
 
 // ── Ask GARI: a short read of a story card's plan ────────────────────────────
 // Sends the card (headline, angle, notes, format, file day) to GARI, which answers with what's
@@ -4573,9 +4751,11 @@ await upsertRow(row);
 Object.assign(DATA[num], fields);
 }
 
-async function saveStory(num) {
-if (!DATA[num]) return;
-if (!planGateAllows(num)) return;
+['askGariCard','openVideoHelp','suggestContacts','stkOpen','openAbandonModal','showBankView','showResourcesView','showPatchView','openAchievements','toggleSound'].forEach(function(n){ try { const f = window[n]; if (typeof f === 'function') window[n] = function(){ logUse(n, arguments[0] && /^\w+$/.test(String(arguments[0])) ? arguments[0] : null); return f.apply(this, arguments); }; } catch(e) {} });
+(function(){ const _u = updateProgress; updateProgress = function(o){ const r = _u(o); try { tidyPills(); } catch(e) {} return r; }; })();
+async function saveStory(num, force) {
+if (!DATA[num]) return false;
+if (!planGateAllows(num, force)) return false;
 const row = {
 reporter:    USER.name,
 publication: USER.pub,
@@ -4596,9 +4776,13 @@ updated_at:  new Date().toISOString(),
 };
 try {
 await upsertRow(row);
+DATA[num]._locked = true;
 showToast();
+refreshLockUI(num);
+return true;
 } catch(e) {
 console.error('Auto-save error:', e);
+return false;
 }
 }
 
