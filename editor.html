@@ -1735,6 +1735,8 @@ const STORY_DEFS = getStoryDefs(null, '');
 const TODO_ITEMS = ['Calls','Research','Draft','GARI check','Subbed','Filed'];
 const POST_ITEMS = ['Instagram','TikTok','Facebook','Newsletter','YouTube'];
 const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+const NEXT_DAYS = ['Next Mon','Next Tue','Next Wed'];   // Video Desk shoots can fall early the following week
+function vdDayIdx(d){ var i=DAYS.indexOf(d); if(i>-1) return i; var n=NEXT_DAYS.indexOf(d); return n>-1?5+n:-1; }
 
 let WEEK = '';
 let EDITOR_NAME = '';
@@ -5063,7 +5065,7 @@ function vdPlanItems(info){
   if(WEEK>='2026-11-09') info.forEach(function(x){
     var sl=x.slots.filter(function(s){return /^Impact/.test(vdSlotName(s.n,x.rep.pub));})[0]; if(!sl) return;
     var nrow=(x.d[vdAddDays(WEEK,7)]||{})[sl.n];
-    items.push({id:'shoot:'+x.rep.name,grp:'Next Impact shoots',label:vdFirst(x.rep.name),sub:(nrow&&nrow.headline?nrow.headline+' · ':'')+'book by Fri',owner:'Nick',rep:x.rep,away:!!x.ai.full,due:4,shootSlot:sl.n});
+    items.push({id:'shoot:'+x.rep.name,grp:'Next Impact shoots',label:vdFirst(x.rep.name),sub:(nrow&&nrow.headline?nrow.headline+' · ':'')+'book by Fri',owner:'Nick',rep:x.rep,away:!!x.ai.full,due:4,nextWk:true,shootSlot:sl.n});
   });
   if(WEEK>='2026-11-09') items.push({id:'pitchreview',grp:'Every week',label:'Review Impact pitches (video angle)',sub:'pitches land Wed, Kitty’s feedback Thu',owner:'Nick',due:3});
   items.push({id:'linkedin',grp:'Gazette LinkedIn',label:'Publish a video to the Gazette LinkedIn',owner:'Nick'});
@@ -5077,7 +5079,7 @@ function vdPlanItems(info){
     var s=P.state[it.id]||{}; it.day=s.day||''; it.how=s.how||''; it.why=s.why||''; it.skip=!!s.skip; it.done=vdPlanDone(WEEK,it.id);
     it.manual=!(it.id.indexOf('impact:')===0||it.id.indexOf('shoot:')===0||it.id==='series'||it.id.indexOf('task:')===0);
     it.auto=it.done&&!s.done&&(it.id.indexOf('impact:')===0||it.id.indexOf('shoot:')===0||it.id==='series'||it.id.indexOf('task:')===0);
-    var di=DAYS.indexOf(it.day); it.over=(it.due!==undefined&&di>it.due&&!it.done);
+    var di=vdDayIdx(it.day); it.over=(it.due!==undefined&&di>it.due&&!it.done&&!it.nextWk);
     it.slipDay=(it.day&&di<=(it.due===undefined?9:it.due))?it.day:(it.due!==undefined?DAYS[it.due]:it.day);
     if(it.away) it.st='away'; else if(it.done) it.st='done'; else if(it.skip) it.st='skipped'; else if(!it.day) it.st='unplanned'; else if(ds.state==='past') it.st='missed';
     else if(ds.state==='current'&&(di<ds.idx||(it.due!==undefined&&ds.idx>it.due))) it.st='slipped'; else if(ds.state==='current'&&di===ds.idx) it.st='today'; else it.st='planned';
@@ -5138,7 +5140,7 @@ function vdPlanHtml(info,ds){
         else if(i.done&&i.auto) h+='<span class="vd-wp-ok">'+(i.id.indexOf('shoot:')===0?'Shoot booked ✓':'Landed ✓')+'</span>';
         else if(i.skip) h+='<span class="vd-wp-ok" style="color:#8A8A82">Won’t happen</span><a class="vd-wp-lnk" onclick="vdPlanSkip(this.dataset.i,false)" data-i="'+idq+'">Put back</a>';
         else{
-          h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+DAYS.slice(0,(i.due===undefined?5:i.due+1)).map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
+          h+='<select class="vd-wp-day" onchange="vdPlanSet(this.dataset.i,\'day\',this.value)" data-i="'+idq+'"><option value="">Day…</option>'+(i.nextWk?DAYS.concat(NEXT_DAYS):DAYS.slice(0,(i.due===undefined?5:i.due+1))).map(function(d){return '<option'+(i.day===d?' selected':'')+'>'+d+'</option>';}).join('')+'</select>';
           h+='<input class="vd-wp-how" data-i="'+idq+'" value="'+esc(i.how)+'" placeholder="Note (optional)" onchange="vdPlanSet(this.dataset.i,\'how\',this.value)">';
           h+='<button class="vd-wp-done'+(i.done?' on':'')+'" title="'+(i.done?'Click to undo':'Mark this as done')+'" onclick="vdPlanSet(this.dataset.i,\'done\','+(i.done?'false':'true')+')" data-i="'+idq+'">'+(i.done?'✓ Done':'Mark done')+'</button>';
           if(i.rep) h+='<a class="vd-wp-lnk" onclick="vdPlanAway(this.dataset.n,this.dataset.p)" data-n="'+esc(i.rep.name)+'" data-p="'+esc(i.rep.pub)+'" title="Mark '+esc(vdFirst(i.rep.name))+' as away">Away</a>';
