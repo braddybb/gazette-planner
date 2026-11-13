@@ -58,11 +58,12 @@ export function fridayText(week, sc) {
 }
 
 const DAYN = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const dayIdx = (d) => { const i = DAYN.indexOf(d); if (i > -1) return i; const m = /^Next (Mon|Tue|Wed)$/.exec(d || ""); return m ? 5 + ["Mon", "Tue", "Wed"].indexOf(m[1]) : -1; };
 // Pure: committed items that were due today (or earlier) and haven't landed.
 export function dueNotLanded(plan, ctx, today) {
   const sc = scorePlan(plan, ctx); if (!sc) return null;
   const ti = DAYN.indexOf(today);
-  return sc.missed.filter((m) => (m.day && DAYN.indexOf(m.day) <= ti) || (typeof m.due === "number" && m.due <= ti));
+  return sc.missed.filter((m) => (m.day && dayIdx(m.day) <= ti) || (typeof m.due === "number" && m.due <= ti));
 }
 export function closeText(list) {
   const L = [`:alarm_clock: *4pm check* — ${list.length} thing${list.length > 1 ? "s were" : " was"} planned for today or earlier and ${list.length > 1 ? "haven't" : "hasn't"} landed:`];
