@@ -2488,7 +2488,16 @@ const rows = await bankFetch();
 const busy = Object.keys(bankSaveTimers).some(n => bankSaveTimers[n]);
 const typing = document.activeElement && document.activeElement.closest && document.activeElement.closest('#bank-slots');
 const fresh = {};
-(rows||[]).forEach(r => { fresh[r.story_num] = r; });
+const dupKeys = [];
+(rows||[]).forEach(r => {
+  const prev = fresh[r.story_num];
+  if (!prev) { fresh[r.story_num] = r; return; }
+  // Two rows for the same slot (a legacy duplicate). Keep the better one; remember we saw a dup.
+  const score = x => ((x.headline||'').trim()?2:0) + (x.updated_at||'');
+  if (score(r) > score(prev)) fresh[r.story_num] = r;
+  dupKeys.push(r.story_num);
+});
+if (dupKeys.length) bankCleanupDuplicates();
 if (busy || typing) { Object.keys(fresh).forEach(n => { if (!bankSaveTimers[n] && !BANK[n] && fresh[n]) BANK[n] = fresh[n]; }); updateBankBadge(); return; }
 BANK = fresh;
 updateBankBadge();
@@ -2707,11 +2716,60 @@ bankStatus(num, 'Saving\u2026');
 try { const r = bankRowFor(num); r.updated_at = new Date().toISOString(); await upsertRow(r); bankStatus(num, 'Saved \u2713', 'ok'); setTimeout(()=>{ if (!bankSaveTimers[num]) bankStatus(num, ''); }, 2500); }
 catch(e){ console.warn('Bank save failed:', e); bankStatus(num, 'Not saved \u2014 try again', 'bad'); }
 }
-function bankClear(num){
+async function bankDeleteSlot(num){
+// Delete every row for this slot (covers any legacy duplicates), then fall back to
+// blanking if the delete removed nothing, so the slot always ends up empty.
+const { data: { session } } = await supa.auth.getSession();
+const token = session ? session.access_token : SUPA_KEY;
+const q = '?reporter=eq.' + encodeURIComponent(USER.name) + '&publication=eq.' + encodeURIComponent(USER.pub) +
+  '&week_of=eq.' + encodeURIComponent(BANK_WEEK) + '&story_num=eq.' + encodeURIComponent(num);
+const h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token };
+const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE + q, { method:'DELETE', headers: Object.assign({ 'Prefer':'return=representation' }, h) });
+if (res.ok) { let gone = []; try { gone = await res.json(); } catch(e){} if (Array.isArray(gone) && gone.length) return true; }
+// Nothing deleted — confirm it's really gone, else blank it in place.
+const chk = await fetch(SUPA_URL + '/rest/v1/' + TABLE + q + '&select=story_num', { headers: h });
+const left = chk.ok ? await chk.json() : [];
+if (!(Array.isArray(left) && left.length)) return true;
+await upsertRow(Object.assign(bankRowFor(num), { headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'', todo:[], posted:[], filed:false, updated_at:new Date().toISOString() }));
+return true;
+}
+async function bankClear(num){
 if (!confirm('Clear this Bank slot?')) return;
-BANK[num] = Object.assign(bankRowFor(num), { headline:'', angle:'', notes:'', format:'', filed:false });
-clearTimeout(bankSaveTimers[num]);
-updateBankBadge(); renderBankCards(); saveBankSlot(num);
+clearTimeout(bankSaveTimers[num]); bankSaveTimers[num] = null;
+const keep = BANK[num];
+delete BANK[num];
+updateBankBadge(); renderBankCards();
+bankStatus(num, 'Clearing' + '\u2026');
+try { await bankDeleteSlot(num); }
+catch(e){ console.warn('Bank clear failed:', e); BANK[num] = keep; updateBankBadge(); renderBankCards(); bankStatus(num, 'Not cleared \u2014 try again', 'bad'); }
+}
+// One-off tidy: if a reporter's bank has duplicate rows for a slot, delete the stale
+// empties so content can't resurface. Runs quietly; failures are ignored.
+let bankCleanupDone = false;
+async function bankCleanupDuplicates(){
+if (bankCleanupDone) return; bankCleanupDone = true;
+try {
+const rows = await bankFetch();
+const bySlot = {};
+(rows||[]).forEach(r => { (bySlot[r.story_num] = bySlot[r.story_num] || []).push(r); });
+for (const sn of Object.keys(bySlot)) {
+  const group = bySlot[sn];
+  if (group.length < 2) continue;
+  // Keep the strongest row (has a headline, else newest); drop the rest by rewriting the slot cleanly.
+  group.sort((a,b) => (((b.headline||'').trim()?2:0)+(b.updated_at||'')> ((a.headline||'').trim()?2:0)+(a.updated_at||'')) ? 1 : -1);
+  const keep = group[0];
+  const { data: { session } } = await supa.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
+  const h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token };
+  const q = '?reporter=eq.' + encodeURIComponent(USER.name) + '&publication=eq.' + encodeURIComponent(USER.pub) + '&week_of=eq.' + encodeURIComponent(BANK_WEEK) + '&story_num=eq.' + encodeURIComponent(sn);
+  // Delete all rows for the slot, then re-insert the one we keep.
+  const del = await fetch(SUPA_URL + '/rest/v1/' + TABLE + q, { method:'DELETE', headers: Object.assign({ 'Prefer':'return=representation' }, h) });
+  if (!del.ok) continue;
+  if ((keep.headline||'').trim()) {
+    await fetch(SUPA_URL + '/rest/v1/' + TABLE, { method:'POST', headers: Object.assign({ 'Content-Type':'application/json', 'Prefer':'return=minimal' }, h), body: JSON.stringify(keep) });
+  }
+}
+} catch(e) { console.warn('Bank de-dupe skipped:', e); }
 }
 
 function radarMoments() {
@@ -4389,6 +4447,12 @@ let updatedRows = [];
 try { updatedRows = await patchRes.json(); } catch(e) { updatedRows = []; }
 
 if (!updatedRows || updatedRows.length === 0) {
+// PATCH changed nothing: make sure a row doesn't already exist before inserting,
+// otherwise a blocked/again update would quietly create a duplicate of this slot.
+try {
+const chk = await fetch(SUPA_URL + '/rest/v1/' + TABLE + '?' + filter + '&select=story_num', { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token } });
+if (chk.ok) { const existing = await chk.json(); if (Array.isArray(existing) && existing.length) return; }
+} catch(e) { /* fall through to insert */ }
 // No existing row — INSERT
 const postRes = await fetch(SUPA_URL + '/rest/v1/' + TABLE, {
 method: 'POST',
