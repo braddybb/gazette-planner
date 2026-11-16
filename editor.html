@@ -1249,6 +1249,8 @@ details.vd-more summary::-webkit-details-marker{display:none}
 .prb-m{font-size:11px;color:#77776F}.prb-w{font-size:12px;color:#3a3a34;margin-top:6px;line-height:1.4}
 .prb-ang{font-size:11.5px;color:#1F5C3E;margin-top:5px;line-height:1.4}
 .prb-empty{padding:24px 8px;color:#8a887e;font-size:13.5px}
+.btn-ghost-sm{background:#fff;border:1px solid var(--border);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--blue)}
+.btn-ghost-sm:hover{background:#f2f4ff}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1430,6 +1432,7 @@ details.vd-more summary::-webkit-details-marker{display:none}
         <div class="wr-title">The Bank</div>
         <div class="wr-sub">Each reporter's evergreen stories — ready to run if they're sick or away</div>
       </div>
+      <button class="am-save" style="margin-left:auto;align-self:center;width:auto;padding:8px 14px" onclick="openBankAdd()">+ Add to a reporter's bank</button>
     </div>
     <div id="bank-rollup-body"></div>
   </div>
@@ -3551,6 +3554,23 @@ document.getElementById('gg-award').addEventListener('click', e=>{ if(e.target.i
 </script>
 
 <!-- Assignment modal -->
+<div class="assign-modal-overlay" id="bankadd-overlay">
+  <div class="assign-modal">
+    <div class="am-head">
+      <div class="am-title">Add to a reporter's bank</div>
+      <button class="am-close" onclick="closeBankAdd()">&times;</button>
+    </div>
+    <div class="am-body">
+      <div class="am-field"><label>Reporter *</label><select id="ba-rep"></select></div>
+      <div class="am-field"><label>What is it? *</label><input type="text" id="ba-title" placeholder="Headline / title"></div>
+      <div class="am-field"><label>Type</label><select id="ba-type"><option value="">Type…</option><option>Video</option><option>Article</option><option>Other</option></select></div>
+      <div class="am-field"><label>Where it's stored / details</label><textarea id="ba-notes" placeholder="Link, Drive folder, what's left to do…"></textarea></div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:12px"><input type="checkbox" id="ba-ready"> Ready to run</label>
+      <div id="ba-err" style="color:#b00020;font-size:12.5px;margin-bottom:8px;display:none"></div>
+      <button class="am-save" id="ba-save" style="width:100%" onclick="saveBankAdd()">Add to bank</button>
+    </div>
+  </div>
+</div>
 <div class="assign-modal-overlay" id="assign-overlay">
   <div class="assign-modal">
     <div class="am-head">
@@ -3816,11 +3836,53 @@ function closeBankRollup() {
   document.getElementById('bank-rollup-view').style.display = 'none';
   document.getElementById('main-view').style.display = 'block';
 }
+function openBankAdd(name) {
+  const sel = document.getElementById('ba-rep');
+  sel.innerHTML = REGION_ORDER.map(region => {
+    const rs = REPORTERS.filter(r => r.region === region);
+    return rs.length ? '<optgroup label="' + esc(region) + '">' + rs.map(r => '<option value="' + esc(r.name) + '">' + esc(r.name) + ' — ' + esc(r.pub) + '</option>').join('') + '</optgroup>' : '';
+  }).join('');
+  if (name) sel.value = name;
+  ['ba-title','ba-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ba-type').value = ''; document.getElementById('ba-ready').checked = false;
+  document.getElementById('ba-err').style.display = 'none';
+  document.getElementById('bankadd-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('ba-title').focus(), 50);
+}
+function closeBankAdd() { document.getElementById('bankadd-overlay').classList.remove('show'); }
+async function saveBankAdd() {
+  const err = document.getElementById('ba-err'), btn = document.getElementById('ba-save');
+  const r = REPORTERS.filter(x => x.name === document.getElementById('ba-rep').value)[0];
+  const title = document.getElementById('ba-title').value.trim();
+  err.style.display = 'none';
+  if (!r || !title) { err.textContent = 'Pick a reporter and say what it is.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    // Use the reporter's first empty bank slot, or the next number after their last one.
+    const rows = await supaFetch(TABLE + '?week_of=eq.bank&reporter=eq.' + encodeURIComponent(r.name) + '&publication=eq.' + encodeURIComponent(r.pub) + '&select=story_num,headline');
+    const used = {}; let max = 0;
+    (rows || []).forEach(x => { const n = parseInt(x.story_num, 10) || 0; used[n] = (x.headline || '').trim() ? 1 : 0; if (n > max) max = n; });
+    let slot = 0; for (let n = 1; n <= max; n++) { if (used[n] === 0 || used[n] === undefined) { slot = n; break; } }
+    if (!slot) slot = max + 1;
+    if (slot > 30) throw new Error('This reporter’s bank is full (30 items).');
+    const row = {
+      reporter: r.name, publication: r.pub, week_of: 'bank', story_num: String(slot).padStart(2, '0'),
+      headline: title, angle: '', notes: document.getElementById('ba-notes').value.trim(),
+      format: document.getElementById('ba-type').value, word_count: '', file_day: '', todo: [], posted: [],
+      filed: document.getElementById('ba-ready').checked, assigned_by: 'Editor', updated_at: new Date().toISOString(),
+    };
+    await editorUpsert(row);
+    notifySlack(slackMention(r.name) + ':bank: ' + (EDITOR_NAME || 'An editor') + ' added to your bank: "' + title + '"');
+    closeBankAdd(); loadBankRollup();
+  } catch(e) {
+    console.error(e); err.textContent = (e && e.message && /full/.test(e.message)) ? e.message : 'Could not add it. Check your connection and try again.'; err.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'Add to bank'; }
+}
 async function loadBankRollup() {
   const body = document.getElementById('bank-rollup-body');
   body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering everyone\u2019s bank...</div>';
   try {
-    const rows = await supaFetch(TABLE + '?week_of=eq.bank&select=reporter,publication,story_num,headline,format,notes,filed&order=story_num.asc');
+    const rows = await supaFetch(TABLE + '?week_of=eq.bank&select=reporter,publication,story_num,headline,format,notes,filed,assigned_by&order=story_num.asc');
     const byReporter = {};
     (rows || []).forEach(row => {
       if (!(row.headline || '').trim()) return;
@@ -3830,26 +3892,24 @@ async function loadBankRollup() {
     REGION_ORDER.forEach(region => {
       const reportersInRegion = REPORTERS.filter(r => r.region === region);
       if (!reportersInRegion.length) return;
-      if (!reportersInRegion.some(r => (byReporter[r.name] || []).length)) return;
       html += '<div class="wr-section"><div class="wr-section-title">' + esc(region) + '</div>';
       reportersInRegion.forEach(r => {
         const items = byReporter[r.name] || [];
-        if (!items.length) return;
         html += '<div class="rollup-reporter-block wr-reporter-card">';
-        html += '<div class="wr-reporter-name">' + esc(r.name) + '<span class="bank-fill-tag">' + items.length + (items.length===1?' item':' items') + '</span></div>';
+        html += '<div class="wr-reporter-name">' + esc(r.name) + '<span class="bank-fill-tag">' + items.length + (items.length===1?' item':' items') + '</span><button class="btn-ghost-sm" style="float:right" data-n="' + esc(r.name) + '" onclick="openBankAdd(this.dataset.n)">+ Add</button></div>';
         html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
         items.forEach(i => {
           html += '<div class="rollup-bank-row"><div class="rollup-bank-top">' +
             '<span class="rollup-bank-title">' + esc(i.headline) + '</span>' +
             (i.format ? '<span class="rollup-bank-type">' + esc(i.format) + '</span>' : '') +
-            (i.filed ? '<span class="rollup-bank-ready">\u2713 Ready</span>' : '') +
+            (i.filed ? '<span class="rollup-bank-ready">\u2713 Ready</span>' : '') + (i.assigned_by ? '<span class="rollup-bank-type">Added by editor</span>' : '') +
             '</div>' + (i.notes ? '<div class="rollup-bank-notes">' + esc(i.notes) + '</div>' : '') + '</div>';
         });
         html += '</div>';
       });
       html += '</div>';
     });
-    body.innerHTML = html || '<div class="rollup-empty">No evergreen stories banked across the network yet.</div>';
+    body.innerHTML = html || '<div class="rollup-empty">No reporters found.</div>';
   } catch(e) {
     console.error('Could not load bank rollup:', e);
     body.innerHTML = '<div class="wr-err">Could not load the bank. Try refreshing.</div>';
