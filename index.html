@@ -2683,7 +2683,7 @@ const r = bankRowFor(num);
 const filled = (r.headline||'').trim() ? ' filled' : '';
 const opts = types.map(t => '<option value="'+t+'"'+(r.format===t?' selected':'')+'>'+(t||'Type…')+'</option>').join('');
 return '<div class="bank-card'+filled+'">'+
-'<div class="bank-card-hd"><span class="bank-card-num">Slot '+(i+1)+'</span><span class="bank-st" id="bank-st-'+num+'"></span>'+
+'<div class="bank-card-hd"><span class="bank-card-num">Slot '+(i+1)+'</span>'+(r.assigned_by?'<span class="bank-st" style="color:#8A5A00">Added by an editor</span>':'')+'<span class="bank-st" id="bank-st-'+num+'"></span>'+
 '<label class="bank-ready"><input type="checkbox" '+(r.filed?'checked':'')+' onchange="bankField(\''+num+'\',\'filed\',this.checked)"> Ready</label></div>'+
 '<div class="bank-field"><div class="cl">What is it?</div><input type="text" value="'+esc(r.headline||'')+'" placeholder="Headline / title" oninput="bankField(\''+num+'\',\'headline\',this.value)"></div>'+
 '<div class="bank-field"><div class="cl">Type</div><select onchange="bankField(\''+num+'\',\'format\',this.value)">'+opts+'</select></div>'+
