@@ -1249,6 +1249,13 @@ details.vd-more summary::-webkit-details-marker{display:none}
 .prb-m{font-size:11px;color:#77776F}.prb-w{font-size:12px;color:#3a3a34;margin-top:6px;line-height:1.4}
 .prb-ang{font-size:11.5px;color:#1F5C3E;margin-top:5px;line-height:1.4}
 .prb-empty{padding:24px 8px;color:#8a887e;font-size:13.5px}
+.rollup-bank-acts{display:flex;gap:6px;margin-top:8px}
+.bk-act{background:#fff;border:1px solid var(--border);border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#333}
+.bk-act:hover{background:#f2f4ff}
+.bk-act.danger{color:#b00020}
+.bk-act.danger:hover{background:#fff1f1}
+.rollup-bank-pubd{font-size:11px;font-weight:700;color:#1E7B34;background:#E6F4EA;border-radius:5px;padding:1px 7px}
+.rollup-bank-row.is-published{opacity:.72}
 .btn-ghost-sm{background:#fff;border:1px solid var(--border);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--blue)}
 .btn-ghost-sm:hover{background:#f2f4ff}
 </style>
@@ -3837,7 +3844,11 @@ function closeBankRollup() {
   document.getElementById('main-view').style.display = 'block';
 }
 function openBankAdd(name) {
+  BA_EDIT = null;
+  document.querySelector('#bankadd-overlay .am-title').textContent = "Add to a reporter's bank";
+  document.getElementById('ba-save').textContent = 'Add to bank';
   const sel = document.getElementById('ba-rep');
+  sel.disabled = false;
   sel.innerHTML = REGION_ORDER.map(region => {
     const rs = REPORTERS.filter(r => r.region === region);
     return rs.length ? '<optgroup label="' + esc(region) + '">' + rs.map(r => '<option value="' + esc(r.name) + '">' + esc(r.name) + ' — ' + esc(r.pub) + '</option>').join('') + '</optgroup>' : '';
@@ -3849,15 +3860,23 @@ function openBankAdd(name) {
   document.getElementById('bankadd-overlay').classList.add('show');
   setTimeout(() => document.getElementById('ba-title').focus(), 50);
 }
-function closeBankAdd() { document.getElementById('bankadd-overlay').classList.remove('show'); }
+function closeBankAdd() { BA_EDIT = null; document.getElementById('ba-rep').disabled = false; document.getElementById('bankadd-overlay').classList.remove('show'); }
 async function saveBankAdd() {
   const err = document.getElementById('ba-err'), btn = document.getElementById('ba-save');
-  const r = REPORTERS.filter(x => x.name === document.getElementById('ba-rep').value)[0];
+  const r = BA_EDIT ? { name: BA_EDIT.reporter, pub: BA_EDIT.pub } : REPORTERS.filter(x => x.name === document.getElementById('ba-rep').value)[0];
   const title = document.getElementById('ba-title').value.trim();
   err.style.display = 'none';
   if (!r || !title) { err.textContent = 'Pick a reporter and say what it is.'; err.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Adding…';
+  btn.disabled = true; btn.textContent = BA_EDIT ? 'Saving…' : 'Adding…';
   try {
+    if (BA_EDIT) {
+      await editorUpsert({ reporter: r.name, publication: r.pub, week_of: 'bank', story_num: BA_EDIT.slot,
+        headline: title, notes: document.getElementById('ba-notes').value.trim(), format: document.getElementById('ba-type').value,
+        filed: document.getElementById('ba-ready').checked, updated_at: new Date().toISOString() });
+      closeBankAdd(); loadBankRollup();
+      btn.disabled = false; btn.textContent = 'Save changes';
+      return;
+    }
     // Use the reporter's first empty bank slot, or the next number after their last one.
     const rows = await supaFetch(TABLE + '?week_of=eq.bank&reporter=eq.' + encodeURIComponent(r.name) + '&publication=eq.' + encodeURIComponent(r.pub) + '&select=story_num,headline');
     const used = {}; let max = 0;
@@ -3878,11 +3897,67 @@ async function saveBankAdd() {
     console.error(e); err.textContent = (e && e.message && /full/.test(e.message)) ? e.message : 'Could not add it. Check your connection and try again.'; err.style.display = 'block';
   } finally { btn.disabled = false; btn.textContent = 'Add to bank'; }
 }
+let BANK_ITEMS = {};
+let BA_EDIT = null;
+
+function openBankEdit(key) {
+  const it = BANK_ITEMS[key]; if (!it) return;
+  const sel = document.getElementById('ba-rep');
+  sel.innerHTML = '<option value="' + esc(it.reporter) + '">' + esc(it.reporter) + ' — ' + esc(it.publication) + '</option>';
+  sel.value = it.reporter; sel.disabled = true;
+  document.getElementById('ba-title').value = it.headline || '';
+  document.getElementById('ba-type').value = it.format || '';
+  document.getElementById('ba-notes').value = it.notes || '';
+  document.getElementById('ba-ready').checked = !!it.filed;
+  document.getElementById('ba-err').style.display = 'none';
+  BA_EDIT = { reporter: it.reporter, pub: it.publication, slot: it.story_num };
+  document.querySelector('#bankadd-overlay .am-title').textContent = "Edit bank item";
+  document.getElementById('ba-save').textContent = 'Save changes';
+  document.getElementById('bankadd-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('ba-title').focus(), 50);
+}
+
+async function bankTogglePublished(key) {
+  const it = BANK_ITEMS[key]; if (!it) return;
+  const posted = Array.isArray(it.posted) ? it.posted.slice() : [];
+  const at = posted.indexOf('Published');
+  if (at > -1) posted.splice(at, 1); else posted.push('Published');
+  try {
+    await editorUpsert({ reporter: it.reporter, publication: it.publication, week_of: 'bank', story_num: it.story_num, posted: posted, updated_at: new Date().toISOString() });
+    if (at === -1) notifySlack(slackMention(it.reporter) + ':white_check_mark: ' + (EDITOR_NAME || 'An editor') + ' marked your banked story published: "' + (it.headline||'') + '"');
+    loadBankRollup();
+  } catch(e) { console.error(e); alert('Could not update. Check your connection.'); }
+}
+
+async function bankRemove(key) {
+  const it = BANK_ITEMS[key]; if (!it) return;
+  if (!confirm('Remove "' + (it.headline || 'this item') + '" from ' + it.reporter + '’s bank?')) return;
+  const q = '?reporter=eq.' + encodeURIComponent(it.reporter) + '&publication=eq.' + encodeURIComponent(it.publication) +
+            '&week_of=eq.bank&story_num=eq.' + encodeURIComponent(it.story_num);
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    const token = session ? session.access_token : SUPA_KEY;
+    const h = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token };
+    let done = false;
+    try {
+      const res = await fetch(SUPA_URL + '/rest/v1/' + TABLE + q, { method: 'DELETE', headers: Object.assign({ 'Prefer': 'return=representation' }, h) });
+      if (res.ok) { let g = []; try { g = await res.json(); } catch(e){} done = Array.isArray(g) && g.length > 0; }
+    } catch(e) {}
+    if (!done) {
+      await editorUpsert({ reporter: it.reporter, publication: it.publication, week_of: 'bank', story_num: it.story_num,
+        headline: '', angle: '', notes: '', format: '', word_count: '', file_day: '', todo: [], posted: [], filed: false, updated_at: new Date().toISOString() });
+    }
+    loadBankRollup();
+  } catch(e) { console.error(e); alert('Could not remove it. Check your connection.'); }
+}
+
 async function loadBankRollup() {
   const body = document.getElementById('bank-rollup-body');
   body.innerHTML = '<div class="wr-loading"><div class="wr-spin"></div>Gathering everyone\u2019s bank...</div>';
   try {
-    const rows = await supaFetch(TABLE + '?week_of=eq.bank&select=reporter,publication,story_num,headline,format,notes,filed,assigned_by&order=story_num.asc');
+    const rows = await supaFetch(TABLE + '?week_of=eq.bank&select=reporter,publication,story_num,headline,format,notes,filed,assigned_by,posted&order=story_num.asc');
+    BANK_ITEMS = {};
+    (rows || []).forEach(row => { BANK_ITEMS[row.reporter + '|' + row.story_num] = row; });
     const byReporter = {};
     (rows || []).forEach(row => {
       if (!(row.headline || '').trim()) return;
@@ -3899,11 +3974,19 @@ async function loadBankRollup() {
         html += '<div class="wr-reporter-name">' + esc(r.name) + '<span class="bank-fill-tag">' + items.length + (items.length===1?' item':' items') + '</span><button class="btn-ghost-sm" style="float:right" data-n="' + esc(r.name) + '" onclick="openBankAdd(this.dataset.n)">+ Add</button></div>';
         html += '<div class="wr-reporter-pub">' + esc(r.pub) + '</div>';
         items.forEach(i => {
-          html += '<div class="rollup-bank-row"><div class="rollup-bank-top">' +
+          const pub = (i.posted || []).indexOf('Published') > -1;
+          const key = r.name + '|' + i.story_num;
+          html += '<div class="rollup-bank-row' + (pub ? ' is-published' : '') + '"><div class="rollup-bank-top">' +
             '<span class="rollup-bank-title">' + esc(i.headline) + '</span>' +
             (i.format ? '<span class="rollup-bank-type">' + esc(i.format) + '</span>' : '') +
-            (i.filed ? '<span class="rollup-bank-ready">\u2713 Ready</span>' : '') + (i.assigned_by ? '<span class="rollup-bank-type">Added by editor</span>' : '') +
-            '</div>' + (i.notes ? '<div class="rollup-bank-notes">' + esc(i.notes) + '</div>' : '') + '</div>';
+            (pub ? '<span class="rollup-bank-pubd">\u2713 Published</span>' : (i.filed ? '<span class="rollup-bank-ready">\u2713 Ready</span>' : '')) +
+            (i.assigned_by ? '<span class="rollup-bank-type">Added by editor</span>' : '') +
+            '</div>' + (i.notes ? '<div class="rollup-bank-notes">' + esc(i.notes) + '</div>' : '') +
+            '<div class="rollup-bank-acts">' +
+              '<button class="bk-act" data-k="' + esc(key) + '" onclick="openBankEdit(this.dataset.k)">Edit</button>' +
+              '<button class="bk-act" data-k="' + esc(key) + '" onclick="bankTogglePublished(this.dataset.k)">' + (pub ? 'Mark unpublished' : 'Mark published') + '</button>' +
+              '<button class="bk-act danger" data-k="' + esc(key) + '" onclick="bankRemove(this.dataset.k)">Remove</button>' +
+            '</div></div>';
         });
         html += '</div>';
       });
