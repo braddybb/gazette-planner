@@ -3844,8 +3844,15 @@ renderGrid(); updateProgress(); refreshNextWeekBadges();
 return;
 }
 } else {
-DATA[num] = blankStory(num);
-await manualSave(num);
+// Clear the current slot by deleting its row (a blank save would be dropped by the lock gate).
+const cleared = await dbDeleteStory(num);
+if (!cleared) {
+alert('The story was copied to next week, but could not be removed from this week. Delete it from this week by hand \u2014 do not send it again.');
+renderGrid(); updateProgress(); refreshNextWeekBadges();
+return;
+}
+delete DATA[num];
+clearPlanGate(num);
 }
 renderGrid();
 updateProgress();
@@ -3940,17 +3947,21 @@ renderGrid();
 updateProgress();
 }
 
-function clearSlot(num, e) {
-e.stopPropagation();
+async function clearSlot(num, e) {
+if (e) e.stopPropagation();
 if (!confirm('Clear all data in this story slot?')) return;
+// Remove the saved row outright. Blanking + save used to be silently dropped by the
+// lock gate (a cleared card looks "unlocked"), so the old row survived a refresh.
+let ok = false;
+try { ok = await dbDeleteStory(num); } catch (err) { console.warn('Clear failed:', err); }
+if (!ok) { alert('Could not clear this slot \u2014 it is still saved. Check your connection and try again. If it keeps happening, tell Brad.'); return; }
 DATA[num] = {
 headline:'', angle:'', notes:'', format:'', word_count:'', file_day:'',
 todo:[], posted:[], filed:false, editor_note:'', editor_note_addressed:false, editor_notes:[]
 };
-// Save the cleared state immediately
-manualSave(num);
-// Rebuild just this card
-const grid = document.getElementById('stories-container').querySelector('.stories-grid');
+clearPlanGate(num); // also drop any saved-on-this-device draft, or it could repopulate
+// Rebuild just this card (now empty)
+const grid = document.getElementById('stories-container') && document.getElementById('stories-container').querySelector('.stories-grid');
 if (grid) {
 const idx = STORIES.findIndex(s => s.n === num);
 if (idx >= 0) {
