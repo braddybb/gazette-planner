@@ -115,6 +115,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 /* ── REPORTER GRID ── */
 .reporter-grid{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:2rem}
+.ir-chips-state{align-items:center}
+.ir-chips-lbl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9A978D;margin-right:4px}
 .region-section{display:flex;flex-direction:column;gap:12px}
 .region-header{display:flex;align-items:baseline;gap:12px;padding-bottom:4px;border-bottom:1px solid var(--border)}
 .region-name{font-size:15px;font-weight:700;letter-spacing:.02em;color:var(--ink,#111)}
@@ -6910,10 +6912,35 @@ function downloadWeeklyReviewPdf() {
 // Data is written by the scheduled functions (impact-run-background); this tab reads
 // it, and lets the editor save / dismiss / assign items, follow watchlists, manage
 // sources and add leads by hand. All tables are editor-only (RLS).
-var IR={scanning:false,scanMsg:'',items:[],sources:[],lists:[],runs:[],tab:'top',win:'24h',topic:'',cat:'',q:'',panel:'',err:'',pending:0,next:null,timer:null,loaded:false};
+var IR={scanning:false,scanMsg:'',items:[],sources:[],lists:[],runs:[],tab:'top',win:'24h',topic:'',cat:'',state:'',q:'',panel:'',err:'',pending:0,next:null,timer:null,loaded:false};
 var IR_TOPICS=['climate','energy','environment','water','land & agriculture','mining & resources','transport & EVs','politics & policy','corporate & finance','science & data','local & regional'];
 var IR_CATS={news:'News',govt:'Government',company:'Company',social:'Social','think-tank':'Think tank',lead:'Lead'};
 var IR_WIN={'24h':24,'3d':72,'7d':168};
+// State / territory filter. Detected from each item's text (or read from a stored
+// `states` column if the scanner ever provides one). Abbreviations are matched
+// case-sensitively so everyday words (act, was...) don't trigger false hits.
+var IR_STATES=[
+  {k:'nsw',lbl:'NSW',full:/new south wales/i,abbr:/\bNSW\b/},
+  {k:'vic',lbl:'VIC',full:/victoria/i,abbr:/\bVIC\b/},
+  {k:'qld',lbl:'QLD',full:/queensland/i,abbr:/\bQLD\b/},
+  {k:'wa',lbl:'WA',full:/western australia/i,abbr:/\bWA\b/},
+  {k:'sa',lbl:'SA',full:/south australia/i,abbr:/\bSA\b/},
+  {k:'tas',lbl:'TAS',full:/tasmania/i,abbr:/\bTAS\b/},
+  {k:'act',lbl:'ACT',full:/australian capital territory|canberra/i,abbr:/\bACT\b/},
+  {k:'nt',lbl:'NT',full:/northern territory/i,abbr:/\bNT\b/}
+];
+function irStatesOf(it){
+  if(it._states) return it._states;
+  var out=[];
+  var stored=it.states||it.state||it.regions;
+  if(stored){ var arr=Array.isArray(stored)?stored:String(stored).split(/[,;]/);
+    arr.forEach(function(x){ x=String(x).trim().toLowerCase(); IR_STATES.forEach(function(S){ if((S.k===x||S.lbl.toLowerCase()===x)&&out.indexOf(S.k)<0) out.push(S.k); }); }); }
+  if(!out.length){
+    var text=((it.title||'')+' '+(it.why||'')+' '+(it.angle||'')+' '+(it.note||'')+' '+(it.summary||'')+' '+(it.source_name||''));
+    IR_STATES.forEach(function(S){ if(S.full.test(text)||S.abbr.test(text)) out.push(S.k); });
+  }
+  it._states=out; return out;
+}
 function irEl(){ return document.getElementById('impact-radar-view'); }
 
 // ── Patch Radar admin: scan, source health, on/off, add. Reporters read the results in their planner ("Your patch"). ──
@@ -7058,6 +7085,7 @@ function irBase(){
   return IR.items.filter(function(it){
     if(IR.topic&&(it.topics||[]).indexOf(IR.topic)<0) return false;
     if(IR.cat&&it.category!==IR.cat) return false;
+    if(IR.state){ var _st=irStatesOf(it); if(IR.state==='national'){ if(_st.length) return false; } else if(_st.indexOf(IR.state)<0) return false; }
     if(q&&((it.title||'')+' '+(it.why||'')+' '+(it.source_name||'')+' '+(it.summary||'')).toLowerCase().indexOf(q)<0) return false;
     return true;
   }).map(function(it){ return it; }).filter(function(it){ return it.status!=='new'||irTime(it)>=cut||!it.published_at&&Date.parse(it.fetched_at)>=cut; });
@@ -7103,6 +7131,7 @@ function irRender(){
   h+='<span class="grow"></span><select onchange="irSetWin(this.value)" title="How far back">'+[['24h','Last 24 hours'],['3d','Last 3 days'],['7d','Last 7 days']].map(function(o){ return '<option value="'+o[0]+'"'+(IR.win===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select><input type="search" placeholder="Search…" value="'+esc(IR.q)+'" oninput="irSetQ(this.value)"></div>';
   h+='<div class="ir-chips">'+IR_TOPICS.map(function(t){ return '<button class="ir-chip'+(IR.topic===t?' on':'')+'" onclick="irSetTopic(\''+t.replace(/'/g,"\\'")+'\')">'+esc(t)+'</button>'; }).join('')+'</div>';
   h+='<div class="ir-chips">'+Object.keys(IR_CATS).map(function(k){ return '<button class="ir-chip'+(IR.cat===k?' on':'')+'" onclick="irSetCat(\''+k+'\')">'+IR_CATS[k]+'</button>'; }).join('')+'</div>';
+  h+='<div class="ir-chips ir-chips-state"><span class="ir-chips-lbl">State</span>'+IR_STATES.map(function(S){ return '<button class="ir-chip'+(IR.state===S.k?' on':'')+'" onclick="irSetState(\''+S.k+'\')">'+S.lbl+'</button>'; }).join('')+'<button class="ir-chip'+(IR.state==='national'?' on':'')+'" onclick="irSetState(\'national\')" title="Items with no specific state">National</button></div>';
   h+='<div class="ir-tools"><button class="vd-btn ghost sm" onclick="irPanel(\'lists\')">👁 Watchlists ('+IR.lists.length+')</button><button class="vd-btn ghost sm" onclick="irPanel(\'sources\')">📡 Sources ('+IR.sources.length+')</button><button class="vd-btn ghost sm" onclick="irPanel(\'lead\')">+ Add a lead</button></div>';
   h+='<div id="ir-panel">'+irPanelHtml()+'</div><div class="ir-list" id="ir-list">'+irListHtml()+'</div>';
   body.innerHTML=h; irRenderBanner();
@@ -7113,6 +7142,7 @@ function irSetWin(v){ IR.win=v; irRender(); }
 function irSetQ(v){ IR.q=v; irRenderList(); }
 function irSetTopic(t){ IR.topic=IR.topic===t?'':t; irRender(); }
 function irSetCat(c){ IR.cat=IR.cat===c?'':c; irRender(); }
+function irSetState(s){ IR.state=IR.state===s?'':s; irRender(); }
 function irPanel(p){ IR.panel=IR.panel===p?'':p; var el=document.getElementById('ir-panel'); if(el) el.innerHTML=irPanelHtml(); }
 
 function irScoreCls(n){ return n>=85?'s3':(n>=70?'s2':(n>=55?'s1':'')); }
