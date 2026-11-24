@@ -9,7 +9,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import crypto from "node:crypto";
 
-export const UA = "GazetteImpactRadar/1.0 (+https://gazettenews.au)";
+// Present as a normal browser. Many sites (Cloudflare/WAF rules) return HTTP 403
+// to a request whose User-Agent names a bot, which is what the old
+// "GazetteImpactRadar/1.0" value triggered. A browser UA clears those
+// User-Agent-based blocks; it does NOT get past IP blocks or JS challenges.
+export const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 export const MAX_AGE_HOURS = 72;        // ignore feed entries older than this
 export const SCORE_PER_RUN = 60;        // cap on AI scoring per run (cost guard)
 export const BATCH = 8;                 // items per AI call
@@ -84,7 +88,12 @@ export const passesGate = (title, summary) => IMPACT_RE.test(`${title} ${summary
 export async function fetchText(fetchImpl, url, opts = {}) {
   const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), opts.timeout || 15000);
   try {
-    const r = await fetchImpl(url, { signal: ctl.signal, headers: { "User-Agent": UA, Accept: opts.accept || "*/*", ...(opts.headers || {}) } });
+    const r = await fetchImpl(url, { signal: ctl.signal, redirect: "follow", headers: {
+      "User-Agent": UA,
+      Accept: opts.accept || "text/html,application/xhtml+xml,application/xml,application/rss+xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-AU,en;q=0.9",
+      ...(opts.headers || {}),
+    } });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return await r.text();
   } finally { clearTimeout(t); }
