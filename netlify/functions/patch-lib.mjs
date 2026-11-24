@@ -26,6 +26,7 @@ export const REPORTERS = [
   { name: "Jacob Wallace", pub: "Gippsland Monitor", slack: "U08DG9R5A6R" },
   { name: "Douglas Connor", pub: "Mid North Coaster", slack: "U0B71KH9Y0K" },
   { name: "Archie Milligan", pub: "National Account", slack: "U08DQ26CEE7" },
+  { name: "Tione Zylstra", pub: "The Moreton Bay Bugle", slack: "U0CJYBGTPAP" },
 ];
 export function alertDm(pub, items, site) {
   const L = [`:round_pushpin: *Patch Radar \u2014 ${pub}*`];
