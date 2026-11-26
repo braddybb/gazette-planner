@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Evergreen video ideas</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{color-scheme:light}
 *{box-sizing:border-box}
@@ -54,13 +55,59 @@ label.chk{font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer}
 .link:hover{background:#f0eee8}
 .pill.s{background:#e9f0e4;color:#35561f}
 footer{margin-top:24px;font-size:12px;color:#777}
+.pill.added{background:#efe7fb;color:#5a3a99}
+.addbtn{border:1px solid #243b7a;background:#243b7a;color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.addbtn:hover{background:#1b2d63}
+.modal-bg{position:fixed;inset:0;background:rgba(20,22,28,.5);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:24px 14px}
+.modal-bg.on{display:flex}
+.modal{background:#fff;border-radius:12px;max-width:560px;width:100%;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.modal h2{margin:0 0 4px;font-size:19px}
+.modal .lead{color:#555;font-size:13px;margin:0 0 14px}
+.modal label.fl{display:block;font-size:13px;font-weight:600;color:#333;margin:12px 0 4px}
+.modal input[type=text],.modal textarea,.modal select{width:100%;box-sizing:border-box;border:1px solid #cfcdc6;border-radius:8px;padding:8px 10px;font:inherit}
+.modal textarea{min-height:70px;resize:vertical}
+.modal .row{display:flex;gap:12px}.modal .row>div{flex:1}
+.modal .flags{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px}
+.modal .flags label{display:inline-flex;align-items:center;gap:6px;font-weight:500;margin:0;font-size:13px}
+.modal .flags input{width:auto}
+.modal .act{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.modal .msg{font-size:13px;margin-top:10px;min-height:16px}
+.modal .msg.err{color:#b4231f}.modal .msg.ok{color:#1d6b2f}
+.modal .gate{background:#fff4c2;color:#6b5600;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:6px;display:none}
+.btn-cancel{border:1px solid #cfcdc6;background:#fff;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer}
+.btn-save{border:1px solid #243b7a;background:#243b7a;color:#fff;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-save:disabled{opacity:.5;cursor:default}
+.delbtn{border:1px solid #e3b7b5;background:#fff;color:#b4231f;border-radius:8px;padding:4px 9px;font-size:12px;cursor:pointer;margin-left:8px}
 </style></head><body>
+<div class="modal-bg" id="addmodal"><div class="modal">
+<h2>Add a video idea</h2>
+<p class="lead">For the whole team. Give it a source link so whoever picks it up can check the facts.</p>
+<div class="gate" id="addgate"></div>
+<div id="addform">
+<div class="row"><div><label class="fl">Brand / patch</label><select id="f-brand"></select></div>
+<div><label class="fl">Section</label><select id="f-cat"></select></div></div>
+<label class="fl">Title</label><input type="text" id="f-title" maxlength="120" placeholder="e.g. How Redcliffe got its name">
+<label class="fl">The idea</label><textarea id="f-body" maxlength="800" placeholder="A couple of sentences a reporter can turn into a short video."></textarea>
+<label class="fl">Town or suburb <span style="font-weight:400;color:#888">(optional — lets it show under “Near me”)</span></label><input type="text" id="f-place" list="placelist" maxlength="60" placeholder="e.g. Redcliffe">
+<div class="row"><div><label class="fl">Source name</label><input type="text" id="f-slabel" maxlength="80" placeholder="e.g. Qld Place Names"></div>
+<div><label class="fl">Source link</label><input type="text" id="f-surl" maxlength="400" placeholder="https://..."></div></div>
+<label class="fl">Note <span style="font-weight:400;color:#888">(optional — anything to verify or handle carefully)</span></label><input type="text" id="f-note" maxlength="200">
+<div class="flags">
+<label><input type="checkbox" id="f-q"> Quick turnaround</label>
+<label><input type="checkbox" id="f-care"> Handle with care</label>
+<label><input type="checkbox" id="f-chk"> Check or attribute</label>
+</div>
+</div>
+<div class="msg" id="addmsg"></div>
+<div class="act"><button class="btn-cancel" id="addcancel">Cancel</button><button class="btn-save" id="addsave">Add idea</button></div>
+</div></div>
 <header><h1>Evergreen video ideas</h1>
 <p class="sub">Name origins, history, landmarks and trivia for each brand's patch. Every idea has source links. Dates and claims vary by source in places, so check the notes and attribute where flagged.</p></header>
 <div class="wrap">
 <div class="views" id="views"></div>
 <div class="tabs" id="tabs"></div>
 <div class="note" id="bnote"></div>
+<div class="controls" id="ctl-add" style="display:none;margin-bottom:12px"><button class="addbtn" id="addbtn">+ Add an idea</button><span style="font-size:12px;color:#777">Add a researched idea for the team — it shows up here for everyone.</span></div>
 <div class="controls" id="ctl-ideas">
 <input type="search" id="q" placeholder="Search ideas, towns or facts">
 <select id="cat"></select>
@@ -123,10 +170,10 @@ function doNear(){
 function renderIdeas(){
   const q=$("q").value.trim().toLowerCase(), cat=$("cat").value, quick=$("quick").checked, hide=$("hidedone").checked;
   const base=ITEMS.filter(i=>(brand==="all"||i.b===brand)&&(cat==="all"||i.c===cat)&&(!quick||i.q)&&(!q||(i.t+" "+i.d+" "+i.n).toLowerCase().includes(q)));
-  let list=base.filter(i=>!(hide&&DONE[i.id])).map(i=>({i,km:near?hav(near.p[3],near.p[4],i.ll[0],i.ll[1]):null}));
+  let list=base.filter(i=>!(hide&&DONE[i.id])).map(i=>({i,km:(near&&i.ll)?hav(near.p[3],near.p[4],i.ll[0],i.ll[1]):null}));
   if(near){
-    const within=list.filter(x=>x.km<=near.r).sort((a,b)=>a.km-b.km);
-    const nearest=list.slice().sort((a,b)=>a.km-b.km)[0];
+    const within=list.filter(x=>x.km!=null&&x.km<=near.r).sort((a,b)=>a.km-b.km);
+    const nearest=list.filter(x=>x.km!=null).sort((a,b)=>a.km-b.km)[0];
     $("nearmsg").className="msg";
     $("nearmsg").textContent=within.length?`Showing ideas within ${near.r} km of ${near.p[0]}${near.p[1]?" ("+near.p[1]+")":""}, nearest first. Distances are straight-line from town centres.`:(nearest?`Nothing within ${near.r} km of ${near.p[0]}. The nearest idea is ${Math.round(nearest.km)} km away (${nearest.i.pl}). Try a bigger radius.`:"No ideas match the current filters.");
     list=within;
@@ -135,10 +182,10 @@ function renderIdeas(){
   const nd=total.filter(i=>DONE[i.id]).length;
   $("count").textContent=list.length+" idea"+(list.length===1?"":"s")+" · "+nd+" of "+total.length+" marked done (saved in this browser only)";
   if(!list.length){$("grid").innerHTML='<div class="empty">No ideas to show. Try widening the radius or clearing the filters.</div>';return;}
-  $("grid").innerHTML=list.map(({i,km})=>{const dn=!!DONE[i.id];return `<div class="card${dn?" done":""}"><div class="meta"><span class="pill brand">${esc(bname(i.b))}</span><span class="pill">${esc(i.c)}</span>${km!==null?`<span class="pill dist">${km<10?km.toFixed(1):Math.round(km)} km · ${esc(i.pl)}</span>`:""}${dn?'<span class="pill dn">Done</span>':""}${flags(i)}</div>
+  $("grid").innerHTML=list.map(({i,km})=>{const dn=!!DONE[i.id];return `<div class="card${dn?" done":""}"><div class="meta"><span class="pill brand">${esc(bname(i.b))}</span><span class="pill">${esc(i.c)}</span>${km!==null?`<span class="pill dist">${km<10?km.toFixed(1):Math.round(km)} km · ${esc(i.pl)}</span>`:""}${i._user?`<span class="pill added">Added${i._by?" by "+esc(i._by):""}</span>`:""}${dn?'<span class="pill dn">Done</span>':""}${flags(i)}</div>
 <h3>${esc(i.t)}</h3><p>${esc(i.d)}</p>${i.n?`<div class="n">${esc(i.n)}</div>`:''}
 <div class="src">Sources: ${srcs(i.s)}</div>
-<button class="donebtn${dn?" on":""}" data-id="${esc(i.id)}">${dn?"Done. Click to undo":"Mark as done"}</button></div>`;}).join("");
+<button class="donebtn${dn?" on":""}" data-id="${esc(i.id)}">${dn?"Done. Click to undo":"Mark as done"}</button>${(i._user&&ME&&ME.role==='editor')?`<button class="delbtn" data-del="${esc(i._dbid)}">Remove</button>`:""}</div>`;}).join("");
 }
 function nextOcc(m,d){const t=today();let dt=new Date(t.getFullYear(),m-1,d||1);if(dt<new Date(t.getTime()-3*864e5))dt=new Date(t.getFullYear()+1,m-1,d||1);return dt;}
 function jump(title,b){view="ideas";brand=b;$("q").value=title;$("cat").value="all";$("quick").checked=false;views();tabs();render();window.scrollTo(0,0);}
@@ -211,5 +258,100 @@ $("nearclear").onclick=()=>{$("nearq").value="";near=null;$("nearmsg").textConte
 $("nearq").addEventListener("keydown",e=>{if(e.key==="Enter")doNear();});
 $("radius").onchange=()=>{if(near)doNear();};
 $("placelist").innerHTML=[...new Set(PLACES.map(p=>p[0]))].sort().map(n=>`<option value="${esc(n)}">`).join("");
+
+/* ---- Team-added ideas (Supabase) ---- */
+const SUPA_URL='https://asgyshkafnrqknnmkbfo.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZ3lzaGthZm5ycWtubm1rYmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjk1MzUsImV4cCI6MjA5NTYwNTUzNX0.ry-VmO4TDzGAQnLVPQfLzL9jjfJhSGOrqBD_8LRL8PM';
+const supa=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+let ME=null; // {name, role} when logged in on this origin (via the Planner)
+
+async function getMe(){
+  if(!supa)return null;
+  try{
+    const {data:{session}}=await supa.auth.getSession();
+    if(!session)return null;
+    const {data:prof}=await supa.from('profiles').select('role, name, reporter_name, publication').eq('id',session.user.id).single();
+    if(!prof||!prof.role)return null;
+    return {name:prof.reporter_name||prof.name||'Team member',role:prof.role,token:session.access_token};
+  }catch(e){return null;}
+}
+
+function dbToItem(r){
+  let ll=(r.lat!=null&&r.lng!=null)?[r.lat,r.lng]:null;
+  if(!ll&&r.place){const p=findPlace(r.place);if(p)ll=[p[3],p[4]];}
+  return {id:'db-'+r.id,_dbid:r.id,_user:true,_by:r.added_by,_role:r.added_role,
+    pl:r.place||'',ll,b:r.brand,c:r.category,t:r.title,d:r.body,n:r.note||'',
+    s:r.source_url?[[r.source_label||'Source',r.source_url]]:[],
+    q:!!r.quick,care:!!r.care,chk:!!r.chk};
+}
+
+async function loadDbIdeas(){
+  if(!supa)return;
+  try{
+    const res=await fetch(`${SUPA_URL}/rest/v1/evergreen_ideas?select=*&order=created_at.desc`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}});
+    if(!res.ok)return;
+    const rows=await res.json();
+    for(let i=ITEMS.length-1;i>=0;i--)if(ITEMS[i]._user)ITEMS.splice(i,1);
+    rows.forEach(r=>ITEMS.push(dbToItem(r)));
+    tabs();render();
+  }catch(e){}
+}
+
+/* Add-idea modal */
+$("f-brand").innerHTML=BRANDS.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join("");
+$("f-cat").innerHTML=CATS.map(c=>`<option>${esc(c)}</option>`).join("");
+function openAdd(){
+  const gate=$("addgate"),form=$("addform"),save=$("addsave");
+  if(ME){gate.style.display="none";form.style.opacity="1";save.disabled=false;}
+  else{gate.style.display="block";gate.textContent="To add an idea, open this page from your Planner while you're logged in (use the Video ideas button). Then reload this tab.";form.style.opacity=".5";save.disabled=true;}
+  $("addmsg").textContent="";$("addmsg").className="msg";
+  $("addmodal").classList.add("on");
+}
+function closeAdd(){$("addmodal").classList.remove("on");}
+function clearForm(){["f-title","f-body","f-place","f-slabel","f-surl","f-note"].forEach(id=>$(id).value="");["f-q","f-care","f-chk"].forEach(id=>$(id).checked=false);}
+
+async function saveIdea(){
+  const msg=$("addmsg");msg.className="msg";
+  if(!ME){msg.className="msg err";msg.textContent="You need to be logged in via the Planner.";return;}
+  const title=$("f-title").value.trim(),body=$("f-body").value.trim(),surl=$("f-surl").value.trim();
+  if(!title||!body){msg.className="msg err";msg.textContent="Add a title and the idea.";return;}
+  if(!/^https?:\/\/\S+/.test(surl)){msg.className="msg err";msg.textContent="Add a source link starting with http.";return;}
+  const row={brand:$("f-brand").value,category:$("f-cat").value,title,body,
+    place:$("f-place").value.trim()||null,note:$("f-note").value.trim()||null,
+    source_label:$("f-slabel").value.trim()||'Source',source_url:surl,
+    quick:$("f-q").checked,care:$("f-care").checked,chk:$("f-chk").checked,
+    added_by:ME.name,added_role:ME.role};
+  const p=row.place?findPlace(row.place):null;if(p){row.lat=p[3];row.lng=p[4];}
+  $("addsave").disabled=true;msg.textContent="Saving…";
+  try{
+    const res=await fetch(`${SUPA_URL}/rest/v1/evergreen_ideas`,{method:'POST',
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${ME.token}`,'Content-Type':'application/json',Prefer:'return=representation'},
+      body:JSON.stringify(row)});
+    if(!res.ok){const t=await res.text();throw new Error(t||res.status);}
+    msg.className="msg ok";msg.textContent="Added. Thanks!";clearForm();
+    await loadDbIdeas();
+    setTimeout(closeAdd,700);
+  }catch(e){msg.className="msg err";msg.textContent="Couldn't save: "+(e.message||e);}
+  $("addsave").disabled=false;
+}
+
+async function deleteIdea(dbid){
+  if(!ME||ME.role!=='editor')return;
+  if(!confirm("Remove this idea for everyone?"))return;
+  try{
+    const res=await fetch(`${SUPA_URL}/rest/v1/evergreen_ideas?id=eq.${dbid}`,{method:'DELETE',headers:{apikey:SUPA_KEY,Authorization:`Bearer ${ME.token}`}});
+    if(!res.ok)throw new Error(await res.text());
+    await loadDbIdeas();
+  }catch(e){alert("Couldn't remove: "+(e.message||e));}
+}
+
+$("addbtn").onclick=openAdd;
+$("addcancel").onclick=closeAdd;
+$("addsave").onclick=saveIdea;
+$("addmodal").addEventListener("click",e=>{if(e.target===$("addmodal"))closeAdd();});
+$("grid").addEventListener("click",ev=>{const d=ev.target.closest(".delbtn");if(d)deleteIdea(d.dataset.del);});
+
+(async()=>{ME=await getMe();if(ME)$("ctl-add").style.display="flex";await loadDbIdeas();})();
+
 views();tabs();render();
 </script></body></html>
